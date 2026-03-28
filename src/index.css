@@ -1,0 +1,203 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #f8f4f0;
+    font-family: 'EB Garamond', Georgia, serif;
+    color: #1a1a1a;
+  }
+}
+
+@layer components {
+  /* ─── Shared tile structure ────────────────────────────────────────────── */
+  .tile-base {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    /* isolation:isolate creates a stacking context so ::before mix-blend-mode
+       composites against this tile's own background, not the page behind it. */
+    isolation: isolate;
+    transition:
+      transform   .15s ease,
+      box-shadow  .22s ease,
+      border-color .28s ease,
+      filter       .28s ease;
+  }
+
+  /* ─── Stone material ───────────────────────────────────────────────────── */
+  .tile-stone {
+    background: url('/textures/stone.jpg') center / cover no-repeat;
+    border: 2px solid #524e48;
+    box-shadow:
+      inset 0 2px 6px rgba(255,255,248,.30),
+      inset 0 -4px 9px rgba(0,0,0,.34),
+      inset 1px 0 3px rgba(0,0,0,.14),
+      3px 5px 14px rgba(0,0,0,.42);
+  }
+
+  /* ─── Brick material ───────────────────────────────────────────────────── */
+  .tile-brick {
+    background: url('/textures/brick.jpg') center / cover no-repeat;
+    border: 2px solid #5a3020;
+    box-shadow:
+      inset 0 2px 5px rgba(255,205,145,.18),
+      inset 0 -4px 9px rgba(0,0,0,.42),
+      inset 1px 0 3px rgba(0,0,0,.20),
+      3px 5px 14px rgba(0,0,0,.40);
+  }
+
+  /* ─── Role: name tile ─────────────────────────────────────────────────── */
+  .tile-name {
+    flex-direction: column;
+    gap: 0;
+    padding: 8px 6px;
+    cursor: default;
+  }
+
+  /* Stone seam line across mid-tile */
+  .tile-name::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(0,0,0,.28) 30%,
+      rgba(0,0,0,.28) 70%,
+      transparent
+    );
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* Brick mortar seam is lighter and wider */
+  .tile-brick.tile-name::after {
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(200,168,120,.55) 25%,
+      rgba(200,168,120,.55) 75%,
+      transparent
+    );
+  }
+
+  /* ─── Role: prayer / empty tile ────────────────────────────────────────── */
+  .tile-prayer {
+    cursor: pointer;
+  }
+
+  .tile-prayer:hover {
+    transform: translateY(-2px);
+  }
+
+  .tile-stone.tile-prayer:hover {
+    box-shadow:
+      inset 0 2px 6px rgba(255,255,248,.30),
+      inset 0 -4px 9px rgba(0,0,0,.34),
+      0 8px 22px rgba(0,0,0,.22);
+  }
+
+  .tile-brick.tile-prayer:hover {
+    box-shadow:
+      inset 0 2px 5px rgba(255,205,145,.22),
+      inset 0 -4px 9px rgba(0,0,0,.38),
+      0 8px 22px rgba(0,0,0,.22);
+  }
+
+  .tile-prayer:focus-visible {
+    outline: 2px solid #b45309;
+    outline-offset: 2px;
+  }
+
+  /* ─── Material-change flash ─────────────────────────────────────────────
+     Gradients can't transition in CSS. A brief brightness flash helps the
+     eye accept the material swap without perceiving a hard snap.          */
+  @keyframes material-change {
+    0%   { filter: brightness(1)    saturate(1);   }
+    38%  { filter: brightness(1.28) saturate(0.35); }
+    100% { filter: brightness(1)    saturate(1);   }
+  }
+
+  .tiles-changing .tile-base {
+    animation: material-change 0.42s ease-out;
+  }
+
+  /* ─── Carved name text ─────────────────────────────────────────────────── */
+  .stone-name {
+    position: relative;
+    z-index: 2;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(19px, 3.3vw, 37px);
+    font-weight: 700;
+    font-style: italic;
+    color: #ffffff;
+    text-align: center;
+    line-height: 1.15;
+    /* Engraved effect: bright bottom edge (light bouncing off carve floor),
+       dark top edge (shadow inside the carve), soft ambient depth          */
+    text-shadow:
+      0  1px 2px rgba(0,0,0,.60),
+      0 -1px 1px rgba(0,0,0,.40),
+      0  0   6px rgba(0,0,0,.25);
+    letter-spacing: .02em;
+    word-break: break-word;
+    padding: 0 2px;
+  }
+
+  /* Brick text: same carve depth but warmer color */
+  .tile-brick .stone-name {
+    color: #ffffff;
+    text-shadow:
+      0  1px 2px rgba(0,0,0,.60),
+      0 -1px 1px rgba(0,0,0,.40),
+      0  0   6px rgba(0,0,0,.25);
+  }
+
+  .stone-name-line { display: block; }
+
+  .stone-icon {
+    position: relative;
+    z-index: 2;
+    font-size: clamp(16px, 2.3vw, 26px);
+    color: rgba(255, 255, 255, .85);
+    margin-bottom: 2px;
+    text-shadow: 0 1px 2px rgba(0,0,0,.50);
+    line-height: 1;
+  }
+
+  .tile-brick .stone-icon {
+    color: rgba(255, 255, 255, .85);
+    text-shadow: 0 1px 2px rgba(0,0,0,.50);
+  }
+
+  /* ─── Praying hands icon ───────────────────────────────────────────────── */
+  .prayer-hands-icon {
+    position: relative;
+    z-index: 2;
+    width: clamp(26px, 3.2vw, 46px);
+    height: clamp(26px, 3.2vw, 46px);
+    filter:
+      drop-shadow(0 1px 0 rgba(255,255,240,.28))
+      drop-shadow(0 -1px 1px rgba(0,0,0,.38));
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .font-body { font-family: 'EB Garamond', Georgia, serif; }
+}
