@@ -57,6 +57,21 @@ export class SupabasePrayerCategoryRepository implements IPrayerCategoryReposito
   }
 
   async update(id: string, data: UpdateCategoryData): Promise<PrayerCategory> {
+    if (data.name === undefined && data.displayOrder === undefined) {
+      // No-op patch: fetch and return current state without a write round-trip
+      const { data: row, error } = await this.client
+        .from('message_categories')
+        .select()
+        .eq('id', id)
+        .single()
+      if (error) {
+        if (error.code === 'PGRST116') throw new NotFoundError('Category')
+        throw new Error(error.message)
+      }
+      if (!row) throw new NotFoundError('Category')
+      return rowToCategory(row as CategoryRow)
+    }
+
     const patch: DB['message_categories']['Update'] = {}
     if (data.name !== undefined) patch.name = data.name.trim()
     if (data.displayOrder !== undefined) patch.display_order = data.displayOrder
@@ -67,7 +82,10 @@ export class SupabasePrayerCategoryRepository implements IPrayerCategoryReposito
       .eq('id', id)
       .select()
       .single()
-    if (error) throw new Error(error.message)
+    if (error) {
+      if (error.code === 'PGRST116') throw new NotFoundError('Category')
+      throw new Error(error.message)
+    }
     if (!row) throw new NotFoundError('Category')
     return rowToCategory(row as CategoryRow)
   }
@@ -77,14 +95,20 @@ export class SupabasePrayerCategoryRepository implements IPrayerCategoryReposito
       .from('message_categories')
       .update({ is_active: active })
       .eq('id', id)
-    if (error) throw new Error(error.message)
+      .select('id')
+      .single()
+    if (error) {
+      if (error.code === 'PGRST116') throw new NotFoundError('Category')
+      throw new Error(error.message)
+    }
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await this.client
+    const { error, count } = await this.client
       .from('message_categories')
-      .delete()
+      .delete({ count: 'exact' })
       .eq('id', id)
     if (error) throw new Error(error.message)
+    if (count === 0) throw new NotFoundError('Category')
   }
 }
