@@ -114,6 +114,7 @@ GRANT USAGE ON SCHEMA prayer_wall TO anon, authenticated;
 GRANT SELECT ON ALL TABLES IN SCHEMA prayer_wall TO anon, authenticated;
 GRANT INSERT ON prayer_wall.commitments TO anon, authenticated;
 GRANT INSERT ON prayer_wall.commitment_categories TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON prayer_wall.message_categories TO authenticated;
 
 -- ============================================================
 -- Realtime
