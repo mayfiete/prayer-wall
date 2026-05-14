@@ -1,17 +1,18 @@
 import type { Prayer } from '../../domain/entities/Prayer'
 import type { PrayerCategory } from '../../domain/entities/PrayerCategory'
 
-export const MOCK_CHURCH_ID = '00000000-0000-0000-0000-000000000001'
+export const MOCK_ORG_ID = '00000000-0000-0000-0000-000000000001'
+export const MOCK_WALL_ID = '00000000-0000-0000-0000-000000000002'
 
 export const MOCK_CATEGORIES: PrayerCategory[] = [
-  { id: 'cat-1', churchId: MOCK_CHURCH_ID, name: 'Family', displayOrder: 1, isActive: true },
-  { id: 'cat-2', churchId: MOCK_CHURCH_ID, name: 'Health', displayOrder: 2, isActive: true },
-  { id: 'cat-3', churchId: MOCK_CHURCH_ID, name: 'Finances', displayOrder: 3, isActive: true },
-  { id: 'cat-4', churchId: MOCK_CHURCH_ID, name: 'Relationships', displayOrder: 4, isActive: true },
-  { id: 'cat-5', churchId: MOCK_CHURCH_ID, name: 'Work & Career', displayOrder: 5, isActive: true },
-  { id: 'cat-6', churchId: MOCK_CHURCH_ID, name: 'Spiritual Growth', displayOrder: 6, isActive: true },
-  { id: 'cat-7', churchId: MOCK_CHURCH_ID, name: 'Community', displayOrder: 7, isActive: true },
-  { id: 'cat-8', churchId: MOCK_CHURCH_ID, name: 'Mission & Outreach', displayOrder: 8, isActive: true },
+  { id: 'cat-1', orgId: MOCK_ORG_ID, name: 'Family', displayOrder: 1, isActive: true },
+  { id: 'cat-2', orgId: MOCK_ORG_ID, name: 'Health', displayOrder: 2, isActive: true },
+  { id: 'cat-3', orgId: MOCK_ORG_ID, name: 'Finances', displayOrder: 3, isActive: true },
+  { id: 'cat-4', orgId: MOCK_ORG_ID, name: 'Relationships', displayOrder: 4, isActive: true },
+  { id: 'cat-5', orgId: MOCK_ORG_ID, name: 'Work & Career', displayOrder: 5, isActive: true },
+  { id: 'cat-6', orgId: MOCK_ORG_ID, name: 'Spiritual Growth', displayOrder: 6, isActive: true },
+  { id: 'cat-7', orgId: MOCK_ORG_ID, name: 'Community', displayOrder: 7, isActive: true },
+  { id: 'cat-8', orgId: MOCK_ORG_ID, name: 'Mission & Outreach', displayOrder: 8, isActive: true },
 ]
 
 const NAMES = [
@@ -35,7 +36,7 @@ function makeDate(daysAgo: number): Date {
 
 export const MOCK_PRAYERS: Prayer[] = NAMES.slice(0, 48).map((name, i) => ({
   id: `mock-prayer-${i + 1}`,
-  churchId: MOCK_CHURCH_ID,
+  wallId: MOCK_WALL_ID,
   name,
   committedAt: makeDate(Math.floor(Math.random() * 30)),
   reminderActive: true,

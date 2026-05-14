@@ -1,4 +1,4 @@
-import { LIVE_NAMES, MOCK_CHURCH_ID } from './mockData'
+import { LIVE_NAMES, MOCK_WALL_ID } from './mockData'
 
 export interface IRealtimePayload {
   new: Record<string, unknown>
@@ -37,7 +37,7 @@ export class MockRealtimeClient implements IRealtimeClient {
           liveNameIndex++
           const row = {
             id: crypto.randomUUID(),
-            church_id: MOCK_CHURCH_ID,
+            wall_id: MOCK_WALL_ID,
             name,
             committed_at: new Date().toISOString(),
             reminder_active: true,

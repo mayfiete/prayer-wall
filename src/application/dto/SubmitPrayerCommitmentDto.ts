@@ -1,5 +1,6 @@
 export interface SubmitPrayerCommitmentDto {
-  churchId: string
+  wallId: string
+  orgId: string
   name: string
   email: string
   categoryIds: string[]

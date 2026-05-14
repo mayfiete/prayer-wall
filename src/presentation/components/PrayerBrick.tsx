@@ -10,11 +10,13 @@ const materialClass = { stone: 'tile-stone', brick: 'tile-brick' } as const
 interface PrayerBrickProps {
   prayer: Prayer
   isNew?: boolean
+  imageUrl?: string
 }
 
 interface EmptyBrickProps {
+  /** When provided, this stone is the next-available CTA */
   onClick?: () => void
-  isPulsing?: boolean
+  imageUrl?: string
 }
 
 function splitName(full: string): [string, string] {
@@ -24,7 +26,11 @@ function splitName(full: string): [string, string] {
   return [trimmed.slice(0, lastSpace), trimmed.slice(lastSpace + 1)]
 }
 
-export const PrayerBrick = memo(function PrayerBrick({ prayer, isNew = false }: PrayerBrickProps) {
+function stoneStyle(imageUrl?: string): React.CSSProperties | undefined {
+  return imageUrl ? { backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined
+}
+
+export const PrayerBrick = memo(function PrayerBrick({ prayer, isNew = false, imageUrl }: PrayerBrickProps) {
   const { mode } = useTileMode()
   const [firstLine, lastLine] = splitName(prayer.name)
 
@@ -32,8 +38,9 @@ export const PrayerBrick = memo(function PrayerBrick({ prayer, isNew = false }: 
     <div
       className={`tile-base ${materialClass[mode]} tile-name${isNew ? ' animate-brick-in' : ''}`}
       title={prayer.name}
+      style={stoneStyle(imageUrl)}
     >
-      <span className="stone-icon" aria-hidden>✦</span>
+      <span className="stone-rule" aria-hidden />
       <span className="stone-name">
         <span className="stone-name-line">{firstLine}</span>
         {lastLine && <span className="stone-name-line">{lastLine}</span>}
@@ -42,27 +49,18 @@ export const PrayerBrick = memo(function PrayerBrick({ prayer, isNew = false }: 
   )
 })
 
-export const EmptyBrick = memo(function EmptyBrick({ onClick, isPulsing = false }: EmptyBrickProps) {
+export const CtaBrick = memo(function CtaBrick({ onClick, imageUrl }: EmptyBrickProps) {
   const { mode } = useTileMode()
-
-  const classes = `tile-base ${materialClass[mode]} tile-prayer${isPulsing ? ' animate-pulse-glow' : ''}`
-
-  if (onClick) {
-    return (
-      <button
-        type="button"
-        className={classes}
-        onClick={onClick}
-        aria-label="Add your name to this prayer stone"
-      >
-        <PrayerHandsIcon className="prayer-hands-icon" />
-      </button>
-    )
-  }
-
   return (
-    <div className={classes} aria-hidden>
+    <button
+      type="button"
+      className={`tile-base ${materialClass[mode]} tile-cta animate-pulse-glow`}
+      onClick={onClick}
+      aria-label="Add your name to the prayer wall"
+      style={stoneStyle(imageUrl)}
+    >
       <PrayerHandsIcon className="prayer-hands-icon" />
-    </div>
+    </button>
   )
 })
+

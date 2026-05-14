@@ -1,6 +1,6 @@
 export interface Prayer {
   id: string
-  churchId: string
+  wallId: string
   name: string
   committedAt: Date
   reminderActive: boolean
@@ -12,7 +12,7 @@ export interface PrayerWithCategories extends Prayer {
 }
 
 export interface CreatePrayerData {
-  churchId: string
+  wallId: string
   name: string
   email: string
   categoryIds: string[]

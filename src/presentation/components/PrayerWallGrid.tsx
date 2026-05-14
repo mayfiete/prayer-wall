@@ -1,19 +1,25 @@
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useMemo } from 'react'
 import type { Prayer } from '../../domain/entities/Prayer'
-import { PrayerBrick, EmptyBrick } from './PrayerBrick'
+import { PrayerBrick, CtaBrick } from './PrayerBrick'
 import { usePrayerWall } from '../hooks/usePrayerWall'
 import { useRealtimePrayers } from '../hooks/useRealtimePrayers'
 import { useTileMode } from '../context/TileModeContext'
 import { Loader2 } from 'lucide-react'
 
-const MIN_DISPLAY_BRICKS = 48
+const STONES_PER_FULL_ROW = 5
+const STONES_PER_OFFSET_ROW = 4
 
 interface PrayerWallGridProps {
-  churchId: string
+  wallId: string
+  onCtaClick?: () => void
 }
 
-export function PrayerWallGrid({ churchId }: PrayerWallGridProps) {
-  const { prayers, loading, error, addPrayer } = usePrayerWall(churchId)
+type StoneItem =
+  | { kind: 'prayer'; prayer: Prayer; isNew: boolean }
+  | { kind: 'cta' }
+
+export function PrayerWallGrid({ wallId, onCtaClick }: PrayerWallGridProps) {
+  const { prayers, loading, error, addPrayer } = usePrayerWall(wallId)
   const { isChanging } = useTileMode()
   const newIdsRef = useRef<Set<string>>(new Set())
 
@@ -25,7 +31,29 @@ export function PrayerWallGrid({ churchId }: PrayerWallGridProps) {
     [addPrayer],
   )
 
-  useRealtimePrayers(churchId, handleNewPrayer)
+  useRealtimePrayers(wallId, handleNewPrayer)
+
+  const rows = useMemo(() => {
+    const items: StoneItem[] = [
+      { kind: 'cta' as const },
+      ...prayers.map((p) => ({
+        kind: 'prayer' as const,
+        prayer: p,
+        isNew: newIdsRef.current.has(p.id),
+      })),
+    ]
+
+    const result: StoneItem[][] = []
+    let itemIndex = 0
+    let rowIndex = 0
+    while (itemIndex < items.length) {
+      const rowSize = rowIndex % 2 === 0 ? STONES_PER_FULL_ROW : STONES_PER_OFFSET_ROW
+      result.push(items.slice(itemIndex, itemIndex + rowSize))
+      itemIndex += rowSize
+      rowIndex += 1
+    }
+    return result
+  }, [prayers])
 
   if (loading) {
     return (
@@ -41,19 +69,26 @@ export function PrayerWallGrid({ churchId }: PrayerWallGridProps) {
     )
   }
 
-  const emptyCount = Math.max(0, MIN_DISPLAY_BRICKS - prayers.length)
-
   return (
-    <div className={`grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1.5${isChanging ? ' tiles-changing' : ''}`}>
-      {prayers.map((prayer) => (
-        <PrayerBrick
-          key={prayer.id}
-          prayer={prayer}
-          isNew={newIdsRef.current.has(prayer.id)}
-        />
-      ))}
-      {Array.from({ length: emptyCount }).map((_, i) => (
-        <EmptyBrick key={`empty-${i}`} />
+    <div className={`stone-wall${isChanging ? ' tiles-changing' : ''}`}>
+      {rows.map((row, rowIdx) => (
+        <div
+          key={rowIdx}
+          className={`stone-row${rowIdx % 2 === 1 ? ' stone-row--offset' : ''}`}
+        >
+          {row.map((item) => {
+            if (item.kind === 'prayer') {
+              return (
+                <PrayerBrick
+                  key={item.prayer.id}
+                  prayer={item.prayer}
+                  isNew={item.isNew}
+                />
+              )
+            }
+            return <CtaBrick key="cta" onClick={onCtaClick} />
+          })}
+        </div>
       ))}
     </div>
   )

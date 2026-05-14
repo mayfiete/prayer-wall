@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,41 +8,81 @@
   *, *::before, *::after { box-sizing: border-box; }
   body {
     margin: 0;
-    background: #f8f4f0;
-    font-family: 'EB Garamond', Georgia, serif;
+    background: #f5f5f4;
+    font-family: 'Poppins', system-ui, sans-serif;
     color: #1a1a1a;
   }
 }
 
 @layer components {
+  /* ─── Staggered cobblestone wall ────────────────────────────────────────
+     Each row is a flex row. Odd rows get a half-stone left offset so the
+     stones interlock like real cobblestone coursing.                       */
+  .stone-wall {
+    --stone-gap: 0px;
+    --stone-screen-padding: clamp(12px, 2vw, 24px);
+    --stone-overlap-x: clamp(85px, 15vw, 213px);
+    --stone-overlap-y: clamp(34px, 7vw, 100px);
+    --stone-w: clamp(
+      126px,
+      calc((100vw - (var(--stone-screen-padding) * 2) + (var(--stone-overlap-x) * 4)) / 5),
+      440px
+    );
+    --stone-h: calc(var(--stone-w) * 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--stone-gap);
+    width: 100%;
+    padding: 8px var(--stone-screen-padding) 18px;
+    overflow: visible;
+    background:
+      radial-gradient(circle at 24px 18px, rgba(255,255,255,.18) 0 1px, transparent 1.5px),
+      linear-gradient(180deg, #e2d2b4 0%, #d7c39d 100%);
+  }
+
+  .stone-row {
+    display: flex;
+    gap: var(--stone-gap);
+    margin-bottom: calc(var(--stone-overlap-y) * -1);
+    max-width: 100%;
+  }
+
+  .stone-row--offset {
+    margin-left: calc((var(--stone-w, 80px) - var(--stone-overlap-x)) / 2);
+  }
+
   /* ─── Shared tile structure ────────────────────────────────────────────── */
   .tile-base {
-    aspect-ratio: 1;
-    border-radius: 8px;
+    width: var(--stone-w, 80px);
+    height: var(--stone-h, 58px);
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
-    /* isolation:isolate creates a stacking context so ::before mix-blend-mode
-       composites against this tile's own background, not the page behind it. */
     isolation: isolate;
+    flex-shrink: 0;
+    margin-right: calc(var(--stone-overlap-x) * -1);
     transition:
       transform   .15s ease,
       box-shadow  .22s ease,
-      border-color .28s ease,
       filter       .28s ease;
   }
 
+  /* Organic shape variation — each nth-child gets a slightly different radius */
+  .tile-base:nth-child(4n+1) { border-radius: 42% 46% 44% 48% / 48% 42% 46% 44%; }
+  .tile-base:nth-child(4n+2) { border-radius: 46% 42% 48% 44% / 44% 48% 42% 46%; }
+  .tile-base:nth-child(4n+3) { border-radius: 44% 48% 42% 46% / 46% 44% 48% 42%; }
+  .tile-base:nth-child(4n+0) { border-radius: 48% 44% 46% 42% / 42% 46% 44% 48%; }
+
   /* ─── Stone material ───────────────────────────────────────────────────── */
   .tile-stone {
-    background: url('/textures/stone.jpg') center / cover no-repeat;
-    border: 2px solid #524e48;
-    box-shadow:
-      inset 0 2px 6px rgba(255,255,248,.30),
-      inset 0 -4px 9px rgba(0,0,0,.34),
-      inset 1px 0 3px rgba(0,0,0,.14),
-      3px 5px 14px rgba(0,0,0,.42);
+    /* --stone-texture-url is set at runtime by AssetAdmin after upload; falls back to bundled asset */
+    background: var(--stone-texture-url, url('/textures/stone.png')) center / contain no-repeat;
+    border-radius: 0 !important;
+    border: 0;
+    box-shadow: none;
+    overflow: visible;
   }
 
   /* ─── Brick material ───────────────────────────────────────────────────── */
@@ -53,79 +93,93 @@
       inset 0 2px 5px rgba(255,205,145,.18),
       inset 0 -4px 9px rgba(0,0,0,.42),
       inset 1px 0 3px rgba(0,0,0,.20),
-      3px 5px 14px rgba(0,0,0,.40);
+      2px 4px 10px rgba(0,0,0,.40);
   }
 
-  /* ─── Role: name tile ─────────────────────────────────────────────────── */
+  /* ─── Role: name tile (inscribed) ──────────────────────────────────────── */
   .tile-name {
     flex-direction: column;
-    gap: 0;
-    padding: 8px 6px;
+    gap: 1px;
+    padding: 6px 5px;
     cursor: default;
+    align-items: center;
+    justify-content: center;
   }
 
-  /* Stone seam line across mid-tile */
-  .tile-name::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 12%;
-    right: 12%;
-    height: 1px;
-    background: linear-gradient(
-      to right,
-      transparent,
-      rgba(0,0,0,.28) 30%,
-      rgba(0,0,0,.28) 70%,
-      transparent
-    );
-    transform: translateY(-50%);
-    pointer-events: none;
+  /* ─── Inscribed name text — carved directly into the stone surface ──────── */
+  .stone-name {
+    position: relative;
     z-index: 2;
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-size: clamp(14px, 2.2vw, 22px);
+    font-weight: 700;
+    font-style: italic;
+    color: #000;
+    text-align: center;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    word-break: break-word;
+    padding: 0 3px;
+    /* Engraved effect: bright bottom highlight (light catching carved floor),
+       dark top shadow (shadow inside the groove)                           */
+    text-shadow:
+      0 1px 0 rgba(255,255,255,.35),
+      0 0 2px rgba(255,255,255,.25);
   }
 
-  /* Brick mortar seam is lighter and wider */
-  .tile-brick.tile-name::after {
+  .stone-name-line { display: block; }
+
+  /* Small decorative rule above the name */
+  .stone-rule {
+    display: block;
+    width: 60%;
+    height: 1px;
+    margin: 0 auto 3px;
     background: linear-gradient(
       to right,
       transparent,
-      rgba(200,168,120,.55) 25%,
-      rgba(200,168,120,.55) 75%,
+      rgba(255,255,255,.25) 30%,
+      rgba(255,255,255,.25) 70%,
       transparent
     );
   }
 
-  /* ─── Role: prayer / empty tile ────────────────────────────────────────── */
-  .tile-prayer {
+  /* ─── Role: next available stone (the CTA) ─────────────────────────────── */
+  .tile-cta {
     cursor: pointer;
   }
 
-  .tile-prayer:hover {
-    transform: translateY(-2px);
+  .tile-cta:hover {
+    transform: translateY(-2px) scale(1.04);
   }
 
-  .tile-stone.tile-prayer:hover {
+  .tile-stone.tile-cta:hover {
     box-shadow:
-      inset 0 2px 6px rgba(255,255,248,.30),
+      inset 0 2px 6px rgba(255,255,248,.35),
+      inset 0 -4px 9px rgba(0,0,0,.30),
+      0 8px 20px rgba(0,0,0,.28);
+  }
+
+  .tile-brick.tile-cta:hover {
+    box-shadow:
+      inset 0 2px 5px rgba(255,205,145,.28),
       inset 0 -4px 9px rgba(0,0,0,.34),
-      0 8px 22px rgba(0,0,0,.22);
+      0 8px 20px rgba(0,0,0,.26);
   }
 
-  .tile-brick.tile-prayer:hover {
-    box-shadow:
-      inset 0 2px 5px rgba(255,205,145,.22),
-      inset 0 -4px 9px rgba(0,0,0,.38),
-      0 8px 22px rgba(0,0,0,.22);
-  }
-
-  .tile-prayer:focus-visible {
+  .tile-cta:focus-visible {
     outline: 2px solid #b45309;
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
 
-  /* ─── Material-change flash ─────────────────────────────────────────────
-     Gradients can't transition in CSS. A brief brightness flash helps the
-     eye accept the material swap without perceiving a hard snap.          */
+  /* ─── Role: unclaimed / placeholder stone ──────────────────────────────── */
+  .tile-empty {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  /* ─── Material-change flash ──────────────────────────────────────────── */
   @keyframes material-change {
     0%   { filter: brightness(1)    saturate(1);   }
     38%  { filter: brightness(1.28) saturate(0.35); }
@@ -136,68 +190,24 @@
     animation: material-change 0.42s ease-out;
   }
 
-  /* ─── Carved name text ─────────────────────────────────────────────────── */
-  .stone-name {
-    position: relative;
-    z-index: 2;
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(19px, 3.3vw, 37px);
-    font-weight: 700;
-    font-style: italic;
-    color: #ffffff;
-    text-align: center;
-    line-height: 1.15;
-    /* Engraved effect: bright bottom edge (light bouncing off carve floor),
-       dark top edge (shadow inside the carve), soft ambient depth          */
-    text-shadow:
-      0  1px 2px rgba(0,0,0,.60),
-      0 -1px 1px rgba(0,0,0,.40),
-      0  0   6px rgba(0,0,0,.25);
-    letter-spacing: .02em;
-    word-break: break-word;
-    padding: 0 2px;
-  }
-
-  /* Brick text: same carve depth but warmer color */
-  .tile-brick .stone-name {
-    color: #ffffff;
-    text-shadow:
-      0  1px 2px rgba(0,0,0,.60),
-      0 -1px 1px rgba(0,0,0,.40),
-      0  0   6px rgba(0,0,0,.25);
-  }
-
-  .stone-name-line { display: block; }
-
-  .stone-icon {
-    position: relative;
-    z-index: 2;
-    font-size: clamp(16px, 2.3vw, 26px);
-    color: rgba(255, 255, 255, .85);
-    margin-bottom: 2px;
-    text-shadow: 0 1px 2px rgba(0,0,0,.50);
-    line-height: 1;
-  }
-
-  .tile-brick .stone-icon {
-    color: rgba(255, 255, 255, .85);
-    text-shadow: 0 1px 2px rgba(0,0,0,.50);
-  }
-
-  /* ─── Praying hands icon ───────────────────────────────────────────────── */
+  /* ─── Praying hands icon (shown on CTA stone) ──────────────────────────── */
   .prayer-hands-icon {
     position: relative;
     z-index: 2;
-    width: clamp(26px, 3.2vw, 46px);
-    height: clamp(26px, 3.2vw, 46px);
+    width: clamp(18px, 2.2vw, 28px);
+    height: clamp(18px, 2.2vw, 28px);
     filter:
-      drop-shadow(0 1px 0 rgba(255,255,240,.28))
-      drop-shadow(0 -1px 1px rgba(0,0,0,.38));
+      drop-shadow(0 1px 0 rgba(255,255,240,.30))
+      drop-shadow(0 -1px 1px rgba(0,0,0,.40));
+  }
+
+  .tile-empty .prayer-hands-icon {
+    opacity: 0.4;
   }
 }
 
 @layer utilities {
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-  .font-body { font-family: 'EB Garamond', Georgia, serif; }
+  .font-body { font-family: 'Poppins', system-ui, sans-serif; }
 }

@@ -6,6 +6,8 @@ import { GetPrayerWall } from '../application/use-cases/GetPrayerWall'
 import { GetPrayerCategories } from '../application/use-cases/GetPrayerCategories'
 import { SubmitPrayerCommitment } from '../application/use-cases/SubmitPrayerCommitment'
 import { UnsubscribeFromReminders } from '../application/use-cases/UnsubscribeFromReminders'
+import { CreatePrayerCategory } from '../application/use-cases/CreatePrayerCategory'
+import { UpdatePrayerCategory } from '../application/use-cases/UpdatePrayerCategory'
 
 import { MockPrayerRepository } from './mock/MockPrayerRepository'
 import { MockPrayerCategoryRepository } from './mock/MockPrayerCategoryRepository'
@@ -37,5 +39,7 @@ export const container = {
   getPrayerCategories: new GetPrayerCategories(categoryRepo),
   submitPrayerCommitment: new SubmitPrayerCommitment(prayerRepo, categoryRepo),
   unsubscribeFromReminders: new UnsubscribeFromReminders(prayerRepo),
+  createPrayerCategory: new CreatePrayerCategory(categoryRepo),
+  updatePrayerCategory: new UpdatePrayerCategory(categoryRepo),
   supabase: realtimeClient,
 }

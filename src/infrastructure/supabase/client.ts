@@ -12,5 +12,7 @@ export function createSupabaseClient() {
     )
   }
 
-  return createClient<Database>(supabaseUrl, supabaseAnonKey)
+  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    db: { schema: 'prayer_wall' },
+  })
 }
