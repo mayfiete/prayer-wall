@@ -8,12 +8,13 @@ import { useContainer } from '../context/AppContext'
 import { CheckCircle2 } from 'lucide-react'
 
 interface CommitmentFormProps {
-  churchId: string
+  wallId: string
+  orgId: string
   categories: PrayerCategory[]
   onSuccess: () => void
 }
 
-export function CommitmentForm({ churchId, categories, onSuccess }: CommitmentFormProps) {
+export function CommitmentForm({ wallId, orgId, categories, onSuccess }: CommitmentFormProps) {
   const { submitPrayerCommitment } = useContainer()
 
   const [name, setName] = useState('')
@@ -40,7 +41,7 @@ export function CommitmentForm({ churchId, categories, onSuccess }: CommitmentFo
 
     setSubmitting(true)
     try {
-      await submitPrayerCommitment.execute({ churchId, name, email, categoryIds })
+      await submitPrayerCommitment.execute({ wallId, orgId, name, email, categoryIds })
       setSubmitted(true)
       setTimeout(onSuccess, 1800)
     } catch (err) {

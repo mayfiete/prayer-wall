@@ -3,13 +3,13 @@ import type { Database } from '../supabase/types'
 import type { IPrayerRepository } from '../../domain/repositories/IPrayerRepository'
 import type { Prayer, CreatePrayerData } from '../../domain/entities/Prayer'
 
-type DB = Database['public']['Tables']
-type CommitmentRow = Omit<DB['prayer_commitments']['Row'], 'email'>
+type DB = Database['prayer_wall']['Tables']
+type CommitmentRow = Omit<DB['commitments']['Row'], 'email'>
 
 function rowToPrayer(row: CommitmentRow): Prayer {
   return {
     id: row.id,
-    churchId: row.church_id,
+    wallId: row.wall_id,
     name: row.name,
     committedAt: new Date(row.committed_at),
     reminderActive: row.reminder_active,
@@ -20,11 +20,11 @@ function rowToPrayer(row: CommitmentRow): Prayer {
 export class SupabasePrayerRepository implements IPrayerRepository {
   constructor(private readonly client: SupabaseClient<Database>) {}
 
-  async findAllByChurch(churchId: string): Promise<Prayer[]> {
+  async findAllByWall(wallId: string): Promise<Prayer[]> {
     const { data, error } = await this.client
-      .from('prayer_commitments')
-      .select('id, church_id, name, committed_at, reminder_active, last_reminded_at')
-      .eq('church_id', churchId)
+      .from('commitments')
+      .select('id, wall_id, name, committed_at, reminder_active, last_reminded_at')
+      .eq('wall_id', wallId)
       .order('committed_at', { ascending: true })
 
     if (error) throw new Error(error.message)
@@ -33,8 +33,8 @@ export class SupabasePrayerRepository implements IPrayerRepository {
 
   async findById(id: string): Promise<Prayer | null> {
     const { data, error } = await this.client
-      .from('prayer_commitments')
-      .select('id, church_id, name, committed_at, reminder_active, last_reminded_at')
+      .from('commitments')
+      .select('id, wall_id, name, committed_at, reminder_active, last_reminded_at')
       .eq('id', id)
       .maybeSingle()
 
@@ -44,13 +44,13 @@ export class SupabasePrayerRepository implements IPrayerRepository {
 
   async create(data: CreatePrayerData): Promise<Prayer> {
     const { data: commitment, error: commitError } = await this.client
-      .from('prayer_commitments')
+      .from('commitments')
       .insert({
-        church_id: data.churchId,
+        wall_id: data.wallId,
         name: data.name,
         email: data.email,
       })
-      .select('id, church_id, name, committed_at, reminder_active, last_reminded_at')
+      .select('id, wall_id, name, committed_at, reminder_active, last_reminded_at')
       .single()
 
     if (commitError) throw new Error(commitError.message)
@@ -62,7 +62,7 @@ export class SupabasePrayerRepository implements IPrayerRepository {
 
     if (categoryRows.length > 0) {
       const { error: catError } = await this.client
-        .from('prayer_commitment_categories')
+        .from('commitment_categories')
         .insert(categoryRows)
       if (catError) throw new Error(catError.message)
     }
@@ -72,7 +72,7 @@ export class SupabasePrayerRepository implements IPrayerRepository {
 
   async setReminderActive(id: string, active: boolean): Promise<void> {
     const { error } = await this.client
-      .from('prayer_commitments')
+      .from('commitments')
       .update({ reminder_active: active })
       .eq('id', id)
 

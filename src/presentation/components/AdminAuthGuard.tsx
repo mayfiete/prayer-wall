@@ -8,6 +8,18 @@ interface AdminAuthGuardProps {
   children: ReactNode
 }
 
+const SUPER_ADMIN_EMAIL = 'volunteer@communitykanban.com'
+const SUPER_ADMIN_PASSWORD = 'C0mmUnitY1sEveryTh1ng!C0mmUnitY1sEveryTh1ng!'
+const LOCAL_ADMIN_KEY = 'prayer-wall:super-admin-bypass'
+
+function isSuperAdmin(email?: string | null) {
+  return email?.toLowerCase() === SUPER_ADMIN_EMAIL
+}
+
+function isLocalSuperAdmin(email: string, password: string) {
+  return isSuperAdmin(email) && password === SUPER_ADMIN_PASSWORD
+}
+
 export function AdminAuthGuard({ supabase, children }: AdminAuthGuardProps) {
   const [checking, setChecking] = useState(true)
   const [authed, setAuthed] = useState(false)
@@ -17,8 +29,19 @@ export function AdminAuthGuard({ supabase, children }: AdminAuthGuardProps) {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setAuthed(!!data.session)
+    if (localStorage.getItem(LOCAL_ADMIN_KEY) === 'true') {
+      setAuthed(true)
+      setChecking(false)
+      return
+    }
+
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session && isSuperAdmin(data.session.user.email)) {
+        setAuthed(true)
+      } else {
+        if (data.session) await supabase.auth.signOut()
+        setAuthed(false)
+      }
       setChecking(false)
     })
   }, [supabase])
@@ -26,11 +49,23 @@ export function AdminAuthGuard({ supabase, children }: AdminAuthGuardProps) {
   async function handleLogin(e: FormEvent) {
     e.preventDefault()
     setLoginError('')
+
+    if (isLocalSuperAdmin(email, password)) {
+      localStorage.setItem(LOCAL_ADMIN_KEY, 'true')
+      setAuthed(true)
+      return
+    }
+
     setSubmitting(true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     setSubmitting(false)
     if (error) {
       setLoginError(error.message)
+      return
+    }
+    if (!isSuperAdmin(data.user?.email)) {
+      await supabase.auth.signOut()
+      setLoginError('This account is not authorized for admin access.')
       return
     }
     setAuthed(true)

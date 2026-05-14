@@ -4,7 +4,7 @@ import { useContainer } from '../context/AppContext'
 
 interface RealtimePrayerPayload {
   id: string
-  church_id: string
+  wall_id: string
   name: string
   committed_at: string
   reminder_active: boolean
@@ -14,7 +14,7 @@ interface RealtimePrayerPayload {
 function payloadToPrayer(row: RealtimePrayerPayload): Prayer {
   return {
     id: row.id,
-    churchId: row.church_id,
+    wallId: row.wall_id,
     name: row.name,
     committedAt: new Date(row.committed_at),
     reminderActive: row.reminder_active,
@@ -22,19 +22,19 @@ function payloadToPrayer(row: RealtimePrayerPayload): Prayer {
   }
 }
 
-export function useRealtimePrayers(churchId: string, onNewPrayer: (prayer: Prayer) => void) {
+export function useRealtimePrayers(wallId: string, onNewPrayer: (prayer: Prayer) => void) {
   const { supabase } = useContainer()
 
   useEffect(() => {
     const channel = supabase
-      .channel(`prayer-wall-${churchId}`)
+      .channel(`prayer-wall-${wallId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
-          schema: 'public',
-          table: 'prayer_commitments',
-          filter: `church_id=eq.${churchId}`,
+          schema: 'prayer_wall',
+          table: 'commitments',
+          filter: `wall_id=eq.${wallId}`,
         },
         (payload) => {
           const prayer = payloadToPrayer(payload.new as unknown as RealtimePrayerPayload)
@@ -46,5 +46,5 @@ export function useRealtimePrayers(churchId: string, onNewPrayer: (prayer: Praye
     return () => {
       void supabase.removeChannel(channel)
     }
-  }, [supabase, churchId, onNewPrayer])
+  }, [supabase, wallId, onNewPrayer])
 }

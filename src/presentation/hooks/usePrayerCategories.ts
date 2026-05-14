@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import type { PrayerCategory } from '../../domain/entities/PrayerCategory'
 import { useContainer } from '../context/AppContext'
 
-export function usePrayerCategories(churchId: string) {
+export function usePrayerCategories(orgId: string) {
   const { getPrayerCategories } = useContainer()
   const [categories, setCategories] = useState<PrayerCategory[]>([])
   const [loading, setLoading] = useState(true)
@@ -12,7 +12,7 @@ export function usePrayerCategories(churchId: string) {
     let cancelled = false
     setLoading(true)
     getPrayerCategories
-      .execute(churchId)
+      .execute(orgId)
       .then((result) => {
         if (!cancelled) setCategories(result)
       })
@@ -26,7 +26,7 @@ export function usePrayerCategories(churchId: string) {
     return () => {
       cancelled = true
     }
-  }, [getPrayerCategories, churchId])
+  }, [getPrayerCategories, orgId])
 
   return { categories, loading, error }
 }

@@ -26,7 +26,7 @@ export class SubmitPrayerCommitment {
       throw new ValidationError(`No more than ${MAX_CATEGORIES} categories may be selected`)
     }
 
-    const available = await this.categoryRepo.findActiveByChurch(dto.churchId)
+    const available = await this.categoryRepo.findActiveByOrg(dto.orgId)
     const availableIds = new Set(available.map((c) => c.id))
     const invalid = dto.categoryIds.filter((id) => !availableIds.has(id))
     if (invalid.length > 0) {
@@ -34,7 +34,7 @@ export class SubmitPrayerCommitment {
     }
 
     return this.prayerRepo.create({
-      churchId: dto.churchId,
+      wallId: dto.wallId,
       name: dto.name.trim(),
       email: dto.email.trim().toLowerCase(),
       categoryIds: dto.categoryIds,

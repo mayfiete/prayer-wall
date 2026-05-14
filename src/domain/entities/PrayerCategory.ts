@@ -1,6 +1,6 @@
 export interface PrayerCategory {
   id: string
-  churchId: string
+  orgId: string
   name: string
   displayOrder: number
   isActive: boolean

@@ -1,17 +1,17 @@
 import type { IPrayerRepository } from '../../domain/repositories/IPrayerRepository'
 import type { Prayer, CreatePrayerData } from '../../domain/entities/Prayer'
 import { NotFoundError } from '../../domain/errors/DomainError'
-import { MOCK_PRAYERS, MOCK_CHURCH_ID } from './mockData'
+import { MOCK_PRAYERS, MOCK_WALL_ID } from './mockData'
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 export class MockPrayerRepository implements IPrayerRepository {
   private prayers: Prayer[] = structuredClone(MOCK_PRAYERS)
 
-  async findAllByChurch(churchId: string): Promise<Prayer[]> {
+  async findAllByWall(wallId: string): Promise<Prayer[]> {
     await delay(400)
     return this.prayers
-      .filter((p) => p.churchId === churchId)
+      .filter((p) => p.wallId === wallId)
       .sort((a, b) => a.committedAt.getTime() - b.committedAt.getTime())
   }
 
@@ -24,7 +24,7 @@ export class MockPrayerRepository implements IPrayerRepository {
     await delay(600)
     const prayer: Prayer = {
       id: crypto.randomUUID(),
-      churchId: data.churchId || MOCK_CHURCH_ID,
+      wallId: data.wallId || MOCK_WALL_ID,
       name: data.name,
       committedAt: new Date(),
       reminderActive: true,

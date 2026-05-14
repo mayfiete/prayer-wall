@@ -1,24 +1,30 @@
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[]
 
 export interface Database {
-  public: {
+  prayer_wall: {
     Tables: {
-      churches: {
+      organizations: {
         Row: { id: string; name: string; slug: string; created_at: string }
         Insert: { id?: string; name: string; slug: string; created_at?: string }
         Update: { id?: string; name?: string; slug?: string; created_at?: string }
         Relationships: []
       }
-      prayer_categories: {
-        Row: { id: string; church_id: string; name: string; display_order: number; is_active: boolean }
-        Insert: { id?: string; church_id: string; name: string; display_order?: number; is_active?: boolean }
-        Update: { id?: string; church_id?: string; name?: string; display_order?: number; is_active?: boolean }
+      walls: {
+        Row: { id: string; org_id: string; name: string; slug: string; is_active: boolean; created_at: string }
+        Insert: { id?: string; org_id: string; name: string; slug: string; is_active?: boolean; created_at?: string }
+        Update: { id?: string; org_id?: string; name?: string; slug?: string; is_active?: boolean; created_at?: string }
         Relationships: []
       }
-      prayer_commitments: {
+      message_categories: {
+        Row: { id: string; org_id: string; name: string; display_order: number; is_active: boolean }
+        Insert: { id?: string; org_id: string; name: string; display_order?: number; is_active?: boolean }
+        Update: { id?: string; org_id?: string; name?: string; display_order?: number; is_active?: boolean }
+        Relationships: []
+      }
+      commitments: {
         Row: {
           id: string
-          church_id: string
+          wall_id: string
           name: string
           email: string
           committed_at: string
@@ -27,7 +33,7 @@ export interface Database {
         }
         Insert: {
           id?: string
-          church_id: string
+          wall_id: string
           name: string
           email: string
           committed_at?: string
@@ -36,7 +42,7 @@ export interface Database {
         }
         Update: {
           id?: string
-          church_id?: string
+          wall_id?: string
           name?: string
           email?: string
           committed_at?: string
@@ -45,7 +51,7 @@ export interface Database {
         }
         Relationships: []
       }
-      prayer_commitment_categories: {
+      commitment_categories: {
         Row: { commitment_id: string; category_id: string }
         Insert: { commitment_id: string; category_id: string }
         Update: { commitment_id?: string; category_id?: string }
@@ -54,7 +60,7 @@ export interface Database {
       email_logs: {
         Row: {
           id: string
-          church_id: string
+          wall_id: string
           commitment_id: string | null
           email: string
           status: 'sent' | 'failed' | 'bounced'
@@ -63,7 +69,7 @@ export interface Database {
         }
         Insert: {
           id?: string
-          church_id: string
+          wall_id: string
           commitment_id?: string | null
           email: string
           status: 'sent' | 'failed' | 'bounced'
@@ -72,7 +78,7 @@ export interface Database {
         }
         Update: {
           id?: string
-          church_id?: string
+          wall_id?: string
           commitment_id?: string | null
           email?: string
           status?: 'sent' | 'failed' | 'bounced'

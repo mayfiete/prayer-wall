@@ -56,8 +56,8 @@ export function WallPage() {
         )}
       </section>
 
-      <section className="px-6 pb-10 bg-white">
-        <div className="flex items-center gap-2 text-[14px] font-semibold text-stone-500 pt-4 pb-3">
+      <section className="flex-1 px-0 pb-10 bg-[#d7c39d] overflow-x-clip">
+        <div className="flex items-center gap-2 text-[14px] font-semibold text-stone-500 pt-4 pb-3 px-6">
           <BookOpen size={14} />
           Click the next open stone to join
         </div>

@@ -6,7 +6,8 @@ import { useRealtimePrayers } from '../hooks/useRealtimePrayers'
 import { useTileMode } from '../context/TileModeContext'
 import { Loader2 } from 'lucide-react'
 
-const STONES_PER_ROW = 7
+const STONES_PER_FULL_ROW = 5
+const STONES_PER_OFFSET_ROW = 4
 
 interface PrayerWallGridProps {
   wallId: string
@@ -34,17 +35,22 @@ export function PrayerWallGrid({ wallId, onCtaClick }: PrayerWallGridProps) {
 
   const rows = useMemo(() => {
     const items: StoneItem[] = [
+      { kind: 'cta' as const },
       ...prayers.map((p) => ({
         kind: 'prayer' as const,
         prayer: p,
         isNew: newIdsRef.current.has(p.id),
       })),
-      { kind: 'cta' as const },
     ]
 
     const result: StoneItem[][] = []
-    for (let i = 0; i < items.length; i += STONES_PER_ROW) {
-      result.push(items.slice(i, i + STONES_PER_ROW))
+    let itemIndex = 0
+    let rowIndex = 0
+    while (itemIndex < items.length) {
+      const rowSize = rowIndex % 2 === 0 ? STONES_PER_FULL_ROW : STONES_PER_OFFSET_ROW
+      result.push(items.slice(itemIndex, itemIndex + rowSize))
+      itemIndex += rowSize
+      rowIndex += 1
     }
     return result
   }, [prayers])

@@ -1,13 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
-  safelist: ['tile-stone', 'tile-brick'],
+  safelist: ['tile-stone', 'tile-brick', 'tile-name', 'tile-cta', 'tile-empty', 'stone-wall', 'stone-row', 'stone-row--offset'],
   theme: {
     extend: {
       fontFamily: {
-        serif: ['"Playfair Display"', 'Georgia', 'serif'],
-        body: ['"EB Garamond"', 'Georgia', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['"Libre Baskerville"', 'Georgia', 'serif'],
+        body: ['"Inter"', 'system-ui', 'sans-serif'],
+        sans: ['"Inter"', 'system-ui', 'sans-serif'],
       },
       colors: {
         parchment: {

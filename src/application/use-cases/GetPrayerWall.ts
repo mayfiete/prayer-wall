@@ -4,7 +4,7 @@ import type { Prayer } from '../../domain/entities/Prayer'
 export class GetPrayerWall {
   constructor(private readonly prayerRepo: IPrayerRepository) {}
 
-  async execute(churchId: string): Promise<Prayer[]> {
-    return this.prayerRepo.findAllByChurch(churchId)
+  async execute(wallId: string): Promise<Prayer[]> {
+    return this.prayerRepo.findAllByWall(wallId)
   }
 }
