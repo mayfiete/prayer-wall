@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { createSupabaseClient } from '../../infrastructure/supabase/client'
 import { AdminAuthGuard } from '../components/AdminAuthGuard'
 import { CategoryAdmin } from './admin/CategoryAdmin'
@@ -15,8 +17,15 @@ export function AdminPage() {
   return (
     <AdminAuthGuard supabase={supabase}>
       <div className="min-h-screen bg-stone-100">
-        <header className="bg-white border-b border-stone-200 px-8 py-5">
+        <header className="bg-white border-b border-stone-200 px-8 py-5 flex items-center justify-between">
           <h1 className="text-xl font-semibold text-stone-900">Prayer Wall Admin</h1>
+          <Link
+            to="/"
+            className="flex items-center gap-1.5 text-sm text-[#88838a] hover:text-[#242148] transition-colors"
+          >
+            <ArrowLeft size={15} />
+            View Wall
+          </Link>
         </header>
 
         <nav className="bg-white border-b border-stone-200 px-8">
