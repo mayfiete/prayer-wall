@@ -1,5 +1,6 @@
 import type { Prayer } from '../../domain/entities/Prayer'
 import type { PrayerCategory } from '../../domain/entities/PrayerCategory'
+import type { PrayerMeditation } from '../../domain/entities/PrayerMeditation'
 
 export const MOCK_ORG_ID = '00000000-0000-0000-0000-000000000001'
 export const MOCK_WALL_ID = '00000000-0000-0000-0000-000000000002'
@@ -42,6 +43,63 @@ export const MOCK_PRAYERS: Prayer[] = NAMES.slice(0, 48).map((name, i) => ({
   reminderActive: true,
   lastRemindedAt: i % 3 === 0 ? makeDate(7) : null,
 }))
+
+export const MOCK_MEDITATIONS: PrayerMeditation[] = [
+  {
+    id: 'med-1',
+    categoryId: 'cat-1',
+    orgId: MOCK_ORG_ID,
+    body: '2 Corinthians 5:15 — "He died for all, that those who live might no longer live for themselves." Lord, bless every family represented on this wall and draw them closer to You.',
+    displayOrder: 1,
+    isActive: true,
+    createdAt: new Date('2024-01-01'),
+  },
+  {
+    id: 'med-2',
+    categoryId: 'cat-1',
+    orgId: MOCK_ORG_ID,
+    body: 'Deuteronomy 6:6-7 — "These commandments are to be on your hearts. Impress them on your children." Father, strengthen parents to lead their homes in faith and wisdom.',
+    displayOrder: 2,
+    isActive: true,
+    createdAt: new Date('2024-01-02'),
+  },
+  {
+    id: 'med-3',
+    categoryId: 'cat-2',
+    orgId: MOCK_ORG_ID,
+    body: 'James 5:14-15 — "Is anyone among you sick? Let them call the elders of the church to pray over them." Father, we lift up every need for physical and emotional healing.',
+    displayOrder: 1,
+    isActive: true,
+    createdAt: new Date('2024-01-03'),
+  },
+  {
+    id: 'med-4',
+    categoryId: 'cat-2',
+    orgId: MOCK_ORG_ID,
+    body: 'Psalm 103:2-3 — "Praise the Lord, O my soul, and forget not all his benefits — who forgives all your sins and heals all your diseases." We trust You for complete restoration.',
+    displayOrder: 2,
+    isActive: false,
+    createdAt: new Date('2024-01-04'),
+  },
+  {
+    id: 'med-5',
+    categoryId: 'cat-3',
+    orgId: MOCK_ORG_ID,
+    body: 'Philippians 4:19 — "And my God will meet all your needs according to the riches of his glory in Christ Jesus." Lord, provide for every financial need represented here.',
+    displayOrder: 1,
+    isActive: true,
+    createdAt: new Date('2024-01-05'),
+  },
+  {
+    id: 'med-6',
+    categoryId: 'cat-6',
+    orgId: MOCK_ORG_ID,
+    body: 'Colossians 2:6-7 — "So then, just as you received Christ Jesus as Lord, continue to live your lives in him, rooted and built up in him." Deepen our roots in You, Lord.',
+    displayOrder: 1,
+    isActive: true,
+    createdAt: new Date('2024-01-06'),
+  },
+]
 
 export const LIVE_NAMES = [
   'Grace H.', 'Ethan W.', 'Olivia R.', 'Noah P.', 'Ava J.', 'Liam C.',
