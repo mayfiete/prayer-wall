@@ -1,26 +1,22 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '../../../infrastructure/supabase/types'
 import type { PrayerCategory } from '../../../domain/entities/PrayerCategory'
 import { usePrayerCategoriesAdmin } from '../../hooks/usePrayerCategoriesAdmin'
-import { ChevronUp, ChevronDown, Trash2, Plus } from 'lucide-react'
+import { StatementsAdmin } from './StatementsAdmin'
+import { ChevronUp, ChevronDown, ChevronRight, Trash2, Plus, BookOpen } from 'lucide-react'
 
 const ORG_ID = import.meta.env.VITE_ORG_ID as string
 
-interface CategoryAdminProps {
-  supabase: SupabaseClient<Database>
-}
-
-export function CategoryAdmin({ supabase }: CategoryAdminProps) {
+export function CategoryAdmin() {
   const { categories, loading, error, create, update, setActive, remove, moveUp, moveDown } =
-    usePrayerCategoriesAdmin(ORG_ID, supabase)
+    usePrayerCategoriesAdmin(ORG_ID)
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [newName, setNewName] = useState('')
   const [adding, setAdding] = useState(false)
   const [opError, setOpError] = useState('')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const sorted = [...categories].sort((a, b) => a.displayOrder - b.displayOrder)
 
@@ -59,10 +55,11 @@ export function CategoryAdmin({ supabase }: CategoryAdminProps) {
   }
 
   async function handleRemove(id: string, name: string) {
-    if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return
+    if (!globalThis.confirm(`Delete "${name}"? This cannot be undone.`)) return
     setOpError('')
     try {
       await remove(id)
+      if (expandedId === id) setExpandedId(null)
     } catch (e) {
       setOpError(e instanceof Error ? e.message : 'Delete failed')
     }
@@ -72,91 +69,134 @@ export function CategoryAdmin({ supabase }: CategoryAdminProps) {
   if (error) return <p className="text-red-500 text-sm py-8 text-center">{error}</p>
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <h2 className="text-lg font-semibold text-stone-800">Prayer Categories</h2>
+    <div className="max-w-3xl mx-auto space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-[#242148]">Prayer Categories</h2>
+        <p className="text-xs text-stone-400 mt-0.5">
+          Click a category name to rename it. Click <BookOpen size={11} className="inline" /> to manage its prayer meditations.
+        </p>
+      </div>
 
       {opError && <p className="text-sm text-red-600">{opError}</p>}
 
-      <ul className="divide-y divide-stone-200 border border-stone-200 rounded-lg overflow-hidden">
+      <div className="border border-stone-200 rounded-lg overflow-hidden divide-y divide-stone-200">
         {sorted.map((cat, idx) => (
-          <li key={cat.id} className="flex items-center gap-3 px-4 py-3 bg-white">
-            <div className="flex flex-col gap-0.5">
-              <button
-                onClick={() => moveUp(cat.id)}
-                disabled={idx === 0}
-                className="p-0.5 text-stone-400 hover:text-stone-700 disabled:opacity-20"
-                aria-label="Move up"
-              >
-                <ChevronUp size={14} />
-              </button>
-              <button
-                onClick={() => moveDown(cat.id)}
-                disabled={idx === sorted.length - 1}
-                className="p-0.5 text-stone-400 hover:text-stone-700 disabled:opacity-20"
-                aria-label="Move down"
-              >
-                <ChevronDown size={14} />
-              </button>
-            </div>
-
-            <div className="flex-1 min-w-0">
-              {editingId === cat.id ? (
-                <input
-                  autoFocus
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  onBlur={() => commitEdit(cat.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') commitEdit(cat.id)
-                    if (e.key === 'Escape') setEditingId(null)
-                  }}
-                  className="w-full border border-amber-400 rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
-              ) : (
+          <div key={cat.id} className="bg-white">
+            {/* Category row */}
+            <div className="flex items-center gap-3 px-4 py-3">
+              {/* Reorder */}
+              <div className="flex flex-col gap-0.5 shrink-0">
                 <button
-                  onClick={() => startEdit(cat)}
-                  className="text-sm text-stone-800 hover:text-amber-700 text-left w-full truncate"
+                  onClick={() => moveUp(cat.id)}
+                  disabled={idx === 0}
+                  className="p-0.5 text-stone-400 hover:text-stone-700 disabled:opacity-20"
+                  aria-label="Move up"
                 >
-                  {cat.name}
+                  <ChevronUp size={14} />
                 </button>
-              )}
+                <button
+                  onClick={() => moveDown(cat.id)}
+                  disabled={idx === sorted.length - 1}
+                  className="p-0.5 text-stone-400 hover:text-stone-700 disabled:opacity-20"
+                  aria-label="Move down"
+                >
+                  <ChevronDown size={14} />
+                </button>
+              </div>
+
+              {/* Name / edit */}
+              <div className="flex-1 min-w-0">
+                {editingId === cat.id ? (
+                  <input
+                    autoFocus
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    onBlur={() => void commitEdit(cat.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') void commitEdit(cat.id)
+                      if (e.key === 'Escape') setEditingId(null)
+                    }}
+                    className="w-full border border-[#5e061e] rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#5e061e]/40"
+                  />
+                ) : (
+                  <button
+                    onClick={() => startEdit(cat)}
+                    className={`text-sm text-left w-full truncate font-medium ${cat.isActive ? 'text-stone-800 hover:text-[#5e061e]' : 'text-stone-400 line-through hover:text-stone-600'}`}
+                    title="Click to rename"
+                  >
+                    {cat.name}
+                  </button>
+                )}
+              </div>
+
+              {/* Active checkbox */}
+              <label className="flex items-center gap-1.5 text-xs text-stone-500 select-none cursor-pointer shrink-0">
+                <input
+                  type="checkbox"
+                  checked={cat.isActive}
+                  onChange={(e) => {
+                    const next = e.target.checked
+                    if (next && !globalThis.confirm(`Are you sure you want to make "${cat.name}" active? It will appear on the prayer wall.`)) return
+                    setActive(cat.id, next)
+                  }}
+                  className="accent-[#5e061e]"
+                />
+                Active
+              </label>
+
+              {/* Expand meditations */}
+              <button
+                onClick={() => setExpandedId(expandedId === cat.id ? null : cat.id)}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors shrink-0 ${
+                  expandedId === cat.id
+                    ? 'bg-[#5e061e] text-white'
+                    : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                }`}
+                title="Manage prayer meditations"
+              >
+                <BookOpen size={12} />
+                Meditations
+                <ChevronRight
+                  size={12}
+                  className={`transition-transform ${expandedId === cat.id ? 'rotate-90' : ''}`}
+                />
+              </button>
+
+              {/* Delete */}
+              <button
+                onClick={() => void handleRemove(cat.id, cat.name)}
+                className="p-1 text-stone-300 hover:text-red-500 shrink-0"
+                aria-label={`Delete ${cat.name}`}
+              >
+                <Trash2 size={14} />
+              </button>
             </div>
 
-            <label className="flex items-center gap-1.5 text-xs text-stone-500 select-none cursor-pointer">
-              <input
-                type="checkbox"
-                checked={cat.isActive}
-                onChange={(e) => setActive(cat.id, e.target.checked)}
-                className="accent-amber-600"
+            {/* Meditations panel — expanded inline */}
+            {expandedId === cat.id && (
+              <StatementsAdmin
+                categoryId={cat.id}
+                categoryName={cat.name}
               />
-              Active
-            </label>
-
-            <button
-              onClick={() => handleRemove(cat.id, cat.name)}
-              className="p-1 text-stone-300 hover:text-red-500"
-              aria-label={`Delete ${cat.name}`}
-            >
-              <Trash2 size={14} />
-            </button>
-          </li>
+            )}
+          </div>
         ))}
-      </ul>
+      </div>
 
-      <form onSubmit={handleAdd} className="flex gap-2">
+      <form onSubmit={(e) => void handleAdd(e)} className="flex gap-2">
         <input
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="New category name"
-          className="flex-1 border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+          className="flex-1 border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5e061e]/40"
         />
         <button
           type="submit"
           disabled={adding || !newName.trim()}
-          className="flex items-center gap-1.5 px-4 py-2 bg-amber-600 text-white rounded-md text-sm font-medium hover:bg-amber-700 disabled:opacity-60"
+          className="flex items-center gap-1.5 px-4 py-2 bg-[#5e061e] text-white rounded-md text-sm font-medium hover:bg-[#7a0826] disabled:opacity-60"
         >
           <Plus size={14} />
-          Add
+          Add Category
         </button>
       </form>
     </div>

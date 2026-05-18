@@ -6,10 +6,17 @@ export default {
     extend: {
       fontFamily: {
         serif: ['"Libre Baskerville"', 'Georgia', 'serif'],
-        body: ['"Inter"', 'system-ui', 'sans-serif'],
-        sans: ['"Inter"', 'system-ui', 'sans-serif'],
+        body: ['"Poppins"', 'system-ui', 'sans-serif'],
+        sans: ['"Poppins"', 'system-ui', 'sans-serif'],
       },
       colors: {
+        hca: {
+          burgundy: '#5e061e',
+          navy:     '#242148',
+          'gray-light': '#d9d9d9',
+          'gray-mid':   '#88838a',
+          charcoal: '#342f31',
+        },
         parchment: {
           50:  '#fdfaf7',
           100: '#f8f4f0',
