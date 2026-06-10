@@ -5,7 +5,7 @@ import type { Database } from '../../../infrastructure/supabase/types'
 import { Upload, CheckCircle } from 'lucide-react'
 
 const MAX_BYTES = 15 * 1024 * 1024
-const BUCKET = 'wall-assets'
+const BUCKET = (import.meta.env.VITE_ASSETS_BUCKET as string | undefined)?.trim() || 'wall-assets'
 const STONE_PATH = 'textures/stone.jpg'
 const LS_KEY = 'prayer-wall:stone-texture'
 
