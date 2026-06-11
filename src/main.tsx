@@ -6,7 +6,7 @@ import App from './App.tsx'
 
 const _LS_KEY = 'prayer-wall:stone-texture'
 const _BUCKET = (import.meta.env.VITE_ASSETS_BUCKET as string | undefined)?.trim() || 'wall-assets'
-const _STONE_PATH = 'prayer-wall-images/stone.jpg'
+const _STONE_PATH = 'stone/stone.jpg'
 
 function _applyTexture(url: string) {
   document.documentElement.style.setProperty('--stone-texture-url', `url(${url})`)

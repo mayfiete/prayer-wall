@@ -6,7 +6,7 @@ import { Upload, CheckCircle } from 'lucide-react'
 
 const MAX_BYTES = 15 * 1024 * 1024
 const BUCKET = (import.meta.env.VITE_ASSETS_BUCKET as string | undefined)?.trim() || 'wall-assets'
-const FOLDER = 'prayer-wall-images'
+const FOLDER = 'stone'
 const STONE_PATH = `${FOLDER}/stone.jpg`
 const LS_KEY = 'prayer-wall:stone-texture'
 
