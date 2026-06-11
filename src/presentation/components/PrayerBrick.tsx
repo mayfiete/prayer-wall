@@ -1,11 +1,6 @@
 import { memo } from 'react'
 import type { Prayer } from '../../domain/entities/Prayer'
 import { PrayerHandsIcon } from './PrayerHandsIcon'
-import { useTileMode } from '../context/TileModeContext'
-
-// Full class names written out so Tailwind's content scanner detects them:
-// tile-stone tile-brick
-const materialClass = { stone: 'tile-stone', brick: 'tile-brick' } as const
 
 interface PrayerBrickProps {
   prayer: Prayer
@@ -31,12 +26,11 @@ function stoneStyle(imageUrl?: string): React.CSSProperties | undefined {
 }
 
 export const PrayerBrick = memo(function PrayerBrick({ prayer, isNew = false, imageUrl }: PrayerBrickProps) {
-  const { mode } = useTileMode()
   const [firstLine, lastLine] = splitName(prayer.name)
 
   return (
     <div
-      className={`tile-base ${materialClass[mode]} tile-name${isNew ? ' animate-brick-in' : ''}`}
+      className={`tile-base tile-stone tile-name${isNew ? ' animate-brick-in' : ''}`}
       title={prayer.name}
       style={stoneStyle(imageUrl)}
     >
@@ -50,11 +44,10 @@ export const PrayerBrick = memo(function PrayerBrick({ prayer, isNew = false, im
 })
 
 export const CtaBrick = memo(function CtaBrick({ onClick, imageUrl }: EmptyBrickProps) {
-  const { mode } = useTileMode()
   return (
     <button
       type="button"
-      className={`tile-base ${materialClass[mode]} tile-cta animate-pulse-glow`}
+      className={`tile-base tile-stone tile-cta animate-pulse-glow`}
       onClick={onClick}
       aria-label="Add your name to the prayer wall"
       style={stoneStyle(imageUrl)}

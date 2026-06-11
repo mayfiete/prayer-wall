@@ -93,17 +93,6 @@
     overflow: visible;
   }
 
-  /* ─── Brick material ───────────────────────────────────────────────────── */
-  .tile-brick {
-    background: url('/textures/brick.jpg') center / cover no-repeat;
-    border: 2px solid #5a3020;
-    box-shadow:
-      inset 0 2px 5px rgba(255,205,145,.18),
-      inset 0 -4px 9px rgba(0,0,0,.42),
-      inset 1px 0 3px rgba(0,0,0,.20),
-      2px 4px 10px rgba(0,0,0,.40);
-  }
-
   /* ─── Role: name tile (inscribed) ──────────────────────────────────────── */
   .tile-name {
     flex-direction: column;
@@ -169,13 +158,6 @@
       0 8px 20px rgba(0,0,0,.28);
   }
 
-  .tile-brick.tile-cta:hover {
-    box-shadow:
-      inset 0 2px 5px rgba(255,205,145,.28),
-      inset 0 -4px 9px rgba(0,0,0,.34),
-      0 8px 20px rgba(0,0,0,.26);
-  }
-
   .tile-cta:focus-visible {
     outline: 2px solid #5e061e;
     outline-offset: 3px;
@@ -185,17 +167,6 @@
   .tile-empty {
     opacity: 0.45;
     cursor: default;
-  }
-
-  /* ─── Material-change flash ──────────────────────────────────────────── */
-  @keyframes material-change {
-    0%   { filter: brightness(1)    saturate(1);   }
-    38%  { filter: brightness(1.28) saturate(0.35); }
-    100% { filter: brightness(1)    saturate(1);   }
-  }
-
-  .tiles-changing .tile-base {
-    animation: material-change 0.42s ease-out;
   }
 
   /* ─── Praying hands icon (shown on CTA stone) ──────────────────────────── */

@@ -6,7 +6,6 @@ import { MockBanner } from '../components/MockBanner'
 import { usePrayerCategories } from '../hooks/usePrayerCategories'
 import { PrayerWallGrid } from '../components/PrayerWallGrid'
 import { ArrowLeft } from 'lucide-react'
-import { TileModeToggle } from '../components/TileModeToggle'
 
 const WALL_ID = import.meta.env.VITE_WALL_ID as string
 const ORG_ID = import.meta.env.VITE_ORG_ID as string
@@ -38,7 +37,6 @@ export function CommitmentPage() {
             {ORG_NAME} — click the next open stone to place your name
           </p>
         </div>
-        <TileModeToggle />
       </header>
 
       <main className="flex-1 px-6 py-6 bg-white">

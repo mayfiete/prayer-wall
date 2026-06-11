@@ -3,7 +3,6 @@ import type { Prayer } from '../../domain/entities/Prayer'
 import { PrayerBrick, CtaBrick } from './PrayerBrick'
 import { usePrayerWall } from '../hooks/usePrayerWall'
 import { useRealtimePrayers } from '../hooks/useRealtimePrayers'
-import { useTileMode } from '../context/TileModeContext'
 import { Loader2 } from 'lucide-react'
 
 const STONES_PER_FULL_ROW = 5
@@ -20,7 +19,6 @@ type StoneItem =
 
 export function PrayerWallGrid({ wallId, onCtaClick }: PrayerWallGridProps) {
   const { prayers, loading, error, addPrayer } = usePrayerWall(wallId)
-  const { isChanging } = useTileMode()
   const newIdsRef = useRef<Set<string>>(new Set())
 
   const handleNewPrayer = useCallback(
@@ -70,7 +68,7 @@ export function PrayerWallGrid({ wallId, onCtaClick }: PrayerWallGridProps) {
   }
 
   return (
-    <div className={`stone-wall${isChanging ? ' tiles-changing' : ''}`}>
+    <div className="stone-wall">
       {rows.map((row, rowIdx) => (
         <div
           key={rowIdx}
