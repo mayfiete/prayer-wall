@@ -12,16 +12,21 @@ function _applyTexture(url: string) {
   document.documentElement.style.setProperty('--stone-texture-url', `url(${url})`)
 }
 
-// Apply cached texture immediately to avoid flash on load
-try {
-  const cached = localStorage.getItem(_LS_KEY)
-  if (cached && /^https?:\/\//.test(cached)) _applyTexture(cached)
-} catch { /* private browsing */ }
-
-// Fetch authoritative public URL from Supabase so every browser gets the latest texture
 const _supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim()
 const _supabaseKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim()
-if (_supabaseUrl && _supabaseKey) {
+const _useMock = import.meta.env.VITE_USE_MOCK === 'true'
+
+if (_useMock || !_supabaseUrl || !_supabaseKey) {
+  // Local / mock mode — use the bundled texture from the public folder
+  _applyTexture('/textures/stone.jpg')
+} else {
+  // Apply cached texture immediately to avoid flash on load
+  try {
+    const cached = localStorage.getItem(_LS_KEY)
+    if (cached && /^https?:\/\//.test(cached)) _applyTexture(cached)
+  } catch { /* private browsing */ }
+
+  // Fetch authoritative public URL from Supabase so every browser gets the latest texture
   const _client = createClient(_supabaseUrl, _supabaseKey)
   const { data: _textureData } = _client.storage.from(_BUCKET).getPublicUrl(_STONE_PATH)
   if (_textureData?.publicUrl) {
