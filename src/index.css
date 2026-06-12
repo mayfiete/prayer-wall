@@ -13,6 +13,14 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-primary:    #5e061e;
+    --color-heading:    #242148;
+    --color-muted:      #88838a;
+    --color-background: #d7c39d;
+    --font-heading:     serif;
+    --font-body:        sans-serif;
+  }
   *, *::before, *::after { box-sizing: border-box; }
   body {
     margin: 0;
@@ -45,7 +53,7 @@
     overflow: visible;
     background:
       radial-gradient(circle at 24px 18px, rgba(255,255,255,.18) 0 1px, transparent 1.5px),
-      linear-gradient(180deg, #e2d2b4 0%, #d7c39d 100%);
+      linear-gradient(180deg, color-mix(in srgb, var(--color-background) 80%, white) 0%, var(--color-background) 100%);
   }
 
   .stone-row {
@@ -159,7 +167,7 @@
   }
 
   .tile-cta:focus-visible {
-    outline: 2px solid #5e061e;
+    outline: 2px solid var(--color-primary);
     outline-offset: 3px;
   }
 

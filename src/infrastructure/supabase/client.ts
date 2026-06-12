@@ -19,6 +19,7 @@ export const supabaseClient = (supabaseUrl && supabaseAnonKey)
     })
   : null
 
+
 export function createSupabaseClient() {
   if (!supabaseClient) {
     throw new Error(

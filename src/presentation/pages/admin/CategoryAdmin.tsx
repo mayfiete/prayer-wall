@@ -71,7 +71,7 @@ export function CategoryAdmin() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-[#242148]">Prayer Categories</h2>
+        <h2 className="text-lg font-semibold text-[var(--color-heading)]">Prayer Categories</h2>
         <p className="text-xs text-stone-400 mt-0.5">
           Click a category name to rename it. Click <BookOpen size={11} className="inline" /> to manage its prayer meditations.
         </p>
@@ -116,12 +116,12 @@ export function CategoryAdmin() {
                       if (e.key === 'Enter') void commitEdit(cat.id)
                       if (e.key === 'Escape') setEditingId(null)
                     }}
-                    className="w-full border border-[#5e061e] rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#5e061e]/40"
+                    className="w-full border border-[var(--color-primary)] rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
                   />
                 ) : (
                   <button
                     onClick={() => startEdit(cat)}
-                    className={`text-sm text-left w-full truncate font-medium ${cat.isActive ? 'text-stone-800 hover:text-[#5e061e]' : 'text-stone-400 line-through hover:text-stone-600'}`}
+                    className={`text-sm text-left w-full truncate font-medium ${cat.isActive ? 'text-stone-800 hover:text-[var(--color-primary)]' : 'text-stone-400 line-through hover:text-stone-600'}`}
                     title="Click to rename"
                   >
                     {cat.name}
@@ -139,7 +139,7 @@ export function CategoryAdmin() {
                     if (next && !globalThis.confirm(`Are you sure you want to make "${cat.name}" active? It will appear on the prayer wall.`)) return
                     setActive(cat.id, next)
                   }}
-                  className="accent-[#5e061e]"
+                  className="accent-[var(--color-primary)]"
                 />
                 Active
               </label>
@@ -149,7 +149,7 @@ export function CategoryAdmin() {
                 onClick={() => setExpandedId(expandedId === cat.id ? null : cat.id)}
                 className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors shrink-0 ${
                   expandedId === cat.id
-                    ? 'bg-[#5e061e] text-white'
+                    ? 'bg-[var(--color-primary)] text-white'
                     : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
                 }`}
                 title="Manage prayer meditations"
@@ -188,12 +188,12 @@ export function CategoryAdmin() {
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="New category name"
-          className="flex-1 border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5e061e]/40"
+          className="flex-1 border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
         />
         <button
           type="submit"
           disabled={adding || !newName.trim()}
-          className="flex items-center gap-1.5 px-4 py-2 bg-[#5e061e] text-white rounded-md text-sm font-medium hover:bg-[#7a0826] disabled:opacity-60"
+          className="flex items-center gap-1.5 px-4 py-2 bg-[var(--color-primary)] text-white rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-60"
         >
           <Plus size={14} />
           Add Category

@@ -57,6 +57,45 @@ export interface Database {
         Update: { commitment_id?: string; category_id?: string }
         Relationships: []
       }
+      wall_theme: {
+        Row: {
+          id: string
+          wall_id: string
+          wall_title: string
+          color_primary: string
+          color_heading: string
+          color_muted: string
+          color_background: string
+          font_heading: string
+          font_body: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          wall_id: string
+          wall_title?: string
+          color_primary?: string
+          color_heading?: string
+          color_muted?: string
+          color_background?: string
+          font_heading?: string
+          font_body?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          wall_id?: string
+          wall_title?: string
+          color_primary?: string
+          color_heading?: string
+          color_muted?: string
+          color_background?: string
+          font_heading?: string
+          font_body?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_logs: {
         Row: {
           id: string
