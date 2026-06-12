@@ -38,16 +38,9 @@ export function AssetAdmin({ supabase }: AssetAdminProps) {
 
     setUploading(true)
     try {
-      // Archive the existing stone.jpg with a retired timestamp before replacing it
-      const { data: existing } = await supabase.storage.from(BUCKET).list(FOLDER, { search: 'stone.jpg' })
-      if (existing && existing.length > 0) {
-        const ts = new Date().toISOString().replace(/[:.]/g, '-')
-        await supabase.storage.from(BUCKET).move(STONE_PATH, `${FOLDER}/stone_retired_${ts}.jpg`)
-      }
-
       const { error: uploadError } = await supabase.storage
         .from(BUCKET)
-        .upload(STONE_PATH, file, { upsert: false, contentType: file.type })
+        .upload(STONE_PATH, file, { upsert: true, contentType: file.type })
 
       if (uploadError) throw new Error(uploadError.message)
 
