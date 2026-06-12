@@ -42,7 +42,10 @@ export function AssetAdmin({ supabase }: AssetAdminProps) {
         .from(BUCKET)
         .upload(STONE_PATH, file, { upsert: true, contentType: file.type })
 
-      if (uploadError) throw new Error(uploadError.message)
+      if (uploadError) {
+        console.error('[AssetAdmin] upload error:', JSON.stringify(uploadError))
+        throw new Error(uploadError.message)
+      }
 
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(STONE_PATH)
       const publicUrl = data.publicUrl
