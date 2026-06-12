@@ -182,12 +182,12 @@ export function StatementsAdmin({ categoryId, categoryName }: Readonly<Statement
                     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void commitEdit(stmt.id)
                   }}
                   rows={4}
-                  className="w-full border border-[#5e061e] rounded px-2 py-1 text-xs text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#5e061e]/40 resize-y"
+                  className="w-full border border-[var(--color-primary)] rounded px-2 py-1 text-xs text-stone-800 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 resize-y"
                 />
               ) : (
                 <button
                   onClick={() => startEdit(stmt)}
-                  className="text-xs text-stone-700 text-left leading-relaxed hover:text-[#5e061e] transition-colors w-full"
+                  className="text-xs text-stone-700 text-left leading-relaxed hover:text-[var(--color-primary)] transition-colors w-full"
                   title="Click to edit"
                 >
                   {stmt.body}
@@ -200,7 +200,7 @@ export function StatementsAdmin({ categoryId, categoryName }: Readonly<Statement
                 type="checkbox"
                 checked={stmt.isActive}
                 onChange={(e) => void handleToggle(stmt.id, e.target.checked)}
-                className="accent-[#5e061e]"
+                className="accent-[var(--color-primary)]"
               />
               Active
             </label>
@@ -222,13 +222,13 @@ export function StatementsAdmin({ categoryId, categoryName }: Readonly<Statement
           onChange={(e) => setNewBody(e.target.value)}
           placeholder={`New prayer meditation for ${categoryName}… (scripture reference + prayer text)`}
           rows={3}
-          className="w-full border border-stone-300 rounded-md px-3 py-2 text-xs text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#5e061e]/40 resize-y"
+          className="w-full border border-stone-300 rounded-md px-3 py-2 text-xs text-stone-800 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 resize-y"
         />
         <div className="flex justify-end">
           <button
             type="submit"
             disabled={adding || !newBody.trim()}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#5e061e] text-white rounded-md text-xs font-medium hover:bg-[#7a0826] disabled:opacity-60"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-primary)] text-white rounded-md text-xs font-medium hover:opacity-90 disabled:opacity-60"
           >
             <Plus size={13} />
             Add Meditation

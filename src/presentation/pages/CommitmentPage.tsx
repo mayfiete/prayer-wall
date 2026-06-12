@@ -26,14 +26,14 @@ export function CommitmentPage() {
       <MockBanner />
 
       <header className="flex items-center gap-4 px-8 py-5 bg-white border-b border-stone-200">
-        <Link to="/" className="text-[#88838a] hover:text-[#242148] transition-colors" aria-label="Back to Prayer Wall">
+        <Link to="/" className="text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors" aria-label="Back to Prayer Wall">
           <ArrowLeft size={20} />
         </Link>
         <div className="flex-1">
-          <h1 className="font-sans text-[22px] font-semibold text-[#242148] leading-tight">
+          <h1 className="font-sans text-[22px] font-semibold text-[var(--color-heading)] leading-tight">
             Add your stone
           </h1>
-          <p className="text-[13px] text-[#88838a] mt-0.5">
+          <p className="text-[13px] text-[var(--color-muted)] mt-0.5">
             {ORG_NAME} — click the next open stone to place your name
           </p>
         </div>

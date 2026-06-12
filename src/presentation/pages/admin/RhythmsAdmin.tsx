@@ -97,7 +97,7 @@ export function RhythmsAdmin() {
   }
 
   const selectClass =
-    'border border-stone-300 rounded-md px-3 py-2 text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#5e061e]/40 w-full'
+    'border border-stone-300 rounded-md px-3 py-2 text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 w-full'
   const labelClass = 'block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1'
 
   return (
@@ -105,7 +105,7 @@ export function RhythmsAdmin() {
 
       {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-[#242148]">Prayer Rhythms</h2>
+        <h2 className="text-lg font-semibold text-[var(--color-heading)]">Prayer Rhythms</h2>
         <p className="text-xs text-stone-400 mt-0.5">
           Configure when reminder emails are sent to everyone on the prayer wall.
         </p>
@@ -114,7 +114,7 @@ export function RhythmsAdmin() {
       {/* Active toggle */}
       <div className="flex items-center justify-between bg-white border border-stone-200 rounded-lg px-5 py-4">
         <div className="flex items-center gap-3">
-          <Mail size={18} className={config.isActive ? 'text-[#5e061e]' : 'text-stone-300'} />
+          <Mail size={18} className={config.isActive ? 'text-[var(--color-primary)]' : 'text-stone-300'} />
           <div>
             <p className="text-sm font-medium text-stone-800">Email reminders</p>
             <p className="text-xs text-stone-400">
@@ -128,8 +128,8 @@ export function RhythmsAdmin() {
             if (next && !window.confirm('Are you sure you want to activate email reminders? Emails will begin sending on the configured schedule.')) return
             update('isActive', next)
           }}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#5e061e]/40 ${
-            config.isActive ? 'bg-[#5e061e]' : 'bg-stone-200'
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 ${
+            config.isActive ? 'bg-[var(--color-primary)]' : 'bg-stone-200'
           }`}
           role="switch"
           aria-checked={config.isActive}
@@ -153,7 +153,7 @@ export function RhythmsAdmin() {
                 onClick={() => update('cadence', c)}
                 className={`flex-1 py-2.5 rounded-md text-sm font-medium border transition-colors ${
                   config.cadence === c
-                    ? 'bg-[#5e061e] text-white border-[#5e061e]'
+                    ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
                     : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'
                 }`}
               >
@@ -228,9 +228,9 @@ export function RhythmsAdmin() {
 
       {/* Summary banner */}
       <div className="bg-[#f9f4f5] border border-[#e8cfd3] rounded-lg px-5 py-4 flex items-start gap-3">
-        <Mail size={16} className="text-[#5e061e] mt-0.5 shrink-0" />
+        <Mail size={16} className="text-[var(--color-primary)] mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm font-medium text-[#5e061e]">Current schedule</p>
+          <p className="text-sm font-medium text-[var(--color-primary)]">Current schedule</p>
           <p className="text-sm text-stone-600 mt-0.5">
             {config.isActive ? formatSummary(config) : 'Email reminders are currently paused.'}
           </p>
@@ -249,7 +249,7 @@ export function RhythmsAdmin() {
         <button
           onClick={() => void handleSave()}
           disabled={saving}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#5e061e] text-white rounded-md text-sm font-medium hover:bg-[#7a0826] disabled:opacity-60 transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-60 transition-colors"
         >
           <Save size={14} />
           {saving ? 'Saving…' : 'Save Rhythm'}

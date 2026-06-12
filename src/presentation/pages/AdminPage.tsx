@@ -6,8 +6,9 @@ import { AdminAuthGuard } from '../components/AdminAuthGuard'
 import { CategoryAdmin } from './admin/CategoryAdmin'
 import { AssetAdmin } from './admin/AssetAdmin'
 import { RhythmsAdmin } from './admin/RhythmsAdmin'
+import { ThemeAdmin } from './admin/ThemeAdmin'
 
-type Tab = 'categories' | 'assets' | 'rhythms'
+type Tab = 'categories' | 'assets' | 'rhythms' | 'theme'
 
 export function AdminPage() {
   const [tab, setTab] = useState<Tab>('categories')
@@ -21,7 +22,7 @@ export function AdminPage() {
           <h1 className="text-xl font-semibold text-stone-900">Prayer Wall Admin</h1>
           <Link
             to="/"
-            className="flex items-center gap-1.5 text-sm text-[#88838a] hover:text-[#242148] transition-colors"
+            className="flex items-center gap-1.5 text-sm text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors"
           >
             <ArrowLeft size={15} />
             View Wall
@@ -30,17 +31,17 @@ export function AdminPage() {
 
         <nav className="bg-white border-b border-stone-200 px-8">
           <div className="flex">
-            {(['categories', 'rhythms', 'assets'] as Tab[]).map((t) => (
+            {(['categories', 'rhythms', 'assets', 'theme'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
                 className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
                   tab === t
-                    ? 'border-[#5e061e] text-[#5e061e]'
+                    ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
                     : 'border-transparent text-stone-500 hover:text-stone-800'
                 }`}
               >
-                {t === 'categories' ? 'Categories' : t === 'rhythms' ? 'Rhythms' : 'Assets'}
+                {t === 'categories' ? 'Categories' : t === 'rhythms' ? 'Rhythms' : t === 'assets' ? 'Assets' : 'Theme'}
               </button>
             ))}
           </div>
@@ -50,6 +51,7 @@ export function AdminPage() {
           {tab === 'categories' && <CategoryAdmin />}
           {tab === 'rhythms'    && <RhythmsAdmin />}
           {tab === 'assets'     && <AssetAdmin supabase={supabase} />}
+          {tab === 'theme'      && <ThemeAdmin supabase={supabase} />}
         </main>
       </div>
     </AdminAuthGuard>
