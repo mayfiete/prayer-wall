@@ -42,15 +42,14 @@ export async function fetchAndApplyTheme(
   supabase: SupabaseClient<Database>,
   wallId: string,
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data } = await (supabase as any).schema('public')
+  const { data } = await supabase
     .from('wall_theme')
     .select('*')
     .eq('wall_id', wallId)
     .maybeSingle()
 
   if (data) {
-    applyTheme(data as Partial<typeof THEME_DEFAULTS>)
-    cacheTheme(data as Partial<typeof THEME_DEFAULTS>)
+    applyTheme(data)
+    cacheTheme(data)
   }
 }

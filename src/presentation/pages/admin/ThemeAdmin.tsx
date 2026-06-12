@@ -48,10 +48,9 @@ export function ThemeAdmin({ supabase }: ThemeAdminProps) {
 
   useEffect(() => {
     if (!WALL_ID) { setLoading(false); return }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(supabase as any).schema('public').from('wall_theme').select('*').eq('wall_id', WALL_ID).maybeSingle()
-      .then(({ data }: { data: ThemeRow | null }) => {
-        const row = data
+    supabase.from('wall_theme').select('*').eq('wall_id', WALL_ID).maybeSingle()
+      .then(({ data }) => {
+        const row = data as ThemeRow | null
         if (row) {
           setDraft({
             wall_title:       row.wall_title,
@@ -77,8 +76,7 @@ export function ThemeAdmin({ supabase }: ThemeAdminProps) {
     if (!WALL_ID) { setError('VITE_WALL_ID is not set'); return }
     setSaving(true)
     setError('')
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: upsertError } = await (supabase as any).schema('public').from('wall_theme').upsert(
+    const { error: upsertError } = await supabase.from('wall_theme').upsert(
       { wall_id: WALL_ID, ...draft },
       { onConflict: 'wall_id' },
     )
