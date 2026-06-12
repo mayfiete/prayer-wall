@@ -42,17 +42,15 @@ export function AssetAdmin({ supabase }: AssetAdminProps) {
         .from(BUCKET)
         .upload(STONE_PATH, file, { upsert: true, contentType: file.type })
 
-      if (uploadError) {
-        console.error('[AssetAdmin] upload error:', JSON.stringify(uploadError))
-        throw new Error(uploadError.message)
-      }
+      if (uploadError) throw new Error(uploadError.message)
 
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(STONE_PATH)
       const publicUrl = data.publicUrl
+      const cacheBusted = `${publicUrl}?t=${Date.now()}`
 
-      localStorage.setItem(LS_KEY, publicUrl)
-      document.documentElement.style.setProperty('--stone-texture-url', `url(${publicUrl})`)
-      setPreviewUrl(publicUrl)
+      localStorage.setItem(LS_KEY, cacheBusted)
+      document.documentElement.style.setProperty('--stone-texture-url', `url(${cacheBusted})`)
+      setPreviewUrl(cacheBusted)
       setSuccess(true)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Upload failed')
