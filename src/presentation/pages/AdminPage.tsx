@@ -7,8 +7,9 @@ import { CategoryAdmin } from './admin/CategoryAdmin'
 import { AssetAdmin } from './admin/AssetAdmin'
 import { RhythmsAdmin } from './admin/RhythmsAdmin'
 import { ThemeAdmin } from './admin/ThemeAdmin'
+import { WarriorsAdmin } from './admin/WarriorsAdmin'
 
-type Tab = 'categories' | 'assets' | 'rhythms' | 'theme'
+type Tab = 'categories' | 'assets' | 'rhythms' | 'theme' | 'warriors'
 
 export function AdminPage() {
   const [tab, setTab] = useState<Tab>('categories')
@@ -31,7 +32,7 @@ export function AdminPage() {
 
         <nav className="bg-white border-b border-stone-200 px-8">
           <div className="flex">
-            {(['categories', 'rhythms', 'assets', 'theme'] as Tab[]).map((t) => (
+            {(['categories', 'rhythms', 'assets', 'theme', 'warriors'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -41,7 +42,7 @@ export function AdminPage() {
                     : 'border-transparent text-stone-500 hover:text-stone-800'
                 }`}
               >
-                {t === 'categories' ? 'Categories' : t === 'rhythms' ? 'Rhythms' : t === 'assets' ? 'Assets' : 'Theme'}
+                {t === 'categories' ? 'Categories' : t === 'rhythms' ? 'Rhythms' : t === 'assets' ? 'Assets' : t === 'theme' ? 'Theme' : 'Bricklayers'}
               </button>
             ))}
           </div>
@@ -49,9 +50,10 @@ export function AdminPage() {
 
         <main className="px-8 py-8">
           {tab === 'categories' && <CategoryAdmin />}
-          {tab === 'rhythms'    && <RhythmsAdmin />}
-          {tab === 'assets'     && <AssetAdmin supabase={supabase} />}
+          {tab === 'rhythms'    && <RhythmsAdmin supabase={supabase} onDone={() => setTab('categories')} />}
+          {tab === 'assets'     && <AssetAdmin supabase={supabase} onDone={() => setTab('categories')} />}
           {tab === 'theme'      && <ThemeAdmin supabase={supabase} />}
+          {tab === 'warriors'   && <WarriorsAdmin supabase={supabase} onDone={() => setTab('categories')} />}
         </main>
       </div>
     </AdminAuthGuard>

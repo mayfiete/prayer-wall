@@ -6,20 +6,14 @@ import { Save, CheckCircle, RefreshCw } from 'lucide-react'
 
 const WALL_ID = (import.meta.env.VITE_WALL_ID as string | undefined)?.trim() ?? ''
 
-const HEADING_FONTS = [
-  { value: 'serif',                        label: 'Serif (classic)' },
-  { value: "'Libre Baskerville', serif",   label: 'Libre Baskerville' },
-  { value: 'Georgia, serif',               label: 'Georgia' },
-  { value: 'sans-serif',                   label: 'Sans-serif (modern)' },
+const ALL_FONTS = [
   { value: "'Poppins', sans-serif",        label: 'Poppins' },
+  { value: 'sans-serif',                   label: 'System sans-serif' },
+  { value: 'serif',                        label: 'Serif (classic)' },
+  { value: 'Georgia, serif',               label: 'Georgia' },
+  { value: "'Libre Baskerville', serif",   label: 'Libre Baskerville' },
 ]
 
-const BODY_FONTS = [
-  { value: "'Poppins', sans-serif",        label: 'Poppins (default)' },
-  { value: 'sans-serif',                   label: 'System sans-serif' },
-  { value: 'Georgia, serif',               label: 'Georgia' },
-  { value: "'Libre Baskerville', serif",   label: 'Libre Baskerville' },
-]
 
 interface ThemeAdminProps {
   supabase: SupabaseClient<Database>
@@ -30,13 +24,26 @@ type ThemeRow = Database['prayer_wall']['Tables']['wall_theme']['Row']
 type DraftTheme = Omit<ThemeRow, 'id' | 'wall_id' | 'updated_at'>
 
 const DEFAULTS: DraftTheme = {
-  wall_title:       THEME_DEFAULTS.wall_title,
-  color_primary:    THEME_DEFAULTS.color_primary,
-  color_heading:    THEME_DEFAULTS.color_heading,
-  color_muted:      THEME_DEFAULTS.color_muted,
-  color_background: THEME_DEFAULTS.color_background,
-  font_heading:     THEME_DEFAULTS.font_heading,
-  font_body:        THEME_DEFAULTS.font_body,
+  wall_title:         THEME_DEFAULTS.wall_title,
+  color_primary:      THEME_DEFAULTS.color_primary,
+  color_heading:      THEME_DEFAULTS.color_heading,
+  color_muted:        THEME_DEFAULTS.color_muted,
+  color_background:   THEME_DEFAULTS.color_background,
+  font_heading:       THEME_DEFAULTS.font_heading,
+  font_body:          THEME_DEFAULTS.font_body,
+  color_header_bg:    THEME_DEFAULTS.color_header_bg,
+  color_header_text:  THEME_DEFAULTS.color_header_text,
+  font_header:        THEME_DEFAULTS.font_header,
+  color_banner_bg:    THEME_DEFAULTS.color_banner_bg,
+  color_banner_text:  THEME_DEFAULTS.color_banner_text,
+  font_banner:        THEME_DEFAULTS.font_banner,
+  color_wall_bg:      THEME_DEFAULTS.color_wall_bg,
+  color_wall_text:    THEME_DEFAULTS.color_wall_text,
+  font_wall:          THEME_DEFAULTS.font_wall,
+  color_modal_bg:     THEME_DEFAULTS.color_modal_bg,
+  color_modal_text:   THEME_DEFAULTS.color_modal_text,
+  color_modal_accent: THEME_DEFAULTS.color_modal_accent,
+  font_modal:         THEME_DEFAULTS.font_modal,
 }
 
 export function ThemeAdmin({ supabase }: ThemeAdminProps) {
@@ -53,13 +60,26 @@ export function ThemeAdmin({ supabase }: ThemeAdminProps) {
         const row = data as ThemeRow | null
         if (row) {
           setDraft({
-            wall_title:       row.wall_title,
-            color_primary:    row.color_primary,
-            color_heading:    row.color_heading,
-            color_muted:      row.color_muted,
-            color_background: row.color_background,
-            font_heading:     row.font_heading,
-            font_body:        row.font_body,
+            wall_title:         row.wall_title,
+            color_primary:      row.color_primary,
+            color_heading:      row.color_heading,
+            color_muted:        row.color_muted,
+            color_background:   row.color_background,
+            font_heading:       row.font_heading,
+            font_body:          row.font_body,
+            color_header_bg:    row.color_header_bg   ?? THEME_DEFAULTS.color_header_bg,
+            color_header_text:  row.color_header_text ?? THEME_DEFAULTS.color_header_text,
+            font_header:        row.font_header        ?? THEME_DEFAULTS.font_header,
+            color_banner_bg:    row.color_banner_bg   ?? THEME_DEFAULTS.color_banner_bg,
+            color_banner_text:  row.color_banner_text ?? THEME_DEFAULTS.color_banner_text,
+            font_banner:        row.font_banner        ?? THEME_DEFAULTS.font_banner,
+            color_wall_bg:      row.color_wall_bg      ?? THEME_DEFAULTS.color_wall_bg,
+            color_wall_text:    row.color_wall_text    ?? THEME_DEFAULTS.color_wall_text,
+            font_wall:          row.font_wall           ?? THEME_DEFAULTS.font_wall,
+            color_modal_bg:     row.color_modal_bg     ?? THEME_DEFAULTS.color_modal_bg,
+            color_modal_text:   row.color_modal_text   ?? THEME_DEFAULTS.color_modal_text,
+            color_modal_accent: row.color_modal_accent ?? THEME_DEFAULTS.color_modal_accent,
+            font_modal:         row.font_modal          ?? THEME_DEFAULTS.font_modal,
           })
         }
         setLoading(false)
@@ -118,9 +138,9 @@ export function ThemeAdmin({ supabase }: ThemeAdminProps) {
         </div>
       </section>
 
-      {/* Colors */}
+      {/* Global colors */}
       <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
-        <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Colors</h3>
+        <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Global Colors</h3>
 
         <ColorRow
           label="Primary"
@@ -130,7 +150,7 @@ export function ThemeAdmin({ supabase }: ThemeAdminProps) {
         />
         <ColorRow
           label="Heading"
-          description="Main titles and headings"
+          description="Default heading text color"
           value={draft.color_heading}
           onChange={v => update('color_heading', v)}
         />
@@ -140,45 +160,128 @@ export function ThemeAdmin({ supabase }: ThemeAdminProps) {
           value={draft.color_muted}
           onChange={v => update('color_muted', v)}
         />
-        <ColorRow
-          label="Wall background"
-          description="Background of the stone wall section"
-          value={draft.color_background}
-          onChange={v => update('color_background', v)}
+      </section>
+
+      {/* Global typography */}
+      <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
+        <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Global Typography</h3>
+
+        <FontRow
+          label="Heading font"
+          value={draft.font_heading}
+          onChange={v => update('font_heading', v)}
+        />
+        <FontRow
+          label="Body font"
+          value={draft.font_body}
+          onChange={v => update('font_body', v)}
         />
       </section>
 
-      {/* Typography */}
+      {/* Header section */}
       <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
-        <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Typography</h3>
-
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Heading font</label>
-          <select
-            value={draft.font_heading}
-            onChange={e => update('font_heading', e.target.value)}
-            className="w-full border border-stone-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
-            style={{ fontFamily: draft.font_heading }}
-          >
-            {HEADING_FONTS.map(f => (
-              <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
-            ))}
-          </select>
+          <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Header Section</h3>
+          <p className="text-xs text-stone-400 mt-0.5">The top bar with the wall title and org name.</p>
         </div>
+        <ColorRow
+          label="Background"
+          description="Header bar background"
+          value={draft.color_header_bg}
+          onChange={v => update('color_header_bg', v)}
+        />
+        <ColorRow
+          label="Text"
+          description="Title and org name color"
+          value={draft.color_header_text}
+          onChange={v => update('color_header_text', v)}
+        />
+        <FontRow
+          label="Font"
+          value={draft.font_header}
+          onChange={v => update('font_header', v)}
+        />
+      </section>
 
+      {/* Banner section */}
+      <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Body font</label>
-          <select
-            value={draft.font_body}
-            onChange={e => update('font_body', e.target.value)}
-            className="w-full border border-stone-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
-            style={{ fontFamily: draft.font_body }}
-          >
-            {BODY_FONTS.map(f => (
-              <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
-            ))}
-          </select>
+          <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Banner Section</h3>
+          <p className="text-xs text-stone-400 mt-0.5">The strip beneath the header with the call-to-action text.</p>
         </div>
+        <ColorRow
+          label="Background"
+          description="Banner strip background"
+          value={draft.color_banner_bg}
+          onChange={v => update('color_banner_bg', v)}
+        />
+        <ColorRow
+          label="Text"
+          description="Banner text color"
+          value={draft.color_banner_text}
+          onChange={v => update('color_banner_text', v)}
+        />
+        <FontRow
+          label="Font"
+          value={draft.font_banner}
+          onChange={v => update('font_banner', v)}
+        />
+      </section>
+
+      {/* Wall section */}
+      <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
+        <div>
+          <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Wall Section</h3>
+          <p className="text-xs text-stone-400 mt-0.5">The stone grid area where bricklayers appear.</p>
+        </div>
+        <ColorRow
+          label="Background"
+          description="Stone wall background color"
+          value={draft.color_wall_bg}
+          onChange={v => update('color_wall_bg', v)}
+        />
+        <ColorRow
+          label="Text"
+          description="Labels and text within the wall section"
+          value={draft.color_wall_text}
+          onChange={v => update('color_wall_text', v)}
+        />
+        <FontRow
+          label="Font"
+          value={draft.font_wall}
+          onChange={v => update('font_wall', v)}
+        />
+      </section>
+
+      {/* Modal (pop-up) section */}
+      <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
+        <div>
+          <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Pop-up (Modal)</h3>
+          <p className="text-xs text-stone-400 mt-0.5">The "Commit to pray" dialog that opens when a bricklayer adds their stone.</p>
+        </div>
+        <ColorRow
+          label="Background"
+          description="Modal panel background"
+          value={draft.color_modal_bg}
+          onChange={v => update('color_modal_bg', v)}
+        />
+        <ColorRow
+          label="Text"
+          description="Body text, labels, and inputs"
+          value={draft.color_modal_text}
+          onChange={v => update('color_modal_text', v)}
+        />
+        <ColorRow
+          label="Accent"
+          description="Submit button and selection highlight color"
+          value={draft.color_modal_accent}
+          onChange={v => update('color_modal_accent', v)}
+        />
+        <FontRow
+          label="Font"
+          value={draft.font_modal}
+          onChange={v => update('font_modal', v)}
+        />
       </section>
 
       {/* Actions */}
@@ -244,6 +347,30 @@ function ColorRow({ label, description, value, onChange }: ColorRowProps) {
         maxLength={7}
         className="w-24 border border-stone-300 rounded-md px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
       />
+    </div>
+  )
+}
+
+interface FontRowProps {
+  label: string
+  value: string
+  onChange: (v: string) => void
+}
+
+function FontRow({ label, value, onChange }: FontRowProps) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-stone-700 mb-1">{label}</label>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="w-full border border-stone-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
+        style={{ fontFamily: value }}
+      >
+        {ALL_FONTS.map(f => (
+          <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
+        ))}
+      </select>
     </div>
   )
 }

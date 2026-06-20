@@ -14,12 +14,29 @@
 
 @layer base {
   :root {
-    --color-primary:    #5e061e;
-    --color-heading:    #242148;
-    --color-muted:      #88838a;
-    --color-background: #d7c39d;
-    --font-heading:     serif;
-    --font-body:        sans-serif;
+    --color-primary:      #5e061e;
+    --color-heading:      #242148;
+    --color-muted:        #88838a;
+    --color-background:   #d7c39d;
+    --font-heading:       serif;
+    --font-body:          sans-serif;
+    /* Header section */
+    --color-header-bg:    #ffffff;
+    --color-header-text:  #242148;
+    --font-header:        serif;
+    /* Banner section */
+    --color-banner-bg:    #ffffff;
+    --color-banner-text:  #342f31;
+    --font-banner:        sans-serif;
+    /* Wall section */
+    --color-wall-bg:      #d7c39d;
+    --color-wall-text:    #342f31;
+    --font-wall:          sans-serif;
+    /* Modal (pop-up) section */
+    --color-modal-bg:     #1c1917;
+    --color-modal-text:   #f5f5f4;
+    --color-modal-accent: #d97706;
+    --font-modal:         sans-serif;
   }
   *, *::before, *::after { box-sizing: border-box; }
   body {
@@ -53,7 +70,7 @@
     overflow: visible;
     background:
       radial-gradient(circle at 24px 18px, rgba(255,255,255,.18) 0 1px, transparent 1.5px),
-      linear-gradient(180deg, color-mix(in srgb, var(--color-background) 80%, white) 0%, var(--color-background) 100%);
+      linear-gradient(180deg, color-mix(in srgb, var(--color-wall-bg) 80%, white) 0%, var(--color-wall-bg) 100%);
   }
 
   .stone-row {

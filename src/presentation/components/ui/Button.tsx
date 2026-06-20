@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react'
+import React, { type ButtonHTMLAttributes } from 'react'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost'
@@ -6,9 +6,24 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses = {
-  primary: 'bg-amber-600 hover:bg-amber-500 text-stone-950 font-semibold shadow-md',
-  secondary: 'bg-stone-700 hover:bg-stone-600 text-stone-100 border border-stone-600',
-  ghost: 'bg-transparent hover:bg-stone-800 text-stone-300 hover:text-stone-100',
+  primary: 'font-semibold shadow-md',
+  secondary: 'border',
+  ghost: 'bg-transparent',
+}
+
+const variantStyles: Record<string, React.CSSProperties> = {
+  primary: {
+    backgroundColor: 'var(--color-modal-accent)',
+    color: 'var(--color-modal-bg)',
+  },
+  secondary: {
+    backgroundColor: 'color-mix(in srgb, var(--color-modal-text) 10%, transparent)',
+    color: 'var(--color-modal-text)',
+    borderColor: 'color-mix(in srgb, var(--color-modal-text) 25%, transparent)',
+  },
+  ghost: {
+    color: 'color-mix(in srgb, var(--color-modal-text) 70%, transparent)',
+  },
 }
 
 const sizeClasses = {
@@ -23,15 +38,17 @@ export function Button({
   className = '',
   disabled,
   children,
+  style,
   ...props
 }: ButtonProps) {
   return (
     <button
       {...props}
       disabled={disabled}
+      style={{ ...variantStyles[variant], ...style }}
       className={[
         'inline-flex items-center justify-center gap-2 rounded-md transition-colors duration-150',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500',
+        'focus:outline-none focus-visible:ring-2',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         variantClasses[variant],
         sizeClasses[size],
