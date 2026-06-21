@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '../../../infrastructure/supabase/types'
 import { applyTheme, cacheTheme, THEME_DEFAULTS } from '../../../infrastructure/theme'
-import { Save, CheckCircle, RefreshCw } from 'lucide-react'
+import { Save, CheckCircle, RefreshCw, Loader2 } from 'lucide-react'
 
 const WALL_ID = (import.meta.env.VITE_WALL_ID as string | undefined)?.trim() ?? ''
 
@@ -17,6 +17,7 @@ const ALL_FONTS = [
 
 interface ThemeAdminProps {
   supabase: SupabaseClient<Database>
+  onDone?: () => void
 }
 
 type ThemeRow = Database['prayer_wall']['Tables']['wall_theme']['Row']
@@ -44,9 +45,18 @@ const DEFAULTS: DraftTheme = {
   color_modal_text:   THEME_DEFAULTS.color_modal_text,
   color_modal_accent: THEME_DEFAULTS.color_modal_accent,
   font_modal:         THEME_DEFAULTS.font_modal,
+  stones_per_row:  THEME_DEFAULTS.stones_per_row,
+  brick_scale:     THEME_DEFAULTS.brick_scale,
+  brick_aspect:    THEME_DEFAULTS.brick_aspect,
+  brick_overlap_x: THEME_DEFAULTS.brick_overlap_x,
+  brick_overlap_y: THEME_DEFAULTS.brick_overlap_y,
+  brick_name_y:     THEME_DEFAULTS.brick_name_y,
+  brick_name_font:  THEME_DEFAULTS.brick_name_font,
+  brick_name_size:  THEME_DEFAULTS.brick_name_size,
+  brick_name_color: THEME_DEFAULTS.brick_name_color,
 }
 
-export function ThemeAdmin({ supabase }: ThemeAdminProps) {
+export function ThemeAdmin({ supabase, onDone }: ThemeAdminProps) {
   const [draft, setDraft] = useState<DraftTheme>(DEFAULTS)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -80,6 +90,15 @@ export function ThemeAdmin({ supabase }: ThemeAdminProps) {
             color_modal_text:   row.color_modal_text   ?? THEME_DEFAULTS.color_modal_text,
             color_modal_accent: row.color_modal_accent ?? THEME_DEFAULTS.color_modal_accent,
             font_modal:         row.font_modal          ?? THEME_DEFAULTS.font_modal,
+            stones_per_row:  row.stones_per_row  ?? THEME_DEFAULTS.stones_per_row,
+            brick_scale:     row.brick_scale     ?? THEME_DEFAULTS.brick_scale,
+            brick_aspect:    row.brick_aspect    ?? THEME_DEFAULTS.brick_aspect,
+            brick_overlap_x: row.brick_overlap_x ?? THEME_DEFAULTS.brick_overlap_x,
+            brick_overlap_y: row.brick_overlap_y ?? THEME_DEFAULTS.brick_overlap_y,
+            brick_name_y:     row.brick_name_y     ?? THEME_DEFAULTS.brick_name_y,
+            brick_name_font:  row.brick_name_font   ?? THEME_DEFAULTS.brick_name_font,
+            brick_name_size:  row.brick_name_size   ?? THEME_DEFAULTS.brick_name_size,
+            brick_name_color: row.brick_name_color  ?? THEME_DEFAULTS.brick_name_color,
           })
         }
         setLoading(false)
@@ -104,6 +123,7 @@ export function ThemeAdmin({ supabase }: ThemeAdminProps) {
     if (upsertError) { setError(upsertError.message); return }
     cacheTheme(draft)
     setSaved(true)
+    onDone?.()
   }
 
   function handleReset() {
@@ -115,6 +135,12 @@ export function ThemeAdmin({ supabase }: ThemeAdminProps) {
   if (loading) return <p className="text-stone-400 text-sm py-8 text-center">Loading theme…</p>
 
   return (
+    <>
+    {saving && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+        <Loader2 className="animate-spin text-[var(--color-primary)]" size={48} />
+      </div>
+    )}
     <div className="max-w-xl mx-auto space-y-8">
       <div>
         <h2 className="text-lg font-semibold text-[var(--color-heading)]">Theme</h2>
@@ -284,6 +310,86 @@ export function ThemeAdmin({ supabase }: ThemeAdminProps) {
         />
       </section>
 
+      {/* Brick Name section */}
+      <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
+        <div>
+          <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Brick Name</h3>
+          <p className="text-xs text-stone-400 mt-0.5">Control how names appear on each brick.</p>
+        </div>
+
+        <SliderRow
+          label="Vertical position"
+          description={`${draft.brick_name_y}% from top`}
+          value={draft.brick_name_y}
+          min={0} max={100} step={1}
+          onChange={v => update('brick_name_y', v)}
+        />
+
+        <FontRow
+          label="Font"
+          value={draft.brick_name_font}
+          onChange={v => update('brick_name_font', v)}
+        />
+
+        <SliderRow
+          label="Font size"
+          description={`${draft.brick_name_size.toFixed(2)}× base size`}
+          value={draft.brick_name_size}
+          min={0.5} max={2.0} step={0.05}
+          onChange={v => update('brick_name_size', v)}
+        />
+
+        <ColorRow
+          label="Color"
+          description="Name text color on the brick"
+          value={draft.brick_name_color}
+          onChange={v => update('brick_name_color', v)}
+        />
+      </section>
+
+      {/* Wall Layout section */}
+      <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-5">
+        <div>
+          <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Wall Layout</h3>
+          <p className="text-xs text-stone-400 mt-0.5">Control brick size, shape, and density. Changes preview live.</p>
+        </div>
+        <SliderRow
+          label="Bricks per row"
+          description={`${draft.stones_per_row} bricks across (full rows)`}
+          value={draft.stones_per_row}
+          min={2} max={10} step={1}
+          onChange={v => update('stones_per_row', v)}
+        />
+        <SliderRow
+          label="Brick scale"
+          description={`${draft.brick_scale.toFixed(2)}× — overall size multiplier`}
+          value={draft.brick_scale}
+          min={0.4} max={2.0} step={0.05}
+          onChange={v => update('brick_scale', v)}
+        />
+        <SliderRow
+          label="Brick shape (height ratio)"
+          description={`${draft.brick_aspect.toFixed(2)} — height as fraction of width (0.3 = flat, 0.8 = tall)`}
+          value={draft.brick_aspect}
+          min={0.3} max={0.8} step={0.01}
+          onChange={v => update('brick_aspect', v)}
+        />
+        <SliderRow
+          label="Horizontal overlap"
+          description={`${draft.brick_overlap_x}px — how far bricks overlap sideways`}
+          value={draft.brick_overlap_x}
+          min={0} max={300} step={1}
+          onChange={v => update('brick_overlap_x', v)}
+        />
+        <SliderRow
+          label="Vertical overlap"
+          description={`${draft.brick_overlap_y}px — how much rows nest into each other`}
+          value={draft.brick_overlap_y}
+          min={0} max={150} step={1}
+          onChange={v => update('brick_overlap_y', v)}
+        />
+      </section>
+
       {/* Actions */}
       <div className="flex items-center justify-between">
         <button
@@ -312,6 +418,7 @@ export function ThemeAdmin({ supabase }: ThemeAdminProps) {
         </div>
       </div>
     </div>
+    </>
   )
 }
 
@@ -371,6 +478,40 @@ function FontRow({ label, value, onChange }: FontRowProps) {
           <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
         ))}
       </select>
+    </div>
+  )
+}
+
+interface SliderRowProps {
+  label: string
+  description: string
+  value: number
+  min: number
+  max: number
+  step: number
+  onChange: (v: number) => void
+}
+
+function SliderRow({ label, description, value, min, max, step, onChange }: SliderRowProps) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium text-stone-800">{label}</p>
+        <p className="text-xs text-stone-400">{description}</p>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={e => onChange(Number(e.target.value))}
+        className="w-full accent-[var(--color-primary)]"
+      />
+      <div className="flex justify-between text-xs text-stone-300">
+        <span>{min}</span>
+        <span>{max}</span>
+      </div>
     </div>
   )
 }

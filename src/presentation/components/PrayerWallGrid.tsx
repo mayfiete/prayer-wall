@@ -1,12 +1,24 @@
-import { useRef, useCallback, useMemo } from 'react'
+import { useRef, useCallback, useMemo, useState, useEffect } from 'react'
 import type { Prayer } from '../../domain/entities/Prayer'
 import { PrayerBrick, CtaBrick } from './PrayerBrick'
 import { usePrayerWall } from '../hooks/usePrayerWall'
 import { useRealtimePrayers } from '../hooks/useRealtimePrayers'
 import { Loader2 } from 'lucide-react'
 
-const STONES_PER_FULL_ROW = 5
-const STONES_PER_OFFSET_ROW = 4
+function useStonesPerRow(): number {
+  const read = () => {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue('--stones-per-row').trim()
+    const n = parseInt(raw, 10)
+    return isNaN(n) || n < 1 ? 5 : n
+  }
+  const [n, setN] = useState(read)
+  useEffect(() => {
+    const obs = new MutationObserver(() => setN(read))
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] })
+    return () => obs.disconnect()
+  }, [])
+  return n
+}
 
 interface PrayerWallGridProps {
   wallId: string
@@ -20,6 +32,9 @@ type StoneItem =
 export function PrayerWallGrid({ wallId, onCtaClick }: PrayerWallGridProps) {
   const { prayers, loading, error, addPrayer } = usePrayerWall(wallId)
   const newIdsRef = useRef<Set<string>>(new Set())
+  const stonesPerRow = useStonesPerRow()
+  const STONES_PER_FULL_ROW   = stonesPerRow
+  const STONES_PER_OFFSET_ROW = Math.max(1, stonesPerRow - 1)
 
   const handleNewPrayer = useCallback(
     (prayer: Prayer) => {
@@ -51,7 +66,7 @@ export function PrayerWallGrid({ wallId, onCtaClick }: PrayerWallGridProps) {
       rowIndex += 1
     }
     return result
-  }, [prayers])
+  }, [prayers, STONES_PER_FULL_ROW, STONES_PER_OFFSET_ROW])
 
   if (loading) {
     return (
