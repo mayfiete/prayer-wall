@@ -382,10 +382,10 @@ export function ThemeAdmin({ supabase, onDone }: ThemeAdminProps) {
           onChange={v => update('brick_overlap_x', v)}
         />
         <SliderRow
-          label="Vertical overlap"
-          description={`${draft.brick_overlap_y}px — how much rows nest into each other`}
+          label="Row spacing (vertical overlap)"
+          description={`${draft.brick_overlap_y}px — higher = rows closer together`}
           value={draft.brick_overlap_y}
-          min={0} max={150} step={1}
+          min={0} max={300} step={1}
           onChange={v => update('brick_overlap_y', v)}
         />
       </section>

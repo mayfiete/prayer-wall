@@ -69,11 +69,12 @@
     flex-direction: column;
     gap: var(--stone-gap);
     width: 100%;
-    padding: 8px var(--stone-screen-padding) 18px;
+    min-height: 100%;
+    padding: 8px var(--stone-screen-padding) calc(var(--stone-overlap-y) + 32px);
     overflow: visible;
     background:
       radial-gradient(circle at 24px 18px, rgba(255,255,255,.18) 0 1px, transparent 1.5px),
-      linear-gradient(180deg, color-mix(in srgb, var(--color-wall-bg) 80%, white) 0%, var(--color-wall-bg) 100%);
+      linear-gradient(180deg, color-mix(in srgb, var(--color-wall-bg) 80%, white) 0%, var(--color-wall-bg) 40%);
   }
 
   .stone-row {
