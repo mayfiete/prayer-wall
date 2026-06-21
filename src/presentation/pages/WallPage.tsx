@@ -102,7 +102,7 @@ export function WallPage() {
       </section>
 
       <section
-        className="flex-1 px-0 pb-10 overflow-x-clip"
+        className="flex-1 flex flex-col px-0 overflow-x-clip"
         style={{ backgroundColor: 'var(--color-wall-bg)' }}
       >
         <div
