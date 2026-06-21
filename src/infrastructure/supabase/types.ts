@@ -111,6 +111,15 @@ export interface Database {
           color_modal_text: string
           color_modal_accent: string
           font_modal: string
+          stones_per_row: number
+          brick_scale: number
+          brick_aspect: number
+          brick_overlap_x: number
+          brick_overlap_y: number
+          brick_name_y: number
+          brick_name_font: string
+          brick_name_size: number
+          brick_name_color: string
           updated_at: string
         }
         Insert: {
@@ -136,6 +145,15 @@ export interface Database {
           color_modal_text?: string
           color_modal_accent?: string
           font_modal?: string
+          stones_per_row?: number
+          brick_scale?: number
+          brick_aspect?: number
+          brick_overlap_x?: number
+          brick_overlap_y?: number
+          brick_name_y?: number
+          brick_name_font?: string
+          brick_name_size?: number
+          brick_name_color?: string
           updated_at?: string
         }
         Update: {
@@ -161,6 +179,15 @@ export interface Database {
           color_modal_text?: string
           color_modal_accent?: string
           font_modal?: string
+          stones_per_row?: number
+          brick_scale?: number
+          brick_aspect?: number
+          brick_overlap_x?: number
+          brick_overlap_y?: number
+          brick_name_y?: number
+          brick_name_font?: string
+          brick_name_size?: number
+          brick_name_color?: string
           updated_at?: string
         }
         Relationships: []

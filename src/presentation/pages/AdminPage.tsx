@@ -52,7 +52,7 @@ export function AdminPage() {
           {tab === 'categories' && <CategoryAdmin />}
           {tab === 'rhythms'    && <RhythmsAdmin supabase={supabase} onDone={() => setTab('categories')} />}
           {tab === 'assets'     && <AssetAdmin supabase={supabase} onDone={() => setTab('categories')} />}
-          {tab === 'theme'      && <ThemeAdmin supabase={supabase} />}
+          {tab === 'theme'      && <ThemeAdmin supabase={supabase} onDone={() => setTab('categories')} />}
           {tab === 'warriors'   && <WarriorsAdmin supabase={supabase} onDone={() => setTab('categories')} />}
         </main>
       </div>
