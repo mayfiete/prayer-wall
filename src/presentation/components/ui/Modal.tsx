@@ -32,14 +32,26 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative z-10 w-full max-w-md bg-stone-900 border border-stone-700 rounded-xl shadow-2xl animate-fade-in">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-700">
-          <h2 id="modal-title" className="text-lg font-semibold text-stone-100 font-serif">
+      <div
+        className="relative z-10 w-full max-w-md rounded-xl shadow-2xl animate-fade-in"
+        style={{
+          backgroundColor: 'var(--color-modal-bg)',
+          color: 'var(--color-modal-text)',
+          fontFamily: 'var(--font-modal)',
+          border: '1px solid color-mix(in srgb, var(--color-modal-text) 20%, transparent)',
+        }}
+      >
+        <div
+          className="flex items-center justify-between px-6 py-4"
+          style={{ borderBottom: '1px solid color-mix(in srgb, var(--color-modal-text) 15%, transparent)' }}
+        >
+          <h2 id="modal-title" className="text-lg font-semibold" style={{ color: 'var(--color-modal-text)', fontFamily: 'var(--font-modal)' }}>
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors"
+            className="p-1.5 rounded-md transition-colors"
+            style={{ color: 'color-mix(in srgb, var(--color-modal-text) 60%, transparent)' }}
             aria-label="Close"
           >
             <X size={18} />

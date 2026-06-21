@@ -3,8 +3,14 @@ import type { Database } from '../supabase/types'
 import type { IPrayerRepository } from '../../domain/repositories/IPrayerRepository'
 import type { Prayer, CreatePrayerData } from '../../domain/entities/Prayer'
 
-type DB = Database['prayer_wall']['Tables']
-type CommitmentRow = Omit<DB['commitments']['Row'], 'email'>
+type CommitmentRow = {
+  id: string
+  wall_id: string
+  name: string
+  committed_at: string
+  reminder_active: boolean
+  last_reminded_at: string | null
+}
 
 function rowToPrayer(row: CommitmentRow): Prayer {
   return {

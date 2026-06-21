@@ -27,7 +27,7 @@ Deno.serve(async (req: Request) => {
   );
 
   const { error } = await supabase
-    .from("prayer_commitments")
+    .from("commitments")
     .update({ reminder_active: false })
     .eq("id", commitmentId);
 

@@ -20,7 +20,7 @@ export function CategorySelector({ categories, selected, onChange }: CategorySel
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-xs text-stone-400">
+      <p className="text-xs" style={{ color: 'color-mix(in srgb, var(--color-modal-text) 60%, transparent)' }}>
         Select up to {MAX_SELECTIONS} areas you will pray for ({selected.length}/{MAX_SELECTIONS})
       </p>
       <div className="grid grid-cols-2 gap-2">
@@ -36,21 +36,29 @@ export function CategorySelector({ categories, selected, onChange }: CategorySel
               aria-pressed={isSelected}
               className={[
                 'flex items-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium text-left',
-                'border transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500',
-                isSelected
-                  ? 'bg-amber-600/20 border-amber-500 text-amber-300'
-                  : isDisabled
-                    ? 'bg-stone-800/40 border-stone-700 text-stone-500 cursor-not-allowed opacity-50'
-                    : 'bg-stone-800 border-stone-600 text-stone-300 hover:border-stone-400 hover:text-stone-100',
+                'border transition-all duration-150 focus:outline-none focus-visible:ring-2',
+                isDisabled ? 'cursor-not-allowed opacity-50' : '',
               ].join(' ')}
+              style={{
+                backgroundColor: isSelected
+                  ? 'color-mix(in srgb, var(--color-modal-accent) 20%, transparent)'
+                  : 'color-mix(in srgb, var(--color-modal-text) 8%, transparent)',
+                borderColor: isSelected
+                  ? 'var(--color-modal-accent)'
+                  : 'color-mix(in srgb, var(--color-modal-text) 25%, transparent)',
+                color: isSelected
+                  ? 'var(--color-modal-accent)'
+                  : 'color-mix(in srgb, var(--color-modal-text) 75%, transparent)',
+              }}
             >
               <span
-                className={[
-                  'flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center',
-                  isSelected ? 'bg-amber-500 border-amber-500' : 'border-stone-500',
-                ].join(' ')}
+                className="flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center"
+              style={{
+                backgroundColor: isSelected ? 'var(--color-modal-accent)' : 'transparent',
+                borderColor: isSelected ? 'var(--color-modal-accent)' : 'color-mix(in srgb, var(--color-modal-text) 35%, transparent)',
+              }}
               >
-                {isSelected && <Check size={10} strokeWidth={3} className="text-stone-950" />}
+                {isSelected && <Check size={10} strokeWidth={3} style={{ color: 'var(--color-modal-bg)' }} />}
               </span>
               {cat.name}
             </button>

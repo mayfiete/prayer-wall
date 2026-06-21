@@ -30,6 +30,7 @@ export interface Database {
           committed_at: string
           reminder_active: boolean
           last_reminded_at: string | null
+          prayer_request: string
         }
         Insert: {
           id?: string
@@ -39,6 +40,7 @@ export interface Database {
           committed_at?: string
           reminder_active?: boolean
           last_reminded_at?: string | null
+          prayer_request?: string
         }
         Update: {
           id?: string
@@ -48,6 +50,7 @@ export interface Database {
           committed_at?: string
           reminder_active?: boolean
           last_reminded_at?: string | null
+          prayer_request?: string
         }
         Relationships: []
       }
@@ -55,6 +58,33 @@ export interface Database {
         Row: { commitment_id: string; category_id: string }
         Insert: { commitment_id: string; category_id: string }
         Update: { commitment_id?: string; category_id?: string }
+        Relationships: []
+      }
+      prayer_points: {
+        Row: {
+          id: string
+          commitment_id: string
+          body: string
+          is_answered: boolean
+          display_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          commitment_id: string
+          body: string
+          is_answered?: boolean
+          display_order?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          commitment_id?: string
+          body?: string
+          is_answered?: boolean
+          display_order?: number
+          created_at?: string
+        }
         Relationships: []
       }
       wall_theme: {
@@ -68,6 +98,19 @@ export interface Database {
           color_background: string
           font_heading: string
           font_body: string
+          color_header_bg: string
+          color_header_text: string
+          font_header: string
+          color_banner_bg: string
+          color_banner_text: string
+          font_banner: string
+          color_wall_bg: string
+          color_wall_text: string
+          font_wall: string
+          color_modal_bg: string
+          color_modal_text: string
+          color_modal_accent: string
+          font_modal: string
           updated_at: string
         }
         Insert: {
@@ -80,6 +123,19 @@ export interface Database {
           color_background?: string
           font_heading?: string
           font_body?: string
+          color_header_bg?: string
+          color_header_text?: string
+          font_header?: string
+          color_banner_bg?: string
+          color_banner_text?: string
+          font_banner?: string
+          color_wall_bg?: string
+          color_wall_text?: string
+          font_wall?: string
+          color_modal_bg?: string
+          color_modal_text?: string
+          color_modal_accent?: string
+          font_modal?: string
           updated_at?: string
         }
         Update: {
@@ -92,8 +148,72 @@ export interface Database {
           color_background?: string
           font_heading?: string
           font_body?: string
+          color_header_bg?: string
+          color_header_text?: string
+          font_header?: string
+          color_banner_bg?: string
+          color_banner_text?: string
+          font_banner?: string
+          color_wall_bg?: string
+          color_wall_text?: string
+          font_wall?: string
+          color_modal_bg?: string
+          color_modal_text?: string
+          color_modal_accent?: string
+          font_modal?: string
           updated_at?: string
         }
+        Relationships: []
+      }
+      email_rhythms: {
+        Row: {
+          id: string
+          org_id: string
+          wall_id: string
+          name: string
+          cadence: 'daily' | 'weekly' | 'monthly'
+          day_of_week: number | null
+          day_of_month: number | null
+          send_time: string
+          timezone: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          wall_id: string
+          name?: string
+          cadence?: 'daily' | 'weekly' | 'monthly'
+          day_of_week?: number | null
+          day_of_month?: number | null
+          send_time?: string
+          timezone?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          wall_id?: string
+          name?: string
+          cadence?: 'daily' | 'weekly' | 'monthly'
+          day_of_week?: number | null
+          day_of_month?: number | null
+          send_time?: string
+          timezone?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      commitment_rhythms: {
+        Row: { commitment_id: string; rhythm_id: string }
+        Insert: { commitment_id: string; rhythm_id: string }
+        Update: { commitment_id?: string; rhythm_id?: string }
         Relationships: []
       }
       email_logs: {
