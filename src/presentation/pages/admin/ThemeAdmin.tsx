@@ -50,10 +50,11 @@ const DEFAULTS: DraftTheme = {
   brick_aspect:    THEME_DEFAULTS.brick_aspect,
   brick_overlap_x: THEME_DEFAULTS.brick_overlap_x,
   brick_overlap_y: THEME_DEFAULTS.brick_overlap_y,
-  brick_name_y:     THEME_DEFAULTS.brick_name_y,
-  brick_name_font:  THEME_DEFAULTS.brick_name_font,
-  brick_name_size:  THEME_DEFAULTS.brick_name_size,
-  brick_name_color: THEME_DEFAULTS.brick_name_color,
+  brick_name_y:        THEME_DEFAULTS.brick_name_y,
+  brick_name_font:      THEME_DEFAULTS.brick_name_font,
+  brick_name_size:      THEME_DEFAULTS.brick_name_size,
+  brick_name_color:     THEME_DEFAULTS.brick_name_color,
+  bible_translation:    THEME_DEFAULTS.bible_translation,
 }
 
 export function ThemeAdmin({ supabase, onDone }: ThemeAdminProps) {
@@ -95,10 +96,11 @@ export function ThemeAdmin({ supabase, onDone }: ThemeAdminProps) {
             brick_aspect:    row.brick_aspect    ?? THEME_DEFAULTS.brick_aspect,
             brick_overlap_x: row.brick_overlap_x ?? THEME_DEFAULTS.brick_overlap_x,
             brick_overlap_y: row.brick_overlap_y ?? THEME_DEFAULTS.brick_overlap_y,
-            brick_name_y:     row.brick_name_y     ?? THEME_DEFAULTS.brick_name_y,
-            brick_name_font:  row.brick_name_font   ?? THEME_DEFAULTS.brick_name_font,
-            brick_name_size:  row.brick_name_size   ?? THEME_DEFAULTS.brick_name_size,
-            brick_name_color: row.brick_name_color  ?? THEME_DEFAULTS.brick_name_color,
+            brick_name_y:        row.brick_name_y        ?? THEME_DEFAULTS.brick_name_y,
+            brick_name_font:      row.brick_name_font      ?? THEME_DEFAULTS.brick_name_font,
+            brick_name_size:      row.brick_name_size      ?? THEME_DEFAULTS.brick_name_size,
+            brick_name_color:     row.brick_name_color     ?? THEME_DEFAULTS.brick_name_color,
+            bible_translation:    row.bible_translation    ?? THEME_DEFAULTS.bible_translation,
           })
         }
         setLoading(false)
@@ -308,6 +310,33 @@ export function ThemeAdmin({ supabase, onDone }: ThemeAdminProps) {
           value={draft.font_modal}
           onChange={v => update('font_modal', v)}
         />
+      </section>
+
+      {/* Bible Translation section */}
+      <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
+        <div>
+          <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Email Bible Translation</h3>
+          <p className="text-xs text-stone-400 mt-0.5">Choose which translation appears in prayer reminder emails.</p>
+        </div>
+        <div className="flex gap-2">
+          {(['ESV', 'NIV'] as const).map(t => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => update('bible_translation', t)}
+              className={`flex-1 py-2 rounded-md text-sm font-medium border transition-colors ${
+                draft.bible_translation === t
+                  ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
+                  : 'bg-white text-stone-600 border-stone-300 hover:border-stone-400'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-stone-400">
+          ESV via API.Bible &middot; NIV via YouVersion or API.Bible &middot; Requires <code className="text-xs bg-stone-100 px-1 rounded">API_BIBLE_KEY</code> secret in Supabase
+        </p>
       </section>
 
       {/* Brick Name section */}

@@ -1,5 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { findPassageForText } from "../_shared/prayer-search-service.ts";
+import { YouVersionProvider } from "../_shared/youversion-provider.ts";
+import { ApiBibleProvider } from "../_shared/apibible-provider.ts";
+import { resolveBibleId } from "../_shared/bible-types.ts";
+import type { BibleTranslation } from "../_shared/bible-types.ts";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -64,9 +69,12 @@ function isDue(rhythm: Rhythm, now: Date): boolean {
 
 // ─── Email HTML builder ───────────────────────────────────────────────────────
 
+type PassageResult = { reference: string; translation: string; text: string; copyright: string | null };
+
 function buildEmailHtml(
   warrior: Commitment,
   points: PrayerPoint[],
+  passage: PassageResult | null,
   unsubscribeUrl: string,
 ): string {
   const openPoints = points.filter((p) => !p.is_answered);
@@ -108,6 +116,13 @@ function buildEmailHtml(
           <p style="margin: 24px 0 0; font-size: 15px; color: #44403c; line-height: 1.7;">
             Keep pressing in. Heaven hears every prayer.
           </p>
+
+          ${passage && passage.text ? `
+          <div style="margin: 24px 0 0; padding: 16px 20px; background: #f0f9ff; border-left: 3px solid #0369a1; border-radius: 4px;">
+            <p style="margin: 0 0 8px; font-size: 13px; font-weight: bold; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.05em;">A Word for Your Prayers</p>
+            <p style="margin: 0 0 8px; font-size: 15px; color: #1e3a5f; line-height: 1.7; font-style: italic;">${passage.text}</p>
+            <p style="margin: 0; font-size: 12px; color: #64748b;">— ${passage.reference}${passage.copyright ? ` &middot; ${passage.copyright}` : ` &middot; ${passage.translation}`}</p>
+          </div>` : ""}
         </div>
 
         <div style="padding: 20px 32px; border-top: 1px solid #e7e5e4; background: #fafaf9;">
@@ -200,6 +215,24 @@ Deno.serve(async (req: Request) => {
     );
   }
 
+  // 4a. Load wall theme to get preferred Bible translation
+  // We grab one wall_id from the commitments; all bricklayers share the same wall.
+  const wallId = Deno.env.get("SUPABASE_WALL_ID") ?? "";
+  const { data: themeRow } = await supabase
+    .from("wall_theme")
+    .select("bible_translation")
+    .eq("wall_id", wallId)
+    .maybeSingle();
+  const preferredTranslation = ((themeRow?.bible_translation as string | undefined) ?? "ESV") as BibleTranslation;
+
+  // Determine provider and bibleId once for all emails in this run
+  const youversionKey = Deno.env.get("YOUVERSION_APP_KEY");
+  const apiBibleKey   = Deno.env.get("API_BIBLE_KEY");
+  const bibleProvider = youversionKey ? new YouVersionProvider() : new ApiBibleProvider();
+  const providerName  = youversionKey ? "youversion" : "api.bible" as const;
+  const bibleId       = resolveBibleId(preferredTranslation, providerName);
+  console.log(`Bible: translation=${preferredTranslation} provider=${providerName} bibleId=${bibleId} apiKey=${apiBibleKey ? "set" : "missing"}`);
+
   // 4. Load bricklayer details
   const { data: warriors, error: warriorErr } = await supabase
     .from("commitments")
@@ -226,9 +259,23 @@ Deno.serve(async (req: Request) => {
         .order("display_order", { ascending: true });
 
       const unsubscribeUrl = `${appUrl}/unsubscribe?id=${warrior.id}`;
+
+      // Find a relevant Bible passage from warrior's prayer points and request
+      const openPoints = (points ?? []).filter((p: PrayerPoint) => !p.is_answered);
+      const searchText = [
+        ...openPoints.map((p: PrayerPoint) => p.body),
+        warrior.prayer_request,
+      ].filter(Boolean).join(" ");
+
+      let passage: PassageResult | null = null;
+      if (searchText) {
+        passage = await findPassageForText(searchText, bibleProvider, bibleId);
+      }
+
       const html = buildEmailHtml(
         warrior as Commitment,
         (points ?? []) as PrayerPoint[],
+        passage,
         unsubscribeUrl,
       );
 
