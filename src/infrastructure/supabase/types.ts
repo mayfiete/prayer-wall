@@ -120,6 +120,7 @@ export interface Database {
           brick_name_font: string
           brick_name_size: number
           brick_name_color: string
+          bible_translation: string
           updated_at: string
         }
         Insert: {
@@ -154,6 +155,7 @@ export interface Database {
           brick_name_font?: string
           brick_name_size?: number
           brick_name_color?: string
+          bible_translation?: string
           updated_at?: string
         }
         Update: {
@@ -188,6 +190,7 @@ export interface Database {
           brick_name_font?: string
           brick_name_size?: number
           brick_name_color?: string
+          bible_translation?: string
           updated_at?: string
         }
         Relationships: []

@@ -39,6 +39,8 @@ export const THEME_DEFAULTS: Omit<WallTheme, 'id' | 'wall_id' | 'updated_at'> = 
   brick_name_font:  "'Libre Baskerville', Georgia, serif",
   brick_name_size:  1.0,
   brick_name_color: '#000000',
+  // Email Bible translation
+  bible_translation: 'ESV',
 }
 
 const LS_KEY = 'prayer-wall:theme'
