@@ -50,6 +50,7 @@ interface RhythmDraft {
   sendTime: string
   timezone: string
   isActive: boolean
+  endDate: string
 }
 
 const BLANK_DRAFT: RhythmDraft = {
@@ -60,6 +61,7 @@ const BLANK_DRAFT: RhythmDraft = {
   sendTime: '09:00',
   timezone: 'America/New_York',
   isActive: true,
+  endDate: '',
 }
 
 function ordinal(n: number) {
@@ -129,6 +131,7 @@ export function RhythmsAdmin({ supabase, onDone }: RhythmsAdminProps) {
       sendTime:   r.send_time,
       timezone:   r.timezone,
       isActive:   r.is_active,
+      endDate:    r.end_date ?? '',
     })
     setShowForm(true)
     setOpError('')
@@ -154,6 +157,7 @@ export function RhythmsAdmin({ supabase, onDone }: RhythmsAdminProps) {
       send_time:    draft.sendTime,
       timezone:     draft.timezone,
       is_active:    draft.isActive,
+      end_date:     draft.endDate.trim() || null,
     }
 
     let id = editingId
@@ -289,6 +293,18 @@ export function RhythmsAdmin({ supabase, onDone }: RhythmsAdminProps) {
             </div>
           )}
 
+          {/* End date */}
+          <div>
+            <label className={labelClass}>End date <span className="font-normal normal-case text-stone-400">(optional)</span></label>
+            <input
+              type="date"
+              value={draft.endDate}
+              onChange={e => updateDraft('endDate', e.target.value)}
+              className={selectClass}
+            />
+            <p className="text-[11px] text-stone-400 mt-1">Rhythm stops firing after this date. Leave blank to run indefinitely.</p>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Send time</label>
@@ -347,6 +363,9 @@ export function RhythmsAdmin({ supabase, onDone }: RhythmsAdminProps) {
                   {!r.is_active && <span className="text-xs text-stone-400 italic">paused</span>}
                 </div>
                 <p className="text-xs text-stone-500 mt-0.5">{formatSummary(r)}</p>
+                {r.end_date && (
+                  <p className="text-xs text-stone-400 mt-0.5">Ends {new Date(r.end_date + 'T00:00:00').toLocaleDateString()}</p>
+                )}
               </div>
 
               {/* Edit */}
