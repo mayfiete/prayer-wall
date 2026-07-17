@@ -207,6 +207,7 @@ export interface Database {
           send_time: string
           timezone: string
           is_active: boolean
+          end_date: string | null
           created_at: string
           updated_at: string
         }
@@ -221,6 +222,7 @@ export interface Database {
           send_time?: string
           timezone?: string
           is_active?: boolean
+          end_date?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -235,6 +237,7 @@ export interface Database {
           send_time?: string
           timezone?: string
           is_active?: boolean
+          end_date?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -244,6 +247,12 @@ export interface Database {
         Row: { commitment_id: string; rhythm_id: string }
         Insert: { commitment_id: string; rhythm_id: string }
         Update: { commitment_id?: string; rhythm_id?: string }
+        Relationships: []
+      }
+      category_rhythms: {
+        Row: { category_id: string; rhythm_id: string }
+        Insert: { category_id: string; rhythm_id: string }
+        Update: { category_id?: string; rhythm_id?: string }
         Relationships: []
       }
       email_logs: {

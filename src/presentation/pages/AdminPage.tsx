@@ -49,7 +49,7 @@ export function AdminPage() {
         </nav>
 
         <main className="px-8 py-8">
-          {tab === 'categories' && <CategoryAdmin />}
+          {tab === 'categories' && <CategoryAdmin supabase={supabase} />}
           {tab === 'rhythms'    && <RhythmsAdmin supabase={supabase} onDone={() => setTab('categories')} />}
           {tab === 'assets'     && <AssetAdmin supabase={supabase} onDone={() => setTab('categories')} />}
           {tab === 'theme'      && <ThemeAdmin supabase={supabase} onDone={() => setTab('categories')} />}

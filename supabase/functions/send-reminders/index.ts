@@ -23,6 +23,7 @@ interface Rhythm {
   send_time: string; // "HH:MM"
   timezone: string;
   is_active: boolean;
+  end_date: string | null; // YYYY-MM-DD, null = no end
 }
 
 interface Commitment {
@@ -38,12 +39,23 @@ interface PrayerPoint {
   is_answered: boolean;
 }
 
+interface CategoryMeditation {
+  categoryName: string;
+  body: string;
+}
+
 // ─── Is a rhythm due right now? ───────────────────────────────────────────────
 // Called every hour by pg_cron. A rhythm fires when the current local hour
 // matches send_time and the day matches the cadence configuration.
 
 function isDue(rhythm: Rhythm, now: Date): boolean {
   if (!rhythm.is_active) return false;
+
+  // Check end_date: stop firing after this date (compared in rhythm's local timezone)
+  if (rhythm.end_date) {
+    const localDateStr = now.toLocaleDateString("en-CA", { timeZone: rhythm.timezone }); // YYYY-MM-DD
+    if (localDateStr > rhythm.end_date) return false;
+  }
 
   // Convert UTC now to rhythm's local time
   const localStr = now.toLocaleString("en-US", { timeZone: rhythm.timezone });
@@ -74,6 +86,7 @@ type PassageResult = { reference: string; translation: string; text: string; cop
 function buildEmailHtml(
   warrior: Commitment,
   points: PrayerPoint[],
+  categoryMeditations: CategoryMeditation[],
   passage: PassageResult | null,
   unsubscribeUrl: string,
 ): string {
@@ -91,6 +104,15 @@ function buildEmailHtml(
       <div style="margin: 24px 0; padding: 16px 20px; background: #fdf8f5; border-left: 3px solid #9a3412; border-radius: 4px;">
         <p style="margin: 0; color: #44403c; font-size: 15px; line-height: 1.7;">${warrior.prayer_request}</p>
       </div>`
+    : "";
+
+  // Stacked meditations — one block per category the bricklayer subscribed to
+  const meditationsHtml = categoryMeditations.length > 0
+    ? categoryMeditations.map((m) => `
+      <div style="margin: 20px 0 0; padding: 16px 20px; background: #fefce8; border-left: 3px solid #ca8a04; border-radius: 4px;">
+        <p style="margin: 0 0 8px; font-size: 12px; font-weight: bold; color: #92400e; text-transform: uppercase; letter-spacing: 0.05em;">${m.categoryName}</p>
+        <p style="margin: 0; font-size: 15px; color: #44403c; line-height: 1.7;">${m.body}</p>
+      </div>`).join("")
     : "";
 
   return `
@@ -112,6 +134,8 @@ function buildEmailHtml(
           </p>
 
           ${pointsHtml}
+
+          ${meditationsHtml}
 
           <p style="margin: 24px 0 0; font-size: 15px; color: #44403c; line-height: 1.7;">
             Keep pressing in. Heaven hears every prayer.
@@ -166,7 +190,7 @@ Deno.serve(async (req: Request) => {
   // 1. Load all active rhythms
   const { data: rhythms, error: rhythmErr } = await supabase
     .from("email_rhythms")
-    .select("id, cadence, day_of_week, day_of_month, send_time, timezone, is_active")
+    .select("id, cadence, day_of_week, day_of_month, send_time, timezone, is_active, end_date")
     .eq("is_active", true);
 
   if (rhythmErr) {
@@ -189,31 +213,72 @@ Deno.serve(async (req: Request) => {
 
   const dueRhythmIds = dueRhythms.map((r) => r.id);
 
-  // 3. Find all bricklayers assigned to a due rhythm
-  const { data: assignments, error: assignErr } = await supabase
-    .from("commitment_rhythms")
-    .select("commitment_id")
+  // 3. Find which categories are assigned to due rhythms
+  const { data: catRhythmRows, error: catRhythmErr } = await supabase
+    .from("category_rhythms")
+    .select("category_id, rhythm_id")
     .in("rhythm_id", dueRhythmIds);
 
-  if (assignErr) {
-    console.error("Failed to load assignments:", assignErr.message);
-    return new Response(JSON.stringify({ error: assignErr.message }), {
+  if (catRhythmErr) {
+    console.error("Failed to load category_rhythms:", catRhythmErr.message);
+    return new Response(JSON.stringify({ error: catRhythmErr.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  // Deduplicate: a bricklayer may be on multiple due rhythms but only gets one email
-  const uniqueCommitmentIds = [...new Set(
-    (assignments ?? []).map((a: { commitment_id: string }) => a.commitment_id),
+  const dueCategoryIds = [...new Set(
+    (catRhythmRows ?? []).map((r: { category_id: string; rhythm_id: string }) => r.category_id),
   )];
 
-  if (uniqueCommitmentIds.length === 0) {
+  if (dueCategoryIds.length === 0) {
     return new Response(
-      JSON.stringify({ sent: 0, failed: 0, total: 0, message: "No bricklayers assigned to due rhythms" }),
+      JSON.stringify({ sent: 0, failed: 0, total: 0, message: "No categories assigned to due rhythms" }),
       { headers: { "Content-Type": "application/json", ...CORS_HEADERS } },
     );
   }
+
+  // 3b. Find all bricklayers who subscribed to any of those categories
+  const { data: catCommitments, error: catCommitErr } = await supabase
+    .from("commitment_categories")
+    .select("commitment_id, category_id")
+    .in("category_id", dueCategoryIds);
+
+  if (catCommitErr) {
+    console.error("Failed to load commitment_categories:", catCommitErr.message);
+    return new Response(JSON.stringify({ error: catCommitErr.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // Build a map: commitment_id → Set<category_id> (only categories with a due rhythm)
+  const commitmentCategoryMap = new Map<string, Set<string>>();
+  for (const row of (catCommitments ?? []) as Array<{ commitment_id: string; category_id: string }>) {
+    if (!commitmentCategoryMap.has(row.commitment_id)) {
+      commitmentCategoryMap.set(row.commitment_id, new Set());
+    }
+    commitmentCategoryMap.get(row.commitment_id)!.add(row.category_id);
+  }
+
+  const uniqueCommitmentIds = [...commitmentCategoryMap.keys()];
+
+  if (uniqueCommitmentIds.length === 0) {
+    return new Response(
+      JSON.stringify({ sent: 0, failed: 0, total: 0, message: "No bricklayers in categories assigned to due rhythms" }),
+      { headers: { "Content-Type": "application/json", ...CORS_HEADERS } },
+    );
+  }
+
+  // 3c. Load category names (needed for stacked meditation labels)
+  const { data: categoryRows } = await supabase
+    .from("message_categories")
+    .select("id, name")
+    .in("id", dueCategoryIds);
+
+  const categoryNameMap = new Map<string, string>(
+    (categoryRows ?? []).map((c: { id: string; name: string }) => [c.id, c.name] as [string, string]),
+  );
 
   // 4a. Load wall theme to get preferred Bible translation
   // We grab one wall_id from the commitments; all bricklayers share the same wall.
@@ -260,6 +325,27 @@ Deno.serve(async (req: Request) => {
 
       const unsubscribeUrl = `${appUrl}/unsubscribe?id=${warrior.id}`;
 
+      // Build stacked meditations: for each category this warrior belongs to that
+      // has a due rhythm, pick one active meditation from that category.
+      const warriorCategoryIds = [...(commitmentCategoryMap.get(warrior.id) ?? new Set<string>())];
+      const categoryMeditations: CategoryMeditation[] = [];
+      for (const catId of warriorCategoryIds) {
+        const { data: medRows } = await supabase
+          .from("prayer_meditations")
+          .select("body")
+          .eq("category_id", catId)
+          .eq("is_active", true)
+          .order("display_order", { ascending: true })
+          .limit(1);
+        const body = (medRows ?? [])[0]?.body as string | undefined;
+        if (body) {
+          categoryMeditations.push({
+            categoryName: categoryNameMap.get(catId) ?? "Prayer",
+            body,
+          });
+        }
+      }
+
       // Find a relevant Bible passage from warrior's prayer points and request
       const openPoints = (points ?? []).filter((p: PrayerPoint) => !p.is_answered);
       const searchText = [
@@ -275,6 +361,7 @@ Deno.serve(async (req: Request) => {
       const html = buildEmailHtml(
         warrior as Commitment,
         (points ?? []) as PrayerPoint[],
+        categoryMeditations,
         passage,
         unsubscribeUrl,
       );

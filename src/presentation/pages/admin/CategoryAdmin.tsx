@@ -1,13 +1,20 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '../../../infrastructure/supabase/types'
 import type { PrayerCategory } from '../../../domain/entities/PrayerCategory'
 import { usePrayerCategoriesAdmin } from '../../hooks/usePrayerCategoriesAdmin'
 import { StatementsAdmin } from './StatementsAdmin'
-import { ChevronUp, ChevronDown, ChevronRight, Trash2, Plus, BookOpen } from 'lucide-react'
+import { CategoryRhythmsAdmin } from './CategoryRhythmsAdmin'
+import { ChevronUp, ChevronDown, ChevronRight, Trash2, Plus, BookOpen, Clock } from 'lucide-react'
 
 const ORG_ID = import.meta.env.VITE_ORG_ID as string
 
-export function CategoryAdmin() {
+interface CategoryAdminProps {
+  supabase: SupabaseClient<Database>
+}
+
+export function CategoryAdmin({ supabase }: CategoryAdminProps) {
   const { categories, loading, error, create, update, setActive, remove, moveUp, moveDown } =
     usePrayerCategoriesAdmin(ORG_ID)
 
@@ -17,6 +24,7 @@ export function CategoryAdmin() {
   const [adding, setAdding] = useState(false)
   const [opError, setOpError] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [expandedPanel, setExpandedPanel] = useState<'meditations' | 'rhythms'>('meditations')
 
   const sorted = [...categories].sort((a, b) => a.displayOrder - b.displayOrder)
 
@@ -146,9 +154,9 @@ export function CategoryAdmin() {
 
               {/* Expand meditations */}
               <button
-                onClick={() => setExpandedId(expandedId === cat.id ? null : cat.id)}
+                onClick={() => { setExpandedPanel('meditations'); setExpandedId(expandedId === cat.id && expandedPanel === 'meditations' ? null : cat.id) }}
                 className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors shrink-0 ${
-                  expandedId === cat.id
+                  expandedId === cat.id && expandedPanel === 'meditations'
                     ? 'bg-[var(--color-primary)] text-white'
                     : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
                 }`}
@@ -158,7 +166,25 @@ export function CategoryAdmin() {
                 Meditations
                 <ChevronRight
                   size={12}
-                  className={`transition-transform ${expandedId === cat.id ? 'rotate-90' : ''}`}
+                  className={`transition-transform ${expandedId === cat.id && expandedPanel === 'meditations' ? 'rotate-90' : ''}`}
+                />
+              </button>
+
+              {/* Expand rhythms */}
+              <button
+                onClick={() => { setExpandedPanel('rhythms'); setExpandedId(expandedId === cat.id && expandedPanel === 'rhythms' ? null : cat.id) }}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors shrink-0 ${
+                  expandedId === cat.id && expandedPanel === 'rhythms'
+                    ? 'bg-[var(--color-primary)] text-white'
+                    : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                }`}
+                title="Assign email rhythms"
+              >
+                <Clock size={12} />
+                Rhythms
+                <ChevronRight
+                  size={12}
+                  className={`transition-transform ${expandedId === cat.id && expandedPanel === 'rhythms' ? 'rotate-90' : ''}`}
                 />
               </button>
 
@@ -172,12 +198,21 @@ export function CategoryAdmin() {
               </button>
             </div>
 
-            {/* Meditations panel — expanded inline */}
-            {expandedId === cat.id && (
+            {/* Expanded panel — meditations or rhythms */}
+            {expandedId === cat.id && expandedPanel === 'meditations' && (
               <StatementsAdmin
                 categoryId={cat.id}
                 categoryName={cat.name}
               />
+            )}
+            {expandedId === cat.id && expandedPanel === 'rhythms' && (
+              <div className="bg-stone-50 border-t border-stone-200 px-4 py-4">
+                <CategoryRhythmsAdmin
+                  supabase={supabase}
+                  categoryId={cat.id}
+                  categoryName={cat.name}
+                />
+              </div>
             )}
           </div>
         ))}

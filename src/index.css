@@ -178,10 +178,12 @@
   /* ─── Role: next available stone (the CTA) ─────────────────────────────── */
   .tile-cta {
     cursor: pointer;
+    transform: scale(1.12);
+    z-index: 2;
   }
 
   .tile-cta:hover {
-    transform: translateY(-2px) scale(1.04);
+    transform: translateY(-2px) scale(1.18);
   }
 
   .tile-stone.tile-cta:hover {
