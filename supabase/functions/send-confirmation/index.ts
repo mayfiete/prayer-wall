@@ -219,6 +219,9 @@ Deno.serve(async (req: Request) => {
   const fromEmail      = Deno.env.get("FROM_EMAIL") ?? "noreply@yourdomain.com";
   const appUrl         = Deno.env.get("APP_URL") ?? "https://your-app.com";
 
+  console.log("DEBUG supabaseUrl:", supabaseUrl ? supabaseUrl.slice(0, 30) : "MISSING");
+  console.log("DEBUG serviceRoleKey present:", !!serviceRoleKey, "length:", serviceRoleKey?.length ?? 0);
+
   const supabase = createClient(supabaseUrl, serviceRoleKey);
   const db = supabase.schema("prayer_wall");
 
