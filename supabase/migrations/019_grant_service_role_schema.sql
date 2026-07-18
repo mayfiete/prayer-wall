@@ -1,0 +1,5 @@
+GRANT USAGE ON SCHEMA prayer_wall TO service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA prayer_wall TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA prayer_wall TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA prayer_wall GRANT ALL ON TABLES TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA prayer_wall GRANT ALL ON SEQUENCES TO service_role;
