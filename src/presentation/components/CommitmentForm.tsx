@@ -5,6 +5,7 @@ import { CategorySelector } from './CategorySelector'
 import type { PrayerCategory } from '../../domain/entities/PrayerCategory'
 import { ValidationError } from '../../domain/errors/DomainError'
 import { useContainer } from '../context/AppContext'
+import { supabaseClient } from '../../infrastructure/supabase/client'
 import { CheckCircle2 } from 'lucide-react'
 
 interface CommitmentFormProps {
@@ -41,9 +42,12 @@ export function CommitmentForm({ wallId, orgId, categories, onSuccess }: Commitm
 
     setSubmitting(true)
     try {
-      await submitPrayerCommitment.execute({ wallId, orgId, name, email, categoryIds })
+      const newPrayer = await submitPrayerCommitment.execute({ wallId, orgId, name, email, categoryIds })
       setSubmitted(true)
       setTimeout(onSuccess, 1800)
+      supabaseClient?.functions.invoke('send-confirmation', {
+        body: { commitment_id: newPrayer.id },
+      }).catch((err: unknown) => console.error('[send-confirmation]', err))
     } catch (err) {
       if (err instanceof ValidationError) {
         setServerError(err.message)
