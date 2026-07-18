@@ -219,14 +219,13 @@ Deno.serve(async (req: Request) => {
   const fromEmail      = Deno.env.get("FROM_EMAIL") ?? "noreply@yourdomain.com";
   const appUrl         = Deno.env.get("APP_URL") ?? "https://your-app.com";
 
-  const supabase = createClient(supabaseUrl, serviceRoleKey, {
-    db: { schema: "prayer_wall" },
-  });
+  const supabase = createClient(supabaseUrl, serviceRoleKey);
+  const db = supabase.schema("prayer_wall");
 
   const unsubscribeUrl = `${appUrl}/unsubscribe?id=${commitmentId}`;
 
   // ── 3. Fetch commitment ────────────────────────────────────────────────────
-  const { data: commitment, error: commitmentErr } = await supabase
+  const { data: commitment, error: commitmentErr } = await db
     .from("commitments")
     .select("id, wall_id, name, email")
     .eq("id", commitmentId)
@@ -248,7 +247,7 @@ Deno.serve(async (req: Request) => {
   }
 
   // ── 4. Fetch categories for this commitment ────────────────────────────────
-  const { data: ccRows, error: ccErr } = await supabase
+  const { data: ccRows, error: ccErr } = await db
     .from("commitment_categories")
     .select("category_id")
     .eq("commitment_id", commitmentId);
@@ -265,7 +264,7 @@ Deno.serve(async (req: Request) => {
 
   let categories: Category[] = [];
   if (categoryIds.length > 0) {
-    const { data: catRows, error: catErr } = await supabase
+    const { data: catRows, error: catErr } = await db
       .from("message_categories")
       .select("id, name, display_order")
       .in("id", categoryIds)
@@ -285,7 +284,7 @@ Deno.serve(async (req: Request) => {
   // ── 5. Fetch all active meditations for those categories (single query) ────
   const meditationMap = new Map<string, string[]>();
   if (categoryIds.length > 0) {
-    const { data: medRows, error: medErr } = await supabase
+    const { data: medRows, error: medErr } = await db
       .from("prayer_meditations")
       .select("category_id, body, display_order")
       .in("category_id", categoryIds)
@@ -324,7 +323,7 @@ Deno.serve(async (req: Request) => {
     "confirmation",
   );
 
-  await supabase.from("email_logs").insert({
+  await db.from("email_logs").insert({
     wall_id: commitment.wall_id,
     commitment_id: commitment.id,
     email: commitment.email,
@@ -356,7 +355,7 @@ Deno.serve(async (req: Request) => {
     "summary",
   );
 
-  await supabase.from("email_logs").insert({
+  await db.from("email_logs").insert({
     wall_id: commitment.wall_id,
     commitment_id: commitment.id,
     email: commitment.email,
