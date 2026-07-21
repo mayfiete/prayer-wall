@@ -31,7 +31,7 @@ export class SupabasePrayerRepository implements IPrayerRepository {
       .from('commitments')
       .select('id, wall_id, name, committed_at, reminder_active, last_reminded_at')
       .eq('wall_id', wallId)
-      .order('committed_at', { ascending: true })
+      .order('committed_at', { ascending: false })
 
     if (error) throw new Error(error.message)
     return (data ?? []).map(rowToPrayer)

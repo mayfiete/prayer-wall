@@ -1,8 +1,6 @@
 import type { PrayerCategory } from '../../domain/entities/PrayerCategory'
 import { Check } from 'lucide-react'
 
-const MAX_SELECTIONS = 3
-
 interface CategorySelectorProps {
   categories: PrayerCategory[]
   selected: string[]
@@ -13,7 +11,7 @@ export function CategorySelector({ categories, selected, onChange }: CategorySel
   const toggle = (id: string) => {
     if (selected.includes(id)) {
       onChange(selected.filter((s) => s !== id))
-    } else if (selected.length < MAX_SELECTIONS) {
+    } else {
       onChange([...selected, id])
     }
   }
@@ -21,12 +19,12 @@ export function CategorySelector({ categories, selected, onChange }: CategorySel
   return (
     <div className="flex flex-col gap-2">
       <p className="text-xs" style={{ color: 'color-mix(in srgb, var(--color-modal-text) 60%, transparent)' }}>
-        Select up to {MAX_SELECTIONS} areas you will pray for ({selected.length}/{MAX_SELECTIONS})
+        Select one or more areas you will pray for
       </p>
       <div className="grid grid-cols-2 gap-2">
         {categories.map((cat) => {
           const isSelected = selected.includes(cat.id)
-          const isDisabled = !isSelected && selected.length >= MAX_SELECTIONS
+          const isDisabled = false
           return (
             <button
               key={cat.id}

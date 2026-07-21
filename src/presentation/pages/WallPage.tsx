@@ -84,7 +84,7 @@ export function WallPage() {
       >
         <h2 className="text-[15px] font-semibold mb-1" style={{ color: 'var(--color-banner-text)' }}>Add your name to the wall</h2>
         <p className="text-[13px] leading-relaxed mb-3" style={{ color: 'var(--color-muted)' }}>
-          Commit to pray for one or more areas and place your stone on the foundation.
+          Commit to pray for one or more areas of need and place your stone on the foundation.
         </p>
         {categories.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -110,7 +110,7 @@ export function WallPage() {
           style={{ color: 'var(--color-wall-text)', fontFamily: 'var(--font-wall)' }}
         >
           <BookOpen size={14} />
-          Click the next open stone to join
+          Click the next open stone to join!
         </div>
         <PrayerWallGrid wallId={WALL_ID} onCtaClick={() => setModalOpen(true)} />
       </section>
