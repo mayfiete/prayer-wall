@@ -4,8 +4,6 @@ import type { Prayer } from '../../domain/entities/Prayer'
 import type { SubmitPrayerCommitmentDto } from '../dto/SubmitPrayerCommitmentDto'
 import { ValidationError } from '../../domain/errors/DomainError'
 
-const MAX_CATEGORIES = 3
-
 export class SubmitPrayerCommitment {
   constructor(
     private readonly prayerRepo: IPrayerRepository,
@@ -22,10 +20,6 @@ export class SubmitPrayerCommitment {
     if (dto.categoryIds.length === 0) {
       throw new ValidationError('At least one prayer category must be selected')
     }
-    if (dto.categoryIds.length > MAX_CATEGORIES) {
-      throw new ValidationError(`No more than ${MAX_CATEGORIES} categories may be selected`)
-    }
-
     const available = await this.categoryRepo.findActiveByOrg(dto.orgId)
     const availableIds = new Set(available.map((c) => c.id))
     const invalid = dto.categoryIds.filter((id) => !availableIds.has(id))

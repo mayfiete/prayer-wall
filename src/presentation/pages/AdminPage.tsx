@@ -42,7 +42,7 @@ export function AdminPage() {
                     : 'border-transparent text-stone-500 hover:text-stone-800'
                 }`}
               >
-                {t === 'categories' ? 'Categories' : t === 'rhythms' ? 'Rhythms' : t === 'assets' ? 'Assets' : t === 'theme' ? 'Theme' : 'Bricklayers'}
+                {t === 'categories' ? 'Categories' : t === 'rhythms' ? 'Rhythms' : t === 'assets' ? 'Assets' : t === 'theme' ? 'Theme' : 'Stonemasons'}
               </button>
             ))}
           </div>

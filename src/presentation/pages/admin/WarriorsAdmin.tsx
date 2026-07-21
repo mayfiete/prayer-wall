@@ -87,7 +87,7 @@ export function WarriorsAdmin({ supabase, onDone }: BricklayersAdminProps) {
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!globalThis.confirm(`Remove "${name}" from the Bricklayers list? This will also remove them from the prayer wall.`)) return
+    if (!globalThis.confirm(`Remove "${name}" from the Stonemasons list? This will also remove them from the prayer wall.`)) return
     setOpError('')
     const { error } = await supabase.from('commitments').delete().eq('id', id)
     if (error) setOpError(error.message)
@@ -105,7 +105,7 @@ export function WarriorsAdmin({ supabase, onDone }: BricklayersAdminProps) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-[var(--color-heading)]">Bricklayers</h2>
+        <h2 className="text-lg font-semibold text-[var(--color-heading)]">Stonemasons</h2>
         <p className="text-xs text-stone-400 mt-0.5">
           Everyone who has placed a stone on the wall. Click a row to edit their name or prayer request.
         </p>
@@ -115,7 +115,7 @@ export function WarriorsAdmin({ supabase, onDone }: BricklayersAdminProps) {
 
       {/* Add form */}
       <form onSubmit={e => void handleAdd(e)} className="bg-white border border-stone-200 rounded-lg px-4 py-4 space-y-3">
-        <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Add a Bricklayer</p>
+        <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Add a Stonemason</p>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-xs text-stone-500 mb-0.5">Name *</label>
@@ -154,7 +154,7 @@ export function WarriorsAdmin({ supabase, onDone }: BricklayersAdminProps) {
             className="flex items-center gap-1.5 px-4 py-2 bg-[var(--color-primary)] text-white rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-60"
           >
             <Plus size={14} />
-            Add Bricklayer
+            Add Stonemason
           </button>
         </div>
       </form>
@@ -162,7 +162,7 @@ export function WarriorsAdmin({ supabase, onDone }: BricklayersAdminProps) {
       {/* List */}
       <div className="border border-stone-200 rounded-lg overflow-hidden divide-y divide-stone-200">
         {bricklayers.length === 0 && (
-          <p className="text-sm text-stone-400 text-center py-6">No bricklayers yet.</p>
+          <p className="text-sm text-stone-400 text-center py-6">No stonemasons yet.</p>
         )}
         {bricklayers.map((w) => (
           <div key={w.id} className="bg-white">
