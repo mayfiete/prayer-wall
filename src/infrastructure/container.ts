@@ -26,6 +26,7 @@ import { MockRealtimeClient } from './mock/MockRealtimeClient'
 import { createSupabaseClient } from './supabase/client'
 import { SupabasePrayerRepository } from './repositories/SupabasePrayerRepository'
 import { SupabasePrayerCategoryRepository } from './repositories/SupabasePrayerCategoryRepository'
+import { SupabasePrayerMeditationRepository } from './repositories/SupabasePrayerMeditationRepository'
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
@@ -43,7 +44,7 @@ if (USE_MOCK) {
   const supabase = createSupabaseClient()
   prayerRepo = new SupabasePrayerRepository(supabase)
   categoryRepo = new SupabasePrayerCategoryRepository(supabase)
-  meditationRepo = new MockPrayerMeditationRepository()
+  meditationRepo = new SupabasePrayerMeditationRepository(supabase)
   realtimeClient = supabase
 }
 
