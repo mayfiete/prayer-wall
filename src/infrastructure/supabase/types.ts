@@ -195,6 +195,36 @@ export interface Database {
         }
         Relationships: []
       }
+      prayer_meditations: {
+        Row: {
+          id: string
+          category_id: string
+          org_id: string
+          body: string
+          display_order: number | null
+          is_active: boolean | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          category_id: string
+          org_id: string
+          body: string
+          display_order?: number | null
+          is_active?: boolean | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          category_id?: string
+          org_id?: string
+          body?: string
+          display_order?: number | null
+          is_active?: boolean | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
       email_rhythms: {
         Row: {
           id: string
