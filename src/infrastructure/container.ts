@@ -28,6 +28,9 @@ import { SupabasePrayerRepository } from './repositories/SupabasePrayerRepositor
 import { SupabasePrayerCategoryRepository } from './repositories/SupabasePrayerCategoryRepository'
 import { SupabasePrayerMeditationRepository } from './repositories/SupabasePrayerMeditationRepository'
 
+// DECISION: VITE_USE_MOCK=true → all in-memory mocks (no Supabase needed for local dev).
+// VITE_USE_MOCK unset or false → all Supabase repos (production).
+// See docs/decisions/003-mock-vs-supabase-repos.md — never use a Mock repo in the else branch.
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 let prayerRepo: IPrayerRepository
@@ -41,6 +44,8 @@ if (USE_MOCK) {
   meditationRepo = new MockPrayerMeditationRepository()
   realtimeClient = new MockRealtimeClient()
 } else {
+  // DECISION: createSupabaseClient() sets db: { schema: 'prayer_wall' }.
+  // All repos share one client instance. Admin pages create their own separate client.
   const supabase = createSupabaseClient()
   prayerRepo = new SupabasePrayerRepository(supabase)
   categoryRepo = new SupabasePrayerCategoryRepository(supabase)

@@ -181,6 +181,9 @@ Deno.serve(async (req: Request) => {
   const fromEmail      = Deno.env.get("FROM_EMAIL") ?? "noreply@yourdomain.com";
   const appUrl         = Deno.env.get("APP_URL") ?? "https://your-app.com";
 
+  // DECISION: db: { schema: 'prayer_wall' } is required — all tables live in that schema, not public.
+  // Omitting this causes all queries to silently target public and return empty results.
+  // See docs/decisions/002-prayer-wall-schema.md
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     db: { schema: "prayer_wall" },
   });
