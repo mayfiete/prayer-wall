@@ -100,9 +100,11 @@ export interface Database {
           font_body: string
           color_header_bg: string
           color_header_text: string
+          color_header_subtext: string
           font_header: string
           color_banner_bg: string
           color_banner_text: string
+          color_banner_subtext: string
           font_banner: string
           color_wall_bg: string
           color_wall_text: string
@@ -135,9 +137,11 @@ export interface Database {
           font_body?: string
           color_header_bg?: string
           color_header_text?: string
+          color_header_subtext?: string
           font_header?: string
           color_banner_bg?: string
           color_banner_text?: string
+          color_banner_subtext?: string
           font_banner?: string
           color_wall_bg?: string
           color_wall_text?: string
@@ -170,9 +174,11 @@ export interface Database {
           font_body?: string
           color_header_bg?: string
           color_header_text?: string
+          color_header_subtext?: string
           font_header?: string
           color_banner_bg?: string
           color_banner_text?: string
+          color_banner_subtext?: string
           font_banner?: string
           color_wall_bg?: string
           color_wall_text?: string
