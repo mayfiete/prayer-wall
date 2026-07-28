@@ -32,12 +32,14 @@ const DEFAULTS: DraftTheme = {
   color_background:   THEME_DEFAULTS.color_background,
   font_heading:       THEME_DEFAULTS.font_heading,
   font_body:          THEME_DEFAULTS.font_body,
-  color_header_bg:    THEME_DEFAULTS.color_header_bg,
-  color_header_text:  THEME_DEFAULTS.color_header_text,
-  font_header:        THEME_DEFAULTS.font_header,
-  color_banner_bg:    THEME_DEFAULTS.color_banner_bg,
-  color_banner_text:  THEME_DEFAULTS.color_banner_text,
-  font_banner:        THEME_DEFAULTS.font_banner,
+  color_header_bg:      THEME_DEFAULTS.color_header_bg,
+  color_header_text:    THEME_DEFAULTS.color_header_text,
+  color_header_subtext: THEME_DEFAULTS.color_header_subtext,
+  font_header:          THEME_DEFAULTS.font_header,
+  color_banner_bg:      THEME_DEFAULTS.color_banner_bg,
+  color_banner_text:    THEME_DEFAULTS.color_banner_text,
+  color_banner_subtext: THEME_DEFAULTS.color_banner_subtext,
+  font_banner:          THEME_DEFAULTS.font_banner,
   color_wall_bg:      THEME_DEFAULTS.color_wall_bg,
   color_wall_text:    THEME_DEFAULTS.color_wall_text,
   font_wall:          THEME_DEFAULTS.font_wall,
@@ -78,12 +80,14 @@ export function ThemeAdmin({ supabase, onDone }: ThemeAdminProps) {
             color_background:   row.color_background,
             font_heading:       row.font_heading,
             font_body:          row.font_body,
-            color_header_bg:    row.color_header_bg   ?? THEME_DEFAULTS.color_header_bg,
-            color_header_text:  row.color_header_text ?? THEME_DEFAULTS.color_header_text,
-            font_header:        row.font_header        ?? THEME_DEFAULTS.font_header,
-            color_banner_bg:    row.color_banner_bg   ?? THEME_DEFAULTS.color_banner_bg,
-            color_banner_text:  row.color_banner_text ?? THEME_DEFAULTS.color_banner_text,
-            font_banner:        row.font_banner        ?? THEME_DEFAULTS.font_banner,
+            color_header_bg:      row.color_header_bg      ?? THEME_DEFAULTS.color_header_bg,
+            color_header_text:    row.color_header_text    ?? THEME_DEFAULTS.color_header_text,
+            color_header_subtext: row.color_header_subtext ?? THEME_DEFAULTS.color_header_subtext,
+            font_header:          row.font_header          ?? THEME_DEFAULTS.font_header,
+            color_banner_bg:      row.color_banner_bg      ?? THEME_DEFAULTS.color_banner_bg,
+            color_banner_text:    row.color_banner_text    ?? THEME_DEFAULTS.color_banner_text,
+            color_banner_subtext: row.color_banner_subtext ?? THEME_DEFAULTS.color_banner_subtext,
+            font_banner:          row.font_banner          ?? THEME_DEFAULTS.font_banner,
             color_wall_bg:      row.color_wall_bg      ?? THEME_DEFAULTS.color_wall_bg,
             color_wall_text:    row.color_wall_text    ?? THEME_DEFAULTS.color_wall_text,
             font_wall:          row.font_wall           ?? THEME_DEFAULTS.font_wall,
@@ -220,9 +224,15 @@ export function ThemeAdmin({ supabase, onDone }: ThemeAdminProps) {
         />
         <ColorRow
           label="Text"
-          description="Title and org name color"
+          description="Title color"
           value={draft.color_header_text}
           onChange={v => update('color_header_text', v)}
+        />
+        <ColorRow
+          label="Subtext"
+          description="Org name / secondary line color"
+          value={draft.color_header_subtext}
+          onChange={v => update('color_header_subtext', v)}
         />
         <FontRow
           label="Font"
@@ -245,9 +255,15 @@ export function ThemeAdmin({ supabase, onDone }: ThemeAdminProps) {
         />
         <ColorRow
           label="Text"
-          description="Banner text color"
+          description="Banner heading text color"
           value={draft.color_banner_text}
           onChange={v => update('color_banner_text', v)}
+        />
+        <ColorRow
+          label="Subtext"
+          description="Banner description / secondary text color"
+          value={draft.color_banner_subtext}
+          onChange={v => update('color_banner_subtext', v)}
         />
         <FontRow
           label="Font"

@@ -21,13 +21,15 @@
     --font-heading:       serif;
     --font-body:          sans-serif;
     /* Header section */
-    --color-header-bg:    #ffffff;
-    --color-header-text:  #242148;
-    --font-header:        serif;
+    --color-header-bg:      #ffffff;
+    --color-header-text:    #242148;
+    --color-header-subtext: #88838a;
+    --font-header:          serif;
     /* Banner section */
-    --color-banner-bg:    #ffffff;
-    --color-banner-text:  #342f31;
-    --font-banner:        sans-serif;
+    --color-banner-bg:      #ffffff;
+    --color-banner-text:    #342f31;
+    --color-banner-subtext: #88838a;
+    --font-banner:          sans-serif;
     /* Wall section */
     --color-wall-bg:      #d7c39d;
     --color-wall-text:    #342f31;

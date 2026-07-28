@@ -74,7 +74,7 @@ export function WallPage() {
         <LogoMark />
         <div className="flex-1">
           <h1 className="text-[26px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--color-header-text)', fontFamily: 'var(--font-header)' }}>{wallTitle}</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--color-muted)' }}>{ORG_NAME}</p>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--color-header-subtext)' }}>{ORG_NAME}</p>
         </div>
       </header>
 
@@ -83,7 +83,7 @@ export function WallPage() {
         style={{ backgroundColor: 'var(--color-banner-bg)', color: 'var(--color-banner-text)', fontFamily: 'var(--font-banner)' }}
       >
         <h2 className="text-[15px] font-semibold mb-1" style={{ color: 'var(--color-banner-text)' }}>Add your name to the wall</h2>
-        <p className="text-[13px] leading-relaxed mb-3" style={{ color: 'var(--color-muted)' }}>
+        <p className="text-[13px] leading-relaxed mb-3" style={{ color: 'var(--color-banner-subtext)' }}>
           Commit to pray for one or more areas of need and place your stone on the foundation.
         </p>
         {categories.length > 0 && (

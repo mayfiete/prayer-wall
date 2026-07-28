@@ -12,13 +12,15 @@ export const THEME_DEFAULTS: Omit<WallTheme, 'id' | 'wall_id' | 'updated_at'> = 
   font_heading:       'serif',
   font_body:          'sans-serif',
   // Header section
-  color_header_bg:    '#ffffff',
-  color_header_text:  '#242148',
-  font_header:        'serif',
+  color_header_bg:      '#ffffff',
+  color_header_text:    '#242148',
+  color_header_subtext: '#88838a',
+  font_header:          'serif',
   // Banner section
-  color_banner_bg:    '#ffffff',
-  color_banner_text:  '#342f31',
-  font_banner:        'sans-serif',
+  color_banner_bg:      '#ffffff',
+  color_banner_text:    '#342f31',
+  color_banner_subtext: '#88838a',
+  font_banner:          'sans-serif',
   // Wall section
   color_wall_bg:      '#d7c39d',
   color_wall_text:    '#342f31',
@@ -57,13 +59,15 @@ export function applyTheme(theme: Partial<typeof THEME_DEFAULTS>) {
   root.style.setProperty('--font-body',           t.font_body)
   root.style.setProperty('--wall-title',          t.wall_title)
   // Header
-  root.style.setProperty('--color-header-bg',     t.color_header_bg)
-  root.style.setProperty('--color-header-text',   t.color_header_text)
-  root.style.setProperty('--font-header',         t.font_header)
+  root.style.setProperty('--color-header-bg',      t.color_header_bg)
+  root.style.setProperty('--color-header-text',    t.color_header_text)
+  root.style.setProperty('--color-header-subtext', t.color_header_subtext)
+  root.style.setProperty('--font-header',          t.font_header)
   // Banner
-  root.style.setProperty('--color-banner-bg',     t.color_banner_bg)
-  root.style.setProperty('--color-banner-text',   t.color_banner_text)
-  root.style.setProperty('--font-banner',         t.font_banner)
+  root.style.setProperty('--color-banner-bg',      t.color_banner_bg)
+  root.style.setProperty('--color-banner-text',    t.color_banner_text)
+  root.style.setProperty('--color-banner-subtext', t.color_banner_subtext)
+  root.style.setProperty('--font-banner',          t.font_banner)
   // Wall
   root.style.setProperty('--color-wall-bg',       t.color_wall_bg)
   root.style.setProperty('--color-wall-text',     t.color_wall_text)
