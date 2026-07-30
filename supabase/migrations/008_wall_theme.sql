@@ -6,7 +6,7 @@ CREATE TABLE prayer_wall.wall_theme (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   wall_id     UUID REFERENCES prayer_wall.walls(id) ON DELETE CASCADE NOT NULL UNIQUE,
   wall_title  TEXT NOT NULL DEFAULT 'Prayer Foundation',
-  color_primary    TEXT NOT NULL DEFAULT '#5e061e',
+  color_primary    TEXT NOT NULL DEFAULT '#6d1a2e',
   color_heading    TEXT NOT NULL DEFAULT '#242148',
   color_muted      TEXT NOT NULL DEFAULT '#88838a',
   color_background TEXT NOT NULL DEFAULT '#d7c39d',

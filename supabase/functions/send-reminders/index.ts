@@ -5,6 +5,20 @@ import { YouVersionProvider } from "../_shared/youversion-provider.ts";
 import { ApiBibleProvider } from "../_shared/apibible-provider.ts";
 import { resolveBibleId } from "../_shared/bible-types.ts";
 import type { BibleTranslation } from "../_shared/bible-types.ts";
+import {
+  BRAND,
+  closing,
+  commitmentList,
+  emailShell,
+  greeting,
+  leadLine,
+  paragraph,
+  passageBlock,
+  personalRequestBlock,
+  praisesBlock,
+  prayerRequestsBlock,
+  PSALM_INTRO_HTML,
+} from "../_shared/email-layout.ts";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -41,7 +55,7 @@ interface PrayerPoint {
 
 interface CategoryMeditation {
   categoryName: string;
-  body: string;
+  bodies: string[];
 }
 
 // ─── Is a rhythm due right now? ───────────────────────────────────────────────
@@ -91,75 +105,31 @@ function buildEmailHtml(
   unsubscribeUrl: string,
 ): string {
   const openPoints = points.filter((p) => !p.is_answered);
-  const pointsHtml = openPoints.length > 0
-    ? `
-      <div style="margin: 24px 0; padding: 16px 20px; background: #fdf8f5; border-left: 3px solid #9a3412; border-radius: 4px;">
-        <p style="margin: 0 0 12px; font-size: 13px; font-weight: bold; color: #78350f; text-transform: uppercase; letter-spacing: 0.05em;">Prayer Points</p>
-        <ul style="margin: 0; padding-left: 20px; color: #44403c; font-size: 15px; line-height: 1.7;">
-          ${openPoints.map((p) => `<li>${p.body}</li>`).join("")}
-        </ul>
-      </div>`
-    : warrior.prayer_request
-    ? `
-      <div style="margin: 24px 0; padding: 16px 20px; background: #fdf8f5; border-left: 3px solid #9a3412; border-radius: 4px;">
-        <p style="margin: 0; color: #44403c; font-size: 15px; line-height: 1.7;">${warrior.prayer_request}</p>
-      </div>`
-    : "";
 
-  // Stacked meditations — one block per category the bricklayer subscribed to
-  const meditationsHtml = categoryMeditations.length > 0
-    ? categoryMeditations.map((m) => `
-      <div style="margin: 20px 0 0; padding: 16px 20px; background: #fefce8; border-left: 3px solid #ca8a04; border-radius: 4px;">
-        <p style="margin: 0 0 8px; font-size: 12px; font-weight: bold; color: #92400e; text-transform: uppercase; letter-spacing: 0.05em;">${m.categoryName}</p>
-        <p style="margin: 0; font-size: 15px; color: #44403c; line-height: 1.7;">${m.body}</p>
-      </div>`).join("")
-    : "";
+  const categoryNames = categoryMeditations.map((m) => m.categoryName);
+  const requestGroups = categoryMeditations.map((m) => ({
+    categoryName: m.categoryName,
+    requests: m.bodies,
+  }));
 
-  return `
-    <!DOCTYPE html>
-    <html>
-    <body style="margin:0;padding:0;background:#f5f5f4;">
-      <div style="font-family: Georgia, 'Times New Roman', serif; max-width: 560px; margin: 32px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-
-        <div style="background: #9a3412; padding: 28px 32px;">
-          <p style="margin:0; font-size: 12px; color: #fca5a5; text-transform: uppercase; letter-spacing: 0.1em;">Prayer Rhythms · Prayer Wall</p>
-          <h1 style="margin: 8px 0 0; font-size: 22px; color: #ffffff; font-weight: normal;">Your Prayer Reminder</h1>
-        </div>
-
-        <div style="padding: 32px;">
-          <p style="margin: 0 0 16px; font-size: 16px; color: #1c1917;">Hi ${warrior.name},</p>
-          <p style="margin: 0 0 16px; font-size: 15px; color: #44403c; line-height: 1.7;">
-            This is your scheduled reminder to spend time in prayer.
-            Thank you for your commitment to intercede — your prayers matter.
-          </p>
-
-          ${pointsHtml}
-
-          ${meditationsHtml}
-
-          <p style="margin: 24px 0 0; font-size: 15px; color: #44403c; line-height: 1.7;">
-            Keep pressing in. Heaven hears every prayer.
-          </p>
-
-          ${passage && passage.text ? `
-          <div style="margin: 24px 0 0; padding: 16px 20px; background: #f0f9ff; border-left: 3px solid #0369a1; border-radius: 4px;">
-            <p style="margin: 0 0 8px; font-size: 13px; font-weight: bold; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.05em;">A Word for Your Prayers</p>
-            <p style="margin: 0 0 8px; font-size: 15px; color: #1e3a5f; line-height: 1.7; font-style: italic;">${passage.text}</p>
-            <p style="margin: 0; font-size: 12px; color: #64748b;">— ${passage.reference}${passage.copyright ? ` &middot; ${passage.copyright}` : ` &middot; ${passage.translation}`}</p>
-          </div>` : ""}
-        </div>
-
-        <div style="padding: 20px 32px; border-top: 1px solid #e7e5e4; background: #fafaf9;">
-          <p style="margin: 0; font-size: 12px; color: #a8a29e; line-height: 1.6;">
-            You're receiving this because you placed your name on the prayer wall.
-            <a href="${unsubscribeUrl}" style="color: #a8a29e;">Unsubscribe</a>
-          </p>
-        </div>
-
-      </div>
-    </body>
-    </html>
+  const bodyHtml = `
+    ${leadLine()}
+    ${greeting(warrior.name)}
+    ${paragraph(PSALM_INTRO_HTML)}
+    ${commitmentList(categoryNames)}
+    ${prayerRequestsBlock(requestGroups)}
+    ${personalRequestBlock(openPoints.length === 0 ? warrior.prayer_request : "")}
+    ${openPoints.length > 0 ? prayerRequestsBlock([{ categoryName: "Your Personal Requests", requests: openPoints.map((p) => p.body) }]) : ""}
+    ${passageBlock(passage)}
+    ${praisesBlock()}
+    ${closing()}
   `;
+
+  return emailShell({
+    title: "A Prayer Reminder",
+    bodyHtml,
+    unsubscribeUrl,
+  });
 }
 
 // ─── Handler ──────────────────────────────────────────────────────────────────
@@ -338,13 +308,14 @@ Deno.serve(async (req: Request) => {
           .select("body")
           .eq("category_id", catId)
           .eq("is_active", true)
-          .order("display_order", { ascending: true })
-          .limit(1);
-        const body = (medRows ?? [])[0]?.body as string | undefined;
-        if (body) {
+          .order("display_order", { ascending: true });
+        const bodies = (medRows ?? [])
+          .map((m: { body: string }) => m.body)
+          .filter(Boolean);
+        if (bodies.length > 0) {
           categoryMeditations.push({
             categoryName: categoryNameMap.get(catId) ?? "Prayer",
-            body,
+            bodies,
           });
         }
       }
@@ -376,9 +347,9 @@ Deno.serve(async (req: Request) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: `Prayer Wall <${fromEmail}>`,
+          from: `${BRAND.fromName} <${fromEmail}>`,
           to: warrior.email,
-          subject: "Your prayer reminder",
+          subject: "A friendly reminder to pray",
           html,
         }),
       });

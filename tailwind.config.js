@@ -11,7 +11,7 @@ export default {
       },
       colors: {
         hca: {
-          burgundy: '#5e061e',
+          burgundy: '#6d1a2e',
           navy:     '#242148',
           'gray-light': '#d9d9d9',
           'gray-mid':   '#88838a',
