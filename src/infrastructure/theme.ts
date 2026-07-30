@@ -5,7 +5,7 @@ export type WallTheme = Database['prayer_wall']['Tables']['wall_theme']['Row']
 
 export const THEME_DEFAULTS: Omit<WallTheme, 'id' | 'wall_id' | 'updated_at'> = {
   wall_title:         'Prayer Foundation',
-  color_primary:      '#5e061e',
+  color_primary:      '#6d1a2e',
   color_heading:      '#242148',
   color_muted:        '#88838a',
   color_background:   '#d7c39d',

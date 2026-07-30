@@ -1,5 +1,17 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import {
+  BRAND,
+  closing,
+  commitmentList,
+  emailShell,
+  greeting,
+  leadLine,
+  paragraph,
+  praisesBlock,
+  prayerRequestsBlock,
+  PSALM_INTRO_HTML,
+} from "../_shared/email-layout.ts";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -38,43 +50,23 @@ interface MeditationRow {
 // ─── Email HTML builders ──────────────────────────────────────────────────────
 
 function buildConfirmationHtml(commitment: Commitment, unsubscribeUrl: string): string {
-  return `
-    <!DOCTYPE html>
-    <html>
-    <body style="margin:0;padding:0;background:#f5f5f4;">
-      <div style="font-family: Georgia, 'Times New Roman', serif; max-width: 560px; margin: 32px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-
-        <div style="background: #9a3412; padding: 28px 32px;">
-          <p style="margin:0; font-size: 12px; color: #fca5a5; text-transform: uppercase; letter-spacing: 0.1em;">Prayer Wall · Commitment Confirmed</p>
-          <h1 style="margin: 8px 0 0; font-size: 22px; color: #ffffff; font-weight: normal;">Your stone has been placed</h1>
-        </div>
-
-        <div style="padding: 32px;">
-          <p style="margin: 0 0 16px; font-size: 16px; color: #1c1917;">Hi ${commitment.name},</p>
-          <p style="margin: 0 0 16px; font-size: 15px; color: #44403c; line-height: 1.7;">
-            Your name has been placed on the prayer wall. Thank you for committing to intercede —
-            your prayers matter and heaven hears every one of them.
-          </p>
-          <p style="margin: 0 0 16px; font-size: 15px; color: #44403c; line-height: 1.7;">
-            You will begin receiving prayer reminders on the schedule set by your community.
-            A separate email with your full prayer guide is on its way to you now.
-          </p>
-          <p style="margin: 24px 0 0; font-size: 15px; color: #44403c; line-height: 1.7;">
-            Keep pressing in.
-          </p>
-        </div>
-
-        <div style="padding: 20px 32px; border-top: 1px solid #e7e5e4; background: #fafaf9;">
-          <p style="margin: 0; font-size: 12px; color: #a8a29e; line-height: 1.6;">
-            You're receiving this because you placed your name on the prayer wall.
-            <a href="${unsubscribeUrl}" style="color: #a8a29e;">Unsubscribe</a>
-          </p>
-        </div>
-
-      </div>
-    </body>
-    </html>
+  const bodyHtml = `
+    ${leadLine()}
+    ${greeting(commitment.name)}
+    ${paragraph(PSALM_INTRO_HTML)}
+    ${paragraph(
+      "Your commitment to pray with the " + BRAND.org + " " + BRAND.product +
+      " has been received. You'll begin receiving prayer reminders on the schedule set by our team, " +
+      "and a separate email with your full prayer guide is on its way to you now.",
+    )}
+    ${closing()}
   `;
+
+  return emailShell({
+    title: "Welcome to the Prayer Foundation",
+    bodyHtml,
+    unsubscribeUrl,
+  });
 }
 
 function buildSummaryHtml(
@@ -83,74 +75,36 @@ function buildSummaryHtml(
   meditationMap: Map<string, string[]>,
   unsubscribeUrl: string,
 ): string {
-  const hasAnyMeditations = categories.some(
+  const filledCategories = categories.filter(
     (c) => (meditationMap.get(c.id) ?? []).length > 0,
   );
 
-  const categorySections = hasAnyMeditations
-    ? categories
-        .filter((c) => (meditationMap.get(c.id) ?? []).length > 0)
-        .map((c, i, arr) => {
-          const bodies = meditationMap.get(c.id) ?? [];
-          const meditationsHtml = bodies
-            .map(
-              (body) =>
-                `<p style="margin: 0 0 1.2em; font-size: 15px; color: #44403c; line-height: 1.7;">${body}</p>`,
-            )
-            .join("");
-          const divider =
-            i < arr.length - 1
-              ? `<hr style="border: none; border-top: 1px solid #e7e5e4; margin: 24px 0;">`
-              : "";
-          return `
-            <div style="margin: 0 0 4px;">
-              <p style="margin: 0 0 16px; font-size: 12px; font-weight: bold; color: #9a3412; text-transform: uppercase; letter-spacing: 0.08em;">${c.name}</p>
-              ${meditationsHtml}
-            </div>
-            ${divider}`;
-        })
-        .join("")
-    : `<p style="font-size: 15px; color: #44403c; line-height: 1.7;">
-        No meditations are currently available for your selected categories.
-        Your community administrator will add content soon.
-       </p>`;
+  const requestGroups = filledCategories.map((c) => ({
+    categoryName: c.name,
+    requests: meditationMap.get(c.id) ?? [],
+  }));
 
-  return `
-    <!DOCTYPE html>
-    <html>
-    <body style="margin:0;padding:0;background:#f5f5f4;">
-      <div style="font-family: Georgia, 'Times New Roman', serif; max-width: 560px; margin: 32px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+  const requestsHtml = requestGroups.length > 0
+    ? commitmentList(filledCategories.map((c) => c.name)) + prayerRequestsBlock(requestGroups)
+    : paragraph(
+        "No prayer requests are available for your selected categories yet. " +
+        "Our team will add content soon.",
+      );
 
-        <div style="background: #9a3412; padding: 28px 32px;">
-          <p style="margin:0; font-size: 12px; color: #fca5a5; text-transform: uppercase; letter-spacing: 0.1em;">Prayer Wall · Your Prayer Guide</p>
-          <h1 style="margin: 8px 0 0; font-size: 22px; color: #ffffff; font-weight: normal;">Your prayers &amp; meditations</h1>
-        </div>
-
-        <div style="padding: 32px;">
-          <p style="margin: 0 0 16px; font-size: 16px; color: #1c1917;">Hi ${commitment.name},</p>
-          <p style="margin: 0 0 24px; font-size: 15px; color: #44403c; line-height: 1.7;">
-            Here are the prayers and meditations for the categories you selected.
-            Use these as a guide during your time of intercession.
-          </p>
-
-          ${categorySections}
-
-          <p style="margin: 24px 0 0; font-size: 15px; color: #44403c; line-height: 1.7;">
-            Keep pressing in. Heaven hears every prayer.
-          </p>
-        </div>
-
-        <div style="padding: 20px 32px; border-top: 1px solid #e7e5e4; background: #fafaf9;">
-          <p style="margin: 0; font-size: 12px; color: #a8a29e; line-height: 1.6;">
-            You're receiving this because you placed your name on the prayer wall.
-            <a href="${unsubscribeUrl}" style="color: #a8a29e;">Unsubscribe</a>
-          </p>
-        </div>
-
-      </div>
-    </body>
-    </html>
+  const bodyHtml = `
+    ${leadLine()}
+    ${greeting(commitment.name)}
+    ${paragraph(PSALM_INTRO_HTML)}
+    ${requestsHtml}
+    ${praisesBlock()}
+    ${closing()}
   `;
+
+  return emailShell({
+    title: "Your Prayer Guide",
+    bodyHtml,
+    unsubscribeUrl,
+  });
 }
 
 // ─── Send one email via Resend ─────────────────────────────────────────────────
@@ -311,7 +265,7 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  const fromDisplay = `Prayer Wall <${fromEmail}>`;
+  const fromDisplay = `${BRAND.fromName} <${fromEmail}>`;
   const errors: string[] = [];
   let sent = 0;
 
@@ -321,7 +275,7 @@ Deno.serve(async (req: Request) => {
     resendApiKey,
     fromDisplay,
     commitment.email,
-    "Your prayer stone has been placed",
+    "Welcome to the Prayer Foundation",
     confirmHtml,
     "confirmation",
   );
@@ -353,7 +307,7 @@ Deno.serve(async (req: Request) => {
     resendApiKey,
     fromDisplay,
     commitment.email,
-    "Your prayers & meditations",
+    "Your Prayer Guide",
     summaryHtml,
     "summary",
   );

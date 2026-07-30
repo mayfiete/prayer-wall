@@ -39,9 +39,17 @@ function LogoMark() {
 
   return (
     <div className="w-[60px] h-[60px] rounded-full bg-[var(--color-primary)] flex items-center justify-center shrink-0">
-      <svg viewBox="0 0 40 40" width="38" height="38" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-        <polygon points="20,4 36,34 4,34" stroke="#fff" strokeWidth="2" fill="none" />
-        <polygon points="20,10 30,28 10,28" fill="rgba(255,255,255,0.35)" />
+      <svg viewBox="0 0 48 48" width="40" height="40" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+        {/* Circle arc over the peaks */}
+        <path d="M9 26 A15 15 0 0 1 39 26" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+        {/* Birds */}
+        <path d="M30 12 q1.4 -1.4 2.8 0 q1.4 -1.4 2.8 0" fill="none" stroke="#fff" strokeWidth="1" strokeLinecap="round" />
+        {/* Mountain peaks */}
+        <polygon points="19,11 28,30 10,30" fill="rgba(255,255,255,0.35)" stroke="#fff" strokeWidth="2" strokeLinejoin="round" />
+        <polygon points="30,16 39,30 21,30" fill="none" stroke="#fff" strokeWidth="2" strokeLinejoin="round" />
+        {/* Open book */}
+        <path d="M8 32 C15 29 21 31 24 33 C27 31 33 29 40 32 L40 37 C33 34 27 36 24 38 C21 36 15 34 8 37 Z" fill="#fff" />
+        <path d="M24 33 L24 38" stroke="var(--color-primary)" strokeWidth="1.2" />
       </svg>
     </div>
   )
