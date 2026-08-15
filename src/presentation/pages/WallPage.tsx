@@ -10,6 +10,21 @@ const WALL_ID = import.meta.env.VITE_WALL_ID as string
 const ORG_ID = import.meta.env.VITE_ORG_ID as string
 const ORG_NAME = (import.meta.env.VITE_ORG_NAME as string | undefined) ?? 'Heritage Christian Academy'
 
+function useThemeVar(varName: string, fallback: string): string {
+  const [val, setVal] = useState(
+    () => getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || fallback
+  )
+  useEffect(() => {
+    const obs = new MutationObserver(() => {
+      const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim()
+      if (v) setVal(v)
+    })
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] })
+    return () => obs.disconnect()
+  }, [varName])
+  return val
+}
+
 function useLogoUrl() {
   const [logoUrl, setLogoUrl] = useState<string>(
     () => getComputedStyle(document.documentElement).getPropertyValue('--logo-url').trim()
@@ -58,18 +73,14 @@ function LogoMark() {
 export function WallPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const { categories } = usePrayerCategories(ORG_ID)
-  const [wallTitle, setWallTitle] = useState(
-    () => getComputedStyle(document.documentElement).getPropertyValue('--wall-title').trim() || 'Prayer Foundation'
-  )
-
-  useEffect(() => {
-    const obs = new MutationObserver(() => {
-      const t = getComputedStyle(document.documentElement).getPropertyValue('--wall-title').trim()
-      if (t) setWallTitle(t)
-    })
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] })
-    return () => obs.disconnect()
-  }, [])
+  const wallTitle       = useThemeVar('--wall-title',           'Prayer Foundation')
+  const bannerHeading   = useThemeVar('--text-banner-heading',  'Add your name to the wall')
+  const bannerBody      = useThemeVar('--text-banner-body',     'Commit to pray for one or more areas of need and place your stone on the foundation.')
+  const wallCta         = useThemeVar('--text-wall-cta',        'Click the next open stone to join!')
+  const modalTitle      = useThemeVar('--text-modal-title',     'Commit to pray')
+  const successHeading  = useThemeVar('--text-success-heading', 'Your stone has been placed!')
+  const successBody     = useThemeVar('--text-success-body',    'You will receive weekly prayer reminders by email.')
+  const submitButton    = useThemeVar('--text-submit-button',   'Add my stone to the foundation!')
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-100 font-body">
@@ -90,9 +101,9 @@ export function WallPage() {
         className="px-8 py-5 border-b border-stone-200"
         style={{ backgroundColor: 'var(--color-banner-bg)', color: 'var(--color-banner-text)', fontFamily: 'var(--font-banner)' }}
       >
-        <h2 className="text-[15px] font-semibold mb-1" style={{ color: 'var(--color-banner-text)' }}>Add your name to the wall</h2>
+        <h2 className="text-[15px] font-semibold mb-1" style={{ color: 'var(--color-banner-text)' }}>{bannerHeading}</h2>
         <p className="text-[13px] leading-relaxed mb-3" style={{ color: 'var(--color-banner-subtext)' }}>
-          Commit to pray for one or more areas of need and place your stone on the foundation.
+          {bannerBody}
         </p>
         {categories.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -118,7 +129,7 @@ export function WallPage() {
           style={{ color: 'var(--color-wall-text)', fontFamily: 'var(--font-wall)' }}
         >
           <BookOpen size={14} />
-          Click the next open stone to join!
+          {wallCta}
         </div>
         <PrayerWallGrid wallId={WALL_ID} onCtaClick={() => setModalOpen(true)} />
       </section>
@@ -126,13 +137,16 @@ export function WallPage() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Commit to pray"
+        title={modalTitle}
       >
         <CommitmentForm
           wallId={WALL_ID}
           orgId={ORG_ID}
           categories={categories}
           onSuccess={() => setModalOpen(false)}
+          successHeading={successHeading}
+          successBody={successBody}
+          submitLabel={submitButton}
         />
       </Modal>
     </div>

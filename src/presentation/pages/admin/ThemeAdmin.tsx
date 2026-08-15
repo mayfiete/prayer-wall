@@ -57,6 +57,13 @@ const DEFAULTS: DraftTheme = {
   brick_name_size:      THEME_DEFAULTS.brick_name_size,
   brick_name_color:     THEME_DEFAULTS.brick_name_color,
   bible_translation:    THEME_DEFAULTS.bible_translation,
+  text_banner_heading:  THEME_DEFAULTS.text_banner_heading,
+  text_banner_body:     THEME_DEFAULTS.text_banner_body,
+  text_wall_cta:        THEME_DEFAULTS.text_wall_cta,
+  text_modal_title:     THEME_DEFAULTS.text_modal_title,
+  text_success_heading: THEME_DEFAULTS.text_success_heading,
+  text_success_body:    THEME_DEFAULTS.text_success_body,
+  text_submit_button:   THEME_DEFAULTS.text_submit_button,
 }
 
 export function ThemeAdmin({ supabase, onDone }: ThemeAdminProps) {
@@ -105,6 +112,13 @@ export function ThemeAdmin({ supabase, onDone }: ThemeAdminProps) {
             brick_name_size:      row.brick_name_size      ?? THEME_DEFAULTS.brick_name_size,
             brick_name_color:     row.brick_name_color     ?? THEME_DEFAULTS.brick_name_color,
             bible_translation:    row.bible_translation    ?? THEME_DEFAULTS.bible_translation,
+            text_banner_heading:  row.text_banner_heading  ?? THEME_DEFAULTS.text_banner_heading,
+            text_banner_body:     row.text_banner_body     ?? THEME_DEFAULTS.text_banner_body,
+            text_wall_cta:        row.text_wall_cta        ?? THEME_DEFAULTS.text_wall_cta,
+            text_modal_title:     row.text_modal_title     ?? THEME_DEFAULTS.text_modal_title,
+            text_success_heading: row.text_success_heading ?? THEME_DEFAULTS.text_success_heading,
+            text_success_body:    row.text_success_body    ?? THEME_DEFAULTS.text_success_body,
+            text_submit_button:   row.text_submit_button   ?? THEME_DEFAULTS.text_submit_button,
           })
         }
         setLoading(false)
@@ -186,9 +200,14 @@ export function ThemeAdmin({ supabase, onDone }: ThemeAdminProps) {
           value={draft.color_heading}
           onChange={v => update('color_heading', v)}
         />
+      </section>
+
+      {/* Muted / secondary text color — separated per meeting request */}
+      <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
+        <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Muted / Secondary Color</h3>
         <ColorRow
           label="Muted"
-          description="Secondary labels and subtext"
+          description="Global secondary labels, subtext, and icons (links, back arrows, etc.)"
           value={draft.color_muted}
           onChange={v => update('color_muted', v)}
         />
@@ -392,6 +411,57 @@ export function ThemeAdmin({ supabase, onDone }: ThemeAdminProps) {
         />
       </section>
 
+      {/* Editable UI Text */}
+      <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
+        <div>
+          <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">UI Text</h3>
+          <p className="text-xs text-stone-400 mt-0.5">Edit the static headings, prompts, and button labels shown on the wall.</p>
+        </div>
+        <TextRow
+          label="Banner heading"
+          description='Shown above the category badges (e.g. "Add your name to the wall")'
+          value={draft.text_banner_heading}
+          onChange={v => update('text_banner_heading', v)}
+        />
+        <TextRow
+          label="Banner description"
+          description='Explanatory line below the heading'
+          value={draft.text_banner_body}
+          onChange={v => update('text_banner_body', v)}
+          multiline
+        />
+        <TextRow
+          label="Wall call-to-action"
+          description='Prompt above the stone grid (e.g. "Click the next open stone to join!")'
+          value={draft.text_wall_cta}
+          onChange={v => update('text_wall_cta', v)}
+        />
+        <TextRow
+          label="Pop-up title"
+          description='Title of the commitment form dialog'
+          value={draft.text_modal_title}
+          onChange={v => update('text_modal_title', v)}
+        />
+        <TextRow
+          label="Success heading"
+          description='Shown after a stone is placed'
+          value={draft.text_success_heading}
+          onChange={v => update('text_success_heading', v)}
+        />
+        <TextRow
+          label="Success message"
+          description='Sub-line after a stone is placed'
+          value={draft.text_success_body}
+          onChange={v => update('text_success_body', v)}
+        />
+        <TextRow
+          label="Submit button"
+          description='Label on the form submit button'
+          value={draft.text_submit_button}
+          onChange={v => update('text_submit_button', v)}
+        />
+      </section>
+
       {/* Wall Layout section */}
       <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-5">
         <div>
@@ -535,6 +605,39 @@ interface SliderRowProps {
   max: number
   step: number
   onChange: (v: number) => void
+}
+
+interface TextRowProps {
+  label: string
+  description: string
+  value: string
+  onChange: (v: string) => void
+  multiline?: boolean
+}
+
+function TextRow({ label, description, value, onChange, multiline }: TextRowProps) {
+  const cls = "w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
+  return (
+    <div>
+      <label className="block text-sm font-medium text-stone-700 mb-0.5">{label}</label>
+      <p className="text-xs text-stone-400 mb-1.5">{description}</p>
+      {multiline ? (
+        <textarea
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          rows={2}
+          className={cls + ' resize-y'}
+        />
+      ) : (
+        <input
+          type="text"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          className={cls}
+        />
+      )}
+    </div>
+  )
 }
 
 function SliderRow({ label, description, value, min, max, step, onChange }: SliderRowProps) {

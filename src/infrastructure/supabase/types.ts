@@ -123,6 +123,13 @@ export interface Database {
           brick_name_size: number
           brick_name_color: string
           bible_translation: string
+          text_banner_heading: string
+          text_banner_body: string
+          text_wall_cta: string
+          text_modal_title: string
+          text_success_heading: string
+          text_success_body: string
+          text_submit_button: string
           updated_at: string
         }
         Insert: {
@@ -160,6 +167,13 @@ export interface Database {
           brick_name_size?: number
           brick_name_color?: string
           bible_translation?: string
+          text_banner_heading?: string
+          text_banner_body?: string
+          text_wall_cta?: string
+          text_modal_title?: string
+          text_success_heading?: string
+          text_success_body?: string
+          text_submit_button?: string
           updated_at?: string
         }
         Update: {
@@ -197,6 +211,13 @@ export interface Database {
           brick_name_size?: number
           brick_name_color?: string
           bible_translation?: string
+          text_banner_heading?: string
+          text_banner_body?: string
+          text_wall_cta?: string
+          text_modal_title?: string
+          text_success_heading?: string
+          text_success_body?: string
+          text_submit_button?: string
           updated_at?: string
         }
         Relationships: []
