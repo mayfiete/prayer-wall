@@ -43,6 +43,14 @@ export const THEME_DEFAULTS: Omit<WallTheme, 'id' | 'wall_id' | 'updated_at'> = 
   brick_name_color: '#000000',
   // Email Bible translation
   bible_translation: 'ESV',
+  // Editable UI text strings
+  text_banner_heading:  'Add your name to the wall',
+  text_banner_body:     'Commit to pray for one or more areas of need and place your stone on the foundation.',
+  text_wall_cta:        'Click the next open stone to join!',
+  text_modal_title:     'Commit to pray',
+  text_success_heading: 'Your stone has been placed!',
+  text_success_body:    'You will receive weekly prayer reminders by email.',
+  text_submit_button:   'Add my stone to the foundation!',
 }
 
 const LS_KEY = 'prayer-wall:theme'
@@ -101,6 +109,14 @@ export function applyTheme(theme: Partial<typeof THEME_DEFAULTS>) {
   root.style.setProperty('--brick-name-size',  String(t.brick_name_size))
   root.style.setProperty('--brick-name-color', t.brick_name_color)
   root.style.setProperty('--brick-name-y',     String(t.brick_name_y))
+  // Editable text strings
+  root.style.setProperty('--text-banner-heading',  t.text_banner_heading)
+  root.style.setProperty('--text-banner-body',     t.text_banner_body)
+  root.style.setProperty('--text-wall-cta',        t.text_wall_cta)
+  root.style.setProperty('--text-modal-title',     t.text_modal_title)
+  root.style.setProperty('--text-success-heading', t.text_success_heading)
+  root.style.setProperty('--text-success-body',    t.text_success_body)
+  root.style.setProperty('--text-submit-button',   t.text_submit_button)
 }
 
 export function loadCachedTheme() {

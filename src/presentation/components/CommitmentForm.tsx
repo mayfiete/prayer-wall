@@ -13,9 +13,12 @@ interface CommitmentFormProps {
   orgId: string
   categories: PrayerCategory[]
   onSuccess: () => void
+  successHeading?: string
+  successBody?: string
+  submitLabel?: string
 }
 
-export function CommitmentForm({ wallId, orgId, categories, onSuccess }: CommitmentFormProps) {
+export function CommitmentForm({ wallId, orgId, categories, onSuccess, successHeading, successBody, submitLabel }: CommitmentFormProps) {
   const { submitPrayerCommitment } = useContainer()
 
   const [name, setName] = useState('')
@@ -63,8 +66,8 @@ export function CommitmentForm({ wallId, orgId, categories, onSuccess }: Commitm
     return (
       <div className="flex flex-col items-center gap-3 py-4 text-center animate-fade-in">
         <CheckCircle2 className="text-amber-500" size={48} />
-        <p className="text-stone-100 font-semibold text-lg font-serif">Your stone has been placed!</p>
-        <p className="text-stone-400 text-sm">You will receive weekly prayer reminders by email.</p>
+        <p className="text-stone-100 font-semibold text-lg font-serif">{successHeading ?? 'Your stone has been placed!'}</p>
+        <p className="text-stone-400 text-sm">{successBody ?? 'You will receive weekly prayer reminders by email.'}</p>
       </div>
     )
   }
@@ -107,7 +110,7 @@ export function CommitmentForm({ wallId, orgId, categories, onSuccess }: Commitm
         </p>
       )}
       <Button type="submit" disabled={submitting} size="lg" className="w-full mt-1">
-        {submitting ? 'Adding your stone…' : 'Add my stone to the foundation!'}
+        {submitting ? 'Adding your stone…' : (submitLabel ?? 'Add my stone to the foundation!')}
       </Button>
       <p className="text-xs text-stone-500 text-center">
         Your email is never displayed publicly. You can unsubscribe from reminders at any time.
