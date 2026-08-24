@@ -312,6 +312,48 @@ export interface Database {
         Update: { category_id?: string; rhythm_id?: string }
         Relationships: []
       }
+      donations: {
+        Row: {
+          id: string
+          giving_wall_id: string
+          name: string
+          amount_cents: number
+          currency: string
+          processor: string
+          processor_ref: string | null
+          email: string | null
+          email_opt_out: boolean
+          donated_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          giving_wall_id: string
+          name: string
+          amount_cents: number
+          currency?: string
+          processor?: string
+          processor_ref?: string | null
+          email?: string | null
+          email_opt_out?: boolean
+          donated_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          giving_wall_id?: string
+          name?: string
+          amount_cents?: number
+          currency?: string
+          processor?: string
+          processor_ref?: string | null
+          email?: string | null
+          email_opt_out?: boolean
+          donated_at?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       email_logs: {
         Row: {
           id: string

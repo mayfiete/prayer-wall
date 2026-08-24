@@ -4,8 +4,6 @@ import type { Database } from '../../../infrastructure/supabase/types'
 import { applyTheme, cacheTheme, THEME_DEFAULTS } from '../../../infrastructure/theme'
 import { Save, CheckCircle, RefreshCw, Loader2 } from 'lucide-react'
 
-const WALL_ID = (import.meta.env.VITE_WALL_ID as string | undefined)?.trim() ?? ''
-
 const ALL_FONTS = [
   { value: "'Poppins', sans-serif",        label: 'Poppins' },
   { value: 'sans-serif',                   label: 'System sans-serif' },
@@ -17,6 +15,7 @@ const ALL_FONTS = [
 
 interface ThemeAdminProps {
   supabase: SupabaseClient<Database>
+  wallId: string
   onDone?: () => void
 }
 
@@ -66,7 +65,7 @@ const DEFAULTS: DraftTheme = {
   text_submit_button:   THEME_DEFAULTS.text_submit_button,
 }
 
-export function ThemeAdmin({ supabase, onDone }: ThemeAdminProps) {
+export function ThemeAdmin({ supabase, wallId: WALL_ID, onDone }: ThemeAdminProps) {
   const [draft, setDraft] = useState<DraftTheme>(DEFAULTS)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

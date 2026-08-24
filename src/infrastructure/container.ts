@@ -1,6 +1,7 @@
 import type { IPrayerRepository } from '../domain/repositories/IPrayerRepository'
 import type { IPrayerCategoryRepository } from '../domain/repositories/IPrayerCategoryRepository'
 import type { IPrayerMeditationRepository } from '../domain/repositories/IPrayerMeditationRepository'
+import type { IGivingWallRepository } from '../domain/repositories/IGivingWallRepository'
 import type { IRealtimeClient } from './mock/MockRealtimeClient'
 
 import { GetPrayerWall } from '../application/use-cases/GetPrayerWall'
@@ -21,12 +22,14 @@ import { SetMeditationActive } from '../application/use-cases/SetMeditationActiv
 import { MockPrayerRepository } from './mock/MockPrayerRepository'
 import { MockPrayerCategoryRepository } from './mock/MockPrayerCategoryRepository'
 import { MockPrayerMeditationRepository } from './mock/MockPrayerMeditationRepository'
+import { MockGivingWallRepository } from './mock/MockGivingWallRepository'
 import { MockRealtimeClient } from './mock/MockRealtimeClient'
 
 import { createSupabaseClient } from './supabase/client'
 import { SupabasePrayerRepository } from './repositories/SupabasePrayerRepository'
 import { SupabasePrayerCategoryRepository } from './repositories/SupabasePrayerCategoryRepository'
 import { SupabasePrayerMeditationRepository } from './repositories/SupabasePrayerMeditationRepository'
+import { SupabaseGivingWallRepository } from './repositories/SupabaseGivingWallRepository'
 
 // DECISION: VITE_USE_MOCK=true → all in-memory mocks (no Supabase needed for local dev).
 // VITE_USE_MOCK unset or false → all Supabase repos (production).
@@ -36,12 +39,14 @@ const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 let prayerRepo: IPrayerRepository
 let categoryRepo: IPrayerCategoryRepository
 let meditationRepo: IPrayerMeditationRepository
+let givingWallRepo: IGivingWallRepository
 let realtimeClient: IRealtimeClient
 
 if (USE_MOCK) {
   prayerRepo = new MockPrayerRepository()
   categoryRepo = new MockPrayerCategoryRepository()
   meditationRepo = new MockPrayerMeditationRepository()
+  givingWallRepo = new MockGivingWallRepository()
   realtimeClient = new MockRealtimeClient()
 } else {
   // DECISION: createSupabaseClient() sets db: { schema: 'prayer_wall' }.
@@ -50,7 +55,12 @@ if (USE_MOCK) {
   prayerRepo = new SupabasePrayerRepository(supabase)
   categoryRepo = new SupabasePrayerCategoryRepository(supabase)
   meditationRepo = new SupabasePrayerMeditationRepository(supabase)
+  givingWallRepo = new SupabaseGivingWallRepository(supabase)
   realtimeClient = supabase
+}
+
+export const givingWallContainer = {
+  repo: givingWallRepo,
 }
 
 export const container = {
