@@ -4,6 +4,8 @@ import { WallPage } from './presentation/pages/WallPage'
 import { CommitmentPage } from './presentation/pages/CommitmentPage'
 import { UnsubscribePage } from './presentation/pages/UnsubscribePage'
 import { AdminPage } from './presentation/pages/AdminPage'
+import { GivingWallPage } from './presentation/pages/GivingWallPage'
+import { GivingWallAdminPage } from './presentation/pages/GivingWallAdminPage'
 
 function App() {
   return (
@@ -11,9 +13,13 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<WallPage />} />
+          <Route path="/prayer" element={<WallPage />} />
           <Route path="/commit" element={<CommitmentPage />} />
           <Route path="/unsubscribe" element={<UnsubscribePage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/prayer/admin" element={<AdminPage />} />
+          <Route path="/giving" element={<GivingWallPage />} />
+          <Route path="/giving/admin" element={<GivingWallAdminPage />} />
         </Routes>
       </BrowserRouter>
     </AppProvider>

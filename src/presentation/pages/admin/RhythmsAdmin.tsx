@@ -7,8 +7,8 @@ import { Save, Clock, Mail, CheckCircle, Plus, Trash2, Pencil } from 'lucide-rea
 type Cadence = 'daily' | 'weekly' | 'monthly'
 type RhythmRow = Database['prayer_wall']['Tables']['email_rhythms']['Row']
 
-const WALL_ID = (import.meta.env.VITE_WALL_ID as string | undefined)?.trim() ?? ''
-const ORG_ID  = (import.meta.env.VITE_ORG_ID  as string | undefined)?.trim() ?? ''
+const DEFAULT_WALL_ID = (import.meta.env.VITE_WALL_ID as string | undefined)?.trim() ?? ''
+const DEFAULT_ORG_ID  = (import.meta.env.VITE_ORG_ID  as string | undefined)?.trim() ?? ''
 
 const DAYS_OF_WEEK = [
   { value: 0, label: 'Sunday' },
@@ -87,9 +87,13 @@ function formatSummary(r: Pick<RhythmRow, 'cadence' | 'day_of_week' | 'day_of_mo
 interface RhythmsAdminProps {
   supabase: SupabaseClient<Database>
   onDone?: () => void
+  wallId?: string
+  orgId?: string
 }
 
-export function RhythmsAdmin({ supabase, onDone }: RhythmsAdminProps) {
+export function RhythmsAdmin({ supabase, onDone, wallId: wallIdProp, orgId: orgIdProp }: RhythmsAdminProps) {
+  const WALL_ID = wallIdProp ?? DEFAULT_WALL_ID
+  const ORG_ID  = orgIdProp  ?? DEFAULT_ORG_ID
   const [rhythms, setRhythms] = useState<RhythmRow[]>([])
   const [loading, setLoading] = useState(true)
   const [opError, setOpError] = useState('')
@@ -110,7 +114,7 @@ export function RhythmsAdmin({ supabase, onDone }: RhythmsAdminProps) {
     if (error) setOpError(error.message)
     else setRhythms((data ?? []) as RhythmRow[])
     setLoading(false)
-  }, [supabase])
+  }, [supabase, WALL_ID])
 
   useEffect(() => { void load() }, [load])
 
