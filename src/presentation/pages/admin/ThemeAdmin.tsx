@@ -131,7 +131,7 @@ export function ThemeAdmin({ supabase, wallId: WALL_ID, onDone }: ThemeAdminProp
   }
 
   async function handleSave() {
-    if (!WALL_ID) { setError('VITE_WALL_ID is not set'); return }
+    if (!WALL_ID) { setError('Wall ID is not set — ensure VITE_WALL_ID (prayer) or VITE_GIVING_WALL_ID (giving) is configured.'); return }
     setSaving(true)
     setError('')
     const { error: upsertError } = await supabase.from('wall_theme').upsert(
