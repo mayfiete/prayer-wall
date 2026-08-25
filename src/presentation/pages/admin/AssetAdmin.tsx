@@ -6,20 +6,22 @@ import { Upload, CheckCircle } from 'lucide-react'
 
 const MAX_BYTES = 15 * 1024 * 1024
 const BUCKET = (import.meta.env.VITE_ASSETS_BUCKET as string | undefined)?.trim() || 'wall-assets'
-const FOLDER = 'stone'
-const STONE_PATH = `${FOLDER}/stone.jpg`
-const LS_KEY = 'prayer-wall:stone-texture'
-
-const LOGO_FOLDER = 'logo'
-const LOGO_PATH = `${LOGO_FOLDER}/logo.png`
-const LOGO_LS_KEY = 'prayer-wall:logo'
 
 interface AssetAdminProps {
   supabase: SupabaseClient<Database>
   onDone?: () => void
+  wallSlug?: string
 }
 
-export function AssetAdmin({ supabase, onDone }: AssetAdminProps) {
+export function AssetAdmin({ supabase, onDone, wallSlug = 'prayer' }: AssetAdminProps) {
+  const STONE_FOLDER = `${wallSlug}/stone`
+  const STONE_PATH   = `${STONE_FOLDER}/stone.jpg`
+  const LS_KEY       = `prayer-wall:${wallSlug}:stone-texture`
+
+  const LOGO_FOLDER  = `${wallSlug}/logo`
+  const LOGO_PATH    = `${LOGO_FOLDER}/logo.png`
+  const LOGO_LS_KEY  = `prayer-wall:${wallSlug}:logo`
+
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -58,6 +60,7 @@ export function AssetAdmin({ supabase, onDone }: AssetAdminProps) {
       if (uploadError) throw new Error(uploadError.message)
 
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(STONE_PATH)
+
       const publicUrl = data.publicUrl
       const cacheBusted = `${publicUrl}?t=${Date.now()}`
 
@@ -101,6 +104,7 @@ export function AssetAdmin({ supabase, onDone }: AssetAdminProps) {
         .upload(LOGO_PATH, file, { upsert: true, contentType: file.type })
       if (uploadError) throw new Error(uploadError.message)
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(LOGO_PATH)
+
       const cacheBusted = `${data.publicUrl}?t=${Date.now()}`
       localStorage.setItem(LOGO_LS_KEY, cacheBusted)
       document.documentElement.style.setProperty('--logo-url', `url(${cacheBusted})`)

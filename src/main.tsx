@@ -5,11 +5,14 @@ import { loadCachedTheme, fetchAndApplyTheme, applyTheme, THEME_DEFAULTS } from 
 import './index.css'
 import App from './App.tsx'
 
-const _LS_KEY = 'prayer-wall:stone-texture'
-const _LOGO_LS_KEY = 'prayer-wall:logo'
 const _BUCKET = (import.meta.env.VITE_ASSETS_BUCKET as string | undefined)?.trim() || 'wall-assets'
-const _STONE_FOLDER = 'stone'
-const _LOGO_FOLDER = 'logo'
+
+// Determine which wall is active from the URL path
+const _wallSlug   = location.pathname.startsWith('/giving') ? 'giving' : 'prayer'
+const _STONE_FOLDER = `${_wallSlug}/stone`
+const _LOGO_FOLDER  = `${_wallSlug}/logo`
+const _LS_KEY       = `prayer-wall:${_wallSlug}:stone-texture`
+const _LOGO_LS_KEY  = `prayer-wall:${_wallSlug}:logo`
 
 function _applyTexture(url: string) {
   document.documentElement.style.setProperty('--stone-texture-url', `url(${url})`)
@@ -20,7 +23,9 @@ function _applyLogo(url: string) {
 }
 
 const _useMock = import.meta.env.VITE_USE_MOCK === 'true'
-const _wallId = (import.meta.env.VITE_WALL_ID as string | undefined)?.trim()
+const _wallId = _wallSlug === 'giving'
+  ? (import.meta.env.VITE_GIVING_WALL_ID as string | undefined)?.trim()
+  : (import.meta.env.VITE_WALL_ID        as string | undefined)?.trim()
 
 // Apply cached theme immediately to avoid flash
 loadCachedTheme()

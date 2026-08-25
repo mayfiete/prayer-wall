@@ -61,7 +61,7 @@ export function GivingWallAdminPage() {
 
         <main className="px-8 py-8">
           {tab === 'rhythms'     && <RhythmsAdmin supabase={supabase} wallId={GIVING_WALL_ID} orgId={GIVING_ORG_ID} onDone={() => setTab('bricklayers')} />}
-          {tab === 'assets'      && <AssetAdmin supabase={supabase} onDone={() => setTab('theme')} />}
+          {tab === 'assets'      && <AssetAdmin supabase={supabase} wallSlug="giving" onDone={() => setTab('theme')} />}
           {tab === 'theme'       && <ThemeAdmin supabase={supabase} wallId={GIVING_WALL_ID} onDone={() => setTab('bricklayers')} />}
           {tab === 'bricklayers' && <GivingWallDonorsAdmin supabase={supabase} />}
         </main>
