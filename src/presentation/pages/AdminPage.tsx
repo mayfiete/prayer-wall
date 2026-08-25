@@ -54,7 +54,7 @@ export function AdminPage() {
         <main className="px-8 py-8">
           {tab === 'categories' && <CategoryAdmin supabase={supabase} />}
           {tab === 'rhythms'    && <RhythmsAdmin supabase={supabase} onDone={() => setTab('categories')} />}
-          {tab === 'assets'     && <AssetAdmin supabase={supabase} onDone={() => setTab('categories')} />}
+          {tab === 'assets'     && <AssetAdmin supabase={supabase} wallSlug="prayer" onDone={() => setTab('categories')} />}
           {tab === 'theme'      && <ThemeAdmin supabase={supabase} wallId={WALL_ID} onDone={() => setTab('categories')} />}
           {tab === 'warriors'   && <WarriorsAdmin supabase={supabase} onDone={() => setTab('categories')} />}
         </main>
