@@ -6,7 +6,7 @@ import { Modal } from '../components/ui/Modal'
 import { LogoMark } from '../components/LogoMark'
 import { WallHeader } from '../components/WallHeader'
 import { WallBanner } from '../components/WallBanner'
-import { useThemeVar } from '../hooks/useThemeVar'
+import { useThemeText } from '../hooks/useThemeText'
 
 const GIVING_WALL_ID = import.meta.env.VITE_GIVING_WALL_ID as string
 const ORG_NAME = (import.meta.env.VITE_ORG_NAME as string | undefined) ?? 'Heritage Christian Academy'
@@ -14,11 +14,11 @@ const ORG_NAME = (import.meta.env.VITE_ORG_NAME as string | undefined) ?? 'Herit
 export function GivingWallPage() {
   const [modalOpen, setModalOpen] = useState(false)
 
-  const wallTitle     = useThemeVar('--wall-title',           'Giving Wall')
-  const bannerHeading = useThemeVar('--text-banner-heading',  'Place your brick on the wall')
-  const bannerBody    = useThemeVar('--text-banner-body',     'Support HCA with a gift and add your name to the foundation.')
-  const wallCta       = useThemeVar('--text-wall-cta',        'Click the next open brick to give!')
-  const modalTitle    = useThemeVar('--text-modal-title',     'Make a gift')
+  const wallTitle     = useThemeText('wall_title',           'Giving Wall')
+  const bannerHeading = useThemeText('text_banner_heading',  'Place your brick on the wall')
+  const bannerBody    = useThemeText('text_banner_body',     'Support HCA with a gift and add your name to the foundation.')
+  const wallCta       = useThemeText('text_wall_cta',        'Click the next open brick to give!')
+  const modalTitle    = useThemeText('text_modal_title',     'Make a gift')
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-100 font-body">
