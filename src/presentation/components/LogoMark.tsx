@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useLogoUrl } from '../hooks/useThemeVar'
+import { useLogoUrl } from '../hooks/useLogoUrl'
 
 interface LogoMarkProps {
   /** Icon shown inside the fallback circle when no logo image is set */

@@ -1,14 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { supabaseClient } from './infrastructure/supabase/client'
-import { loadCachedTheme, fetchAndApplyTheme, applyTheme, THEME_DEFAULTS } from './infrastructure/theme'
+import { loadCachedTheme, fetchAndApplyTheme, applyTheme, THEME_DEFAULTS, wallSlugFromPath } from './infrastructure/theme'
 import './index.css'
 import App from './App.tsx'
 
 const _BUCKET = (import.meta.env.VITE_ASSETS_BUCKET as string | undefined)?.trim() || 'wall-assets'
 
 // Determine which wall is active from the URL path
-const _wallSlug   = location.pathname.startsWith('/giving') ? 'giving' : 'prayer'
+const _wallSlug   = wallSlugFromPath()
 const _STONE_FOLDER = `${_wallSlug}/stone`
 const _LOGO_FOLDER  = `${_wallSlug}/logo`
 const _LS_KEY       = `prayer-wall:${_wallSlug}:stone-texture`

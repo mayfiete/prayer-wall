@@ -53,7 +53,65 @@ export const THEME_DEFAULTS: Omit<WallTheme, 'id' | 'wall_id' | 'updated_at'> = 
   text_submit_button:   'Add my stone to the foundation!',
 }
 
-const LS_KEY = 'prayer-wall:theme'
+/**
+ * Editable UI strings. These are content, not CSS values, so they are kept in a
+ * JS store rather than in CSS custom properties: a custom property value may not
+ * contain a top-level "!" or an unmatched apostrophe, so setProperty() silently
+ * drops strings like "Click the next open stone to join!" or "Don't miss it".
+ */
+export const THEME_TEXT_KEYS = [
+  'wall_title',
+  'text_banner_heading',
+  'text_banner_body',
+  'text_wall_cta',
+  'text_modal_title',
+  'text_success_heading',
+  'text_success_body',
+  'text_submit_button',
+] as const
+
+export type ThemeTextKey = typeof THEME_TEXT_KEYS[number]
+export type ThemeText = Partial<Record<ThemeTextKey, string>>
+
+let themeText: ThemeText = {}
+const textListeners = new Set<() => void>()
+
+export function getThemeText(): ThemeText {
+  return themeText
+}
+
+export function subscribeThemeText(listener: () => void): () => void {
+  textListeners.add(listener)
+  return () => { textListeners.delete(listener) }
+}
+
+function setThemeText(theme: Partial<typeof THEME_DEFAULTS>) {
+  const next: ThemeText = { ...themeText }
+  let changed = false
+  for (const key of THEME_TEXT_KEYS) {
+    const value = theme[key]
+    if (typeof value === 'string' && value !== next[key]) {
+      next[key] = value
+      changed = true
+    }
+  }
+  if (!changed) return
+  themeText = next
+  textListeners.forEach(listener => { listener() })
+}
+
+/** Theme is cached per wall — the two walls have separate theme rows. */
+export function wallSlugFromPath(pathname = location.pathname) {
+  return pathname.startsWith('/giving') ? 'giving' : 'prayer'
+}
+
+const LS_KEY_PREFIX = 'prayer-wall:theme'
+/** Pre-per-wall key, kept only so stale entries can be cleared. */
+const LEGACY_LS_KEY = LS_KEY_PREFIX
+
+function themeCacheKey() {
+  return `${LS_KEY_PREFIX}:${wallSlugFromPath()}`
+}
 
 export function applyTheme(theme: Partial<typeof THEME_DEFAULTS>) {
   const t = { ...THEME_DEFAULTS, ...theme }
@@ -65,7 +123,6 @@ export function applyTheme(theme: Partial<typeof THEME_DEFAULTS>) {
   root.style.setProperty('--color-background',    t.color_background)
   root.style.setProperty('--font-heading',        t.font_heading)
   root.style.setProperty('--font-body',           t.font_body)
-  root.style.setProperty('--wall-title',          t.wall_title)
   // Header
   root.style.setProperty('--color-header-bg',      t.color_header_bg)
   root.style.setProperty('--color-header-text',    t.color_header_text)
@@ -109,25 +166,21 @@ export function applyTheme(theme: Partial<typeof THEME_DEFAULTS>) {
   root.style.setProperty('--brick-name-size',  String(t.brick_name_size))
   root.style.setProperty('--brick-name-color', t.brick_name_color)
   root.style.setProperty('--brick-name-y',     String(t.brick_name_y))
-  // Editable text strings
-  root.style.setProperty('--text-banner-heading',  t.text_banner_heading)
-  root.style.setProperty('--text-banner-body',     t.text_banner_body)
-  root.style.setProperty('--text-wall-cta',        t.text_wall_cta)
-  root.style.setProperty('--text-modal-title',     t.text_modal_title)
-  root.style.setProperty('--text-success-heading', t.text_success_heading)
-  root.style.setProperty('--text-success-body',    t.text_success_body)
-  root.style.setProperty('--text-submit-button',   t.text_submit_button)
+  // Editable text strings — published to the text store, not to CSS
+  setThemeText(theme)
 }
 
 export function loadCachedTheme() {
   try {
-    const raw = localStorage.getItem(LS_KEY)
+    // Drop the pre-per-wall cache, which leaked giving wall text onto the prayer wall
+    localStorage.removeItem(LEGACY_LS_KEY)
+    const raw = localStorage.getItem(themeCacheKey())
     if (raw) applyTheme(JSON.parse(raw) as Partial<typeof THEME_DEFAULTS>)
   } catch { /* ignore */ }
 }
 
 export function cacheTheme(theme: Partial<typeof THEME_DEFAULTS>) {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(theme)) } catch { /* ignore */ }
+  try { localStorage.setItem(themeCacheKey(), JSON.stringify(theme)) } catch { /* ignore */ }
 }
 
 export async function fetchAndApplyTheme(

@@ -9,7 +9,7 @@ import { PrayerHandsIcon } from '../components/PrayerHandsIcon'
 import { WallHeader } from '../components/WallHeader'
 import { WallBanner } from '../components/WallBanner'
 import { usePrayerCategories } from '../hooks/usePrayerCategories'
-import { useThemeVar } from '../hooks/useThemeVar'
+import { useThemeText } from '../hooks/useThemeText'
 
 const WALL_ID = import.meta.env.VITE_WALL_ID as string
 const ORG_ID = import.meta.env.VITE_ORG_ID as string
@@ -19,14 +19,14 @@ const ORG_NAME = (import.meta.env.VITE_ORG_NAME as string | undefined) ?? 'Herit
 export function WallPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const { categories } = usePrayerCategories(ORG_ID)
-  const wallTitle       = useThemeVar('--wall-title',           'Prayer Foundation')
-  const bannerHeading   = useThemeVar('--text-banner-heading',  'Add your name to the wall')
-  const bannerBody      = useThemeVar('--text-banner-body',     'Commit to pray for one or more areas of need and place your stone on the foundation.')
-  const wallCta         = useThemeVar('--text-wall-cta',        'Click the next open stone to join!')
-  const modalTitle      = useThemeVar('--text-modal-title',     'Commit to pray')
-  const successHeading  = useThemeVar('--text-success-heading', 'Your stone has been placed!')
-  const successBody     = useThemeVar('--text-success-body',    'You will receive weekly prayer reminders by email.')
-  const submitButton    = useThemeVar('--text-submit-button',   'Add my stone to the foundation!')
+  const wallTitle       = useThemeText('wall_title',           'Prayer Foundation')
+  const bannerHeading   = useThemeText('text_banner_heading',  'Add your name to the wall')
+  const bannerBody      = useThemeText('text_banner_body',     'Commit to pray for one or more areas of need and place your stone on the foundation.')
+  const wallCta         = useThemeText('text_wall_cta',        'Click the next open stone to join!')
+  const modalTitle      = useThemeText('text_modal_title',     'Commit to pray')
+  const successHeading  = useThemeText('text_success_heading', 'Your stone has been placed!')
+  const successBody     = useThemeText('text_success_body',    'You will receive weekly prayer reminders by email.')
+  const submitButton    = useThemeText('text_submit_button',   'Add my stone to the foundation!')
 
   const categoryPills = categories.length > 0 ? (
     <div className="flex flex-wrap gap-2">
