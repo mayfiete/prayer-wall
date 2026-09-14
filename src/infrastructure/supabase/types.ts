@@ -1,5 +1,11 @@
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[]
 
+export type EmailType = 'reminder' | 'confirmation' | 'summary' | 'donation_thank_you'
+
+export type WebhookEventStatus = 'pending' | 'processed' | 'skipped' | 'failed'
+
+export type WallAppType = 'prayer' | 'giving'
+
 export interface Database {
   prayer_wall: {
     Tables: {
@@ -10,9 +16,9 @@ export interface Database {
         Relationships: []
       }
       walls: {
-        Row: { id: string; org_id: string; name: string; slug: string; is_active: boolean; created_at: string }
-        Insert: { id?: string; org_id: string; name: string; slug: string; is_active?: boolean; created_at?: string }
-        Update: { id?: string; org_id?: string; name?: string; slug?: string; is_active?: boolean; created_at?: string }
+        Row: { id: string; org_id: string; name: string; slug: string; is_active: boolean; app_type: WallAppType; created_at: string }
+        Insert: { id?: string; org_id: string; name: string; slug: string; is_active?: boolean; app_type?: WallAppType; created_at?: string }
+        Update: { id?: string; org_id?: string; name?: string; slug?: string; is_active?: boolean; app_type?: WallAppType; created_at?: string }
         Relationships: []
       }
       message_categories: {
@@ -26,6 +32,9 @@ export interface Database {
           id: string
           wall_id: string
           name: string
+          first_name: string | null
+          last_name: string | null
+          full_name: string | null
           email: string
           committed_at: string
           reminder_active: boolean
@@ -36,6 +45,9 @@ export interface Database {
           id?: string
           wall_id: string
           name: string
+          first_name?: string | null
+          last_name?: string | null
+          full_name?: string | null
           email: string
           committed_at?: string
           reminder_active?: boolean
@@ -46,6 +58,9 @@ export interface Database {
           id?: string
           wall_id?: string
           name?: string
+          first_name?: string | null
+          last_name?: string | null
+          full_name?: string | null
           email?: string
           committed_at?: string
           reminder_active?: boolean
@@ -316,6 +331,7 @@ export interface Database {
         Row: {
           id: string
           giving_wall_id: string
+          commitment_id: string | null
           name: string
           amount_cents: number
           currency: string
@@ -323,12 +339,14 @@ export interface Database {
           processor_ref: string | null
           email: string | null
           email_opt_out: boolean
+          thank_you_sent: boolean
           donated_at: string
           created_at: string
         }
         Insert: {
           id?: string
           giving_wall_id: string
+          commitment_id?: string | null
           name: string
           amount_cents: number
           currency?: string
@@ -336,12 +354,14 @@ export interface Database {
           processor_ref?: string | null
           email?: string | null
           email_opt_out?: boolean
+          thank_you_sent?: boolean
           donated_at?: string
           created_at?: string
         }
         Update: {
           id?: string
           giving_wall_id?: string
+          commitment_id?: string | null
           name?: string
           amount_cents?: number
           currency?: string
@@ -349,6 +369,7 @@ export interface Database {
           processor_ref?: string | null
           email?: string | null
           email_opt_out?: boolean
+          thank_you_sent?: boolean
           donated_at?: string
           created_at?: string
         }
@@ -357,36 +378,94 @@ export interface Database {
       email_logs: {
         Row: {
           id: string
-          wall_id: string
+          wall_id: string | null
+          giving_wall_id: string | null
           commitment_id: string | null
+          donation_id: string | null
           email: string
           status: 'sent' | 'failed' | 'bounced'
+          email_type: EmailType
           sent_at: string
           resend_message_id: string | null
         }
         Insert: {
           id?: string
-          wall_id: string
+          wall_id?: string | null
+          giving_wall_id?: string | null
           commitment_id?: string | null
+          donation_id?: string | null
           email: string
           status: 'sent' | 'failed' | 'bounced'
+          email_type?: EmailType
           sent_at?: string
           resend_message_id?: string | null
         }
         Update: {
           id?: string
-          wall_id?: string
+          wall_id?: string | null
+          giving_wall_id?: string | null
           commitment_id?: string | null
+          donation_id?: string | null
           email?: string
           status?: 'sent' | 'failed' | 'bounced'
+          email_type?: EmailType
           sent_at?: string
           resend_message_id?: string | null
         }
         Relationships: []
       }
+      webhook_events: {
+        Row: {
+          id: string
+          giving_wall_id: string | null
+          processor: string
+          event_type: string
+          processor_event_id: string
+          raw_payload: Record<string, unknown>
+          status: WebhookEventStatus
+          donation_id: string | null
+          error_message: string | null
+          received_at: string
+          processed_at: string | null
+        }
+        Insert: {
+          id?: string
+          giving_wall_id?: string | null
+          processor?: string
+          event_type: string
+          processor_event_id: string
+          raw_payload: Record<string, unknown>
+          status?: WebhookEventStatus
+          donation_id?: string | null
+          error_message?: string | null
+          received_at?: string
+          processed_at?: string | null
+        }
+        Update: {
+          status?: WebhookEventStatus
+          donation_id?: string | null
+          error_message?: string | null
+          processed_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      record_paid_donation: {
+        Args: {
+          p_wall_id: string
+          p_processor_ref: string
+          p_name: string
+          p_first_name?: string | null
+          p_last_name?: string | null
+          p_email?: string | null
+          p_amount_cents?: number | null
+          p_currency?: string | null
+        }
+        Returns: Json
+      }
+    }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
   }

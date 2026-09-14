@@ -8,22 +8,25 @@ type Status = 'loading' | 'success' | 'error' | 'invalid'
 
 export function UnsubscribePage() {
   const [searchParams] = useSearchParams()
-  const { unsubscribeFromReminders } = useContainer()
+  const { unsubscribeFromReminders, unsubscribeDonor } = useContainer()
   const [status, setStatus] = useState<Status>('loading')
 
   const commitmentId = searchParams.get('id')
+  // Thank-you emails from the giving wall link here with ?donation=<id>
+  const donationId = searchParams.get('donation')
 
   useEffect(() => {
-    if (!commitmentId) {
+    if (!commitmentId && !donationId) {
       setStatus('invalid')
       return
     }
 
-    unsubscribeFromReminders
-      .execute(commitmentId)
-      .then(() => setStatus('success'))
-      .catch(() => setStatus('error'))
-  }, [commitmentId, unsubscribeFromReminders])
+    const action = donationId
+      ? unsubscribeDonor.execute(donationId)
+      : unsubscribeFromReminders.execute(commitmentId!)
+
+    action.then(() => setStatus('success')).catch(() => setStatus('error'))
+  }, [commitmentId, donationId, unsubscribeDonor, unsubscribeFromReminders])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-stone-950 p-6">
@@ -42,11 +45,14 @@ export function UnsubscribePage() {
               You've been unsubscribed
             </h1>
             <p className="text-stone-400 text-sm leading-relaxed">
-              You will no longer receive weekly prayer reminders. Thank you for
-              your time on the prayer wall.
+              {donationId
+                ? 'You will no longer receive emails about your gift. Thank you for your generosity.'
+                : 'You will no longer receive weekly prayer reminders. Thank you for your time on the prayer wall.'}
             </p>
-            <Link to="/">
-              <Button variant="secondary">Return to the prayer wall</Button>
+            <Link to={donationId ? '/giving' : '/'}>
+              <Button variant="secondary">
+                {donationId ? 'Return to the giving wall' : 'Return to the prayer wall'}
+              </Button>
             </Link>
           </>
         )}

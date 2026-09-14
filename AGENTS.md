@@ -60,9 +60,23 @@ When adding a new repository:
 - Edge functions run on Deno. Deno lint errors in VS Code are false positives — ignore them.
 - Every edge function creates its own Supabase client with `service_role` key and `db: { schema: 'prayer_wall' }`.
 - The `send-reminders` function is triggered hourly by pg_cron. It must be redeployed after any code changes.
-- Secrets (RESEND_API_KEY, FROM_EMAIL, CRON_SECRET, APP_URL, API_BIBLE_KEY, SUPABASE_WALL_ID) are set in Supabase Dashboard → Edge Functions → Secrets.
+- The pg_cron job reads its URL and auth header from **Supabase Vault** (`project_url`, `cron_secret`), not from Postgres GUCs. Migration 012 used `current_setting('app.*')` and failed on every run; migration 028 replaced it. The Vault `cron_secret` and the `CRON_SECRET` edge secret must hold the same value.
+- Secrets (RESEND_API_KEY, FROM_EMAIL, CRON_SECRET, APP_URL, SUPABASE_WALL_ID) are set in Supabase Dashboard → Edge Functions → Secrets.
+- Bible verse lookup is **discontinued** (Sep 2026) — do not set `API_BIBLE_KEY` or `YOUVERSION_APP_KEY`. The `_shared/*bible*` and `prayer-search-*` code is dormant, not broken: `findPassageForText` catches all provider failures and returns `null`, so reminder emails simply send without a passage.
 
 ---
+
+## Payments (Giving Wall)
+
+- Payments use **Stripe-hosted Checkout**, not an embedded card form. No Stripe keys or Stripe JS belong in the frontend or `.env.local`.
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `GIVING_WALL_ID`, `ORG_NAME` are Supabase edge function secrets.
+- Only `giving-wall-webhook` (service_role) may create `donations` rows — RLS blocks the browser. It listens to `checkout.session.completed`, never `payment_intent.succeeded`.
+- Deploy the webhook with `--no-verify-jwt`; it authenticates via `Stripe-Signature` HMAC.
+- Mock mode (`VITE_USE_MOCK=true`) uses `MockPaymentGateway`, which accepts Stripe's real test card numbers (`4242…` approves, `4000…0002` declines).
+- Full setup and test procedure: `docs/giving-wall-stripe-test-mode.md`.
+- `STRIPE_MODE` is a Supabase edge function secret, defaulting to `test`. Both payment functions reject invalid modes; checkout requires a matching secret-key prefix and session `livemode`, and the webhook rejects wrong-mode events/sessions before database access. Live payments require explicit `STRIPE_MODE=live` plus matching live secrets.
+- Test payments still create normal donation records and send real thank-you emails; use a separate test project/wall and controlled email addresses.
+- Payment mode regression tests: `node --test supabase/functions/stripe-mode.test.mjs` (Node.js 22+ with dependencies installed; Stripe, Supabase, and Deno are mocked, no network calls).
 
 ## Email
 

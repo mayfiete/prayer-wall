@@ -5,7 +5,11 @@ import { Loader2 } from 'lucide-react'
 
 const GIVING_WALL_ID = (import.meta.env.VITE_GIVING_WALL_ID as string | undefined)?.trim() ?? ''
 
-type DonationRow = Omit<Database['prayer_wall']['Tables']['donations']['Row'], 'email'>
+// email is revoked from authenticated by migration 024, so it can't be selected.
+type DonationRow = Pick<
+  Database['prayer_wall']['Tables']['donations']['Row'],
+  'id' | 'name' | 'amount_cents' | 'currency' | 'processor_ref' | 'email_opt_out' | 'donated_at'
+>
 
 interface GivingWallDonorsAdminProps {
   supabase: SupabaseClient<Database>
