@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { GivingWallGrid } from '../components/GivingWallGrid'
 import { MockBanner } from '../components/MockBanner'
 import { Heart } from 'lucide-react'
@@ -6,13 +7,20 @@ import { Modal } from '../components/ui/Modal'
 import { LogoMark } from '../components/LogoMark'
 import { WallHeader } from '../components/WallHeader'
 import { WallBanner } from '../components/WallBanner'
+import { DonationCheckout } from '../components/DonationCheckout'
 import { useThemeText } from '../hooks/useThemeText'
+import { useContainer } from '../context/AppContext'
 
-const GIVING_WALL_ID = import.meta.env.VITE_GIVING_WALL_ID as string
 const ORG_NAME = (import.meta.env.VITE_ORG_NAME as string | undefined) ?? 'Heritage Christian Academy'
 
 export function GivingWallPage() {
+  const { givingWallId } = useContainer()
+  const [searchParams] = useSearchParams()
   const [modalOpen, setModalOpen] = useState(false)
+
+  // Set by the Stripe Checkout success_url / cancel_url. The brick itself
+  // arrives via realtime once the webhook records the donation.
+  const checkoutResult = searchParams.get('checkout')
 
   const wallTitle     = useThemeText('wall_title',           'Giving Wall')
   const bannerHeading = useThemeText('text_banner_heading',  'Place your brick on the wall')
@@ -32,6 +40,17 @@ export function GivingWallPage() {
 
       <WallBanner heading={bannerHeading} body={bannerBody} />
 
+      {checkoutResult === 'success' && (
+        <p className="px-6 py-2.5 text-sm text-center bg-emerald-900/30 border-b border-emerald-700/50 text-emerald-300">
+          Thank you — your gift was received. Your brick appears on the wall as soon as the payment is confirmed.
+        </p>
+      )}
+      {checkoutResult === 'cancelled' && (
+        <p className="px-6 py-2.5 text-sm text-center bg-stone-800/60 border-b border-stone-600/50 text-stone-300">
+          Checkout was cancelled — no payment was taken.
+        </p>
+      )}
+
       <section
         className="flex-1 flex flex-col px-0 overflow-x-clip"
         style={{ backgroundColor: 'var(--color-wall-bg)' }}
@@ -43,7 +62,7 @@ export function GivingWallPage() {
           <Heart size={14} />
           {wallCta}
         </div>
-        <GivingWallGrid givingWallId={GIVING_WALL_ID} onCtaClick={() => setModalOpen(true)} />
+        <GivingWallGrid givingWallId={givingWallId} onCtaClick={() => setModalOpen(true)} />
       </section>
 
       <Modal
@@ -51,11 +70,7 @@ export function GivingWallPage() {
         onClose={() => setModalOpen(false)}
         title={modalTitle}
       >
-        <div className="p-4 text-sm text-stone-600">
-          {/* Payment processor embed goes here — Stripe, Justify, or Gettrx iframe/modal */}
-          <p className="mb-4">Payment integration pending processor selection.</p>
-          <p className="text-xs text-stone-400">Once a payment is confirmed, your brick will appear automatically via webhook.</p>
-        </div>
+        <DonationCheckout givingWallId={givingWallId} />
       </Modal>
     </div>
   )

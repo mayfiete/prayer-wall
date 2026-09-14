@@ -1,19 +1,20 @@
 import type { IGivingWallRepository } from '../../domain/repositories/IGivingWallRepository'
 import type { Donation, CreateDonationData } from '../../domain/entities/Donation'
+import { MOCK_GIVING_WALL_ID } from './mockData'
 
 const MOCK_DONATIONS: Donation[] = [
-  { id: 'mock-1', givingWallId: 'mock-wall', name: 'Sarah Johnson', donatedAt: new Date('2024-01-15'), amountCents: 5000, currency: 'usd', processorRef: null, emailOptOut: false },
-  { id: 'mock-2', givingWallId: 'mock-wall', name: 'Michael Chen', donatedAt: new Date('2024-01-16'), amountCents: 10000, currency: 'usd', processorRef: null, emailOptOut: false },
-  { id: 'mock-3', givingWallId: 'mock-wall', name: 'The Williams Family', donatedAt: new Date('2024-01-17'), amountCents: 25000, currency: 'usd', processorRef: null, emailOptOut: false },
-  { id: 'mock-4', givingWallId: 'mock-wall', name: 'Anonymous', donatedAt: new Date('2024-01-18'), amountCents: 1000, currency: 'usd', processorRef: null, emailOptOut: true },
-  { id: 'mock-5', givingWallId: 'mock-wall', name: 'Robert & Lisa Davis', donatedAt: new Date('2024-01-19'), amountCents: 50000, currency: 'usd', processorRef: null, emailOptOut: false },
+  { id: 'mock-1', givingWallId: MOCK_GIVING_WALL_ID, name: 'Sarah Johnson', donatedAt: new Date('2024-01-15'), amountCents: 5000, currency: 'usd', processorRef: null, emailOptOut: false },
+  { id: 'mock-2', givingWallId: MOCK_GIVING_WALL_ID, name: 'Michael Chen', donatedAt: new Date('2024-01-16'), amountCents: 10000, currency: 'usd', processorRef: null, emailOptOut: false },
+  { id: 'mock-3', givingWallId: MOCK_GIVING_WALL_ID, name: 'The Williams Family', donatedAt: new Date('2024-01-17'), amountCents: 25000, currency: 'usd', processorRef: null, emailOptOut: false },
+  { id: 'mock-4', givingWallId: MOCK_GIVING_WALL_ID, name: 'Anonymous', donatedAt: new Date('2024-01-18'), amountCents: 1000, currency: 'usd', processorRef: null, emailOptOut: true },
+  { id: 'mock-5', givingWallId: MOCK_GIVING_WALL_ID, name: 'Robert & Lisa Davis', donatedAt: new Date('2024-01-19'), amountCents: 50000, currency: 'usd', processorRef: null, emailOptOut: false },
 ]
 
 export class MockGivingWallRepository implements IGivingWallRepository {
   private donations: Donation[] = [...MOCK_DONATIONS]
 
   async findAllByWall(givingWallId: string): Promise<Donation[]> {
-    return this.donations.filter(d => d.givingWallId === givingWallId || givingWallId === 'mock-wall')
+    return this.donations.filter(d => d.givingWallId === givingWallId || givingWallId === MOCK_GIVING_WALL_ID)
   }
 
   async findById(id: string): Promise<Donation | null> {

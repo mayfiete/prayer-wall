@@ -4,6 +4,8 @@ import type { PrayerMeditation } from '../../domain/entities/PrayerMeditation'
 
 export const MOCK_ORG_ID = '00000000-0000-0000-0000-000000000001'
 export const MOCK_WALL_ID = '00000000-0000-0000-0000-000000000002'
+/** Stand-in for VITE_GIVING_WALL_ID so /giving works with no Supabase config */
+export const MOCK_GIVING_WALL_ID = 'mock-wall'
 
 export const MOCK_CATEGORIES: PrayerCategory[] = [
   { id: 'cat-1', orgId: MOCK_ORG_ID, name: 'Family', displayOrder: 1, isActive: true },

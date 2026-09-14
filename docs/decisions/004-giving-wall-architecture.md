@@ -1164,6 +1164,37 @@ This table is the audit trail that allows you to answer Ivy's question "why didn
 
 ---
 
+## Amendment — September 7, 2026: Stripe-hosted Checkout
+
+The plan above assumed an embedded Stripe **Payment Element** and a
+`payment_intent.succeeded` webhook. Implementation chose Stripe-hosted
+**Checkout** instead. What changed and why:
+
+| Decision | ADR-004 original | Amended | Reason |
+|---|---|---|---|
+| Payment UI | Payment Element embedded in `PaymentModal` | Stripe-hosted Checkout, browser redirects out | Minimises PCI scope (SAQ A — no card fields in our DOM at all) and ships no Stripe JS in the bundle |
+| Webhook event | `payment_intent.succeeded` | `checkout.session.completed` (+ `checkout.session.async_payment_succeeded`) | Only the Session carries `customer_details` and `custom_fields`; the PaymentIntent does not |
+| Donor name | Collected in our form, passed as `metadata.donor_name` | Collected on Stripe's page: `billing_address_collection=required` for the payer name, plus an optional `custom_fields[wall_name]` override | Avoids asking the donor for their name twice. Our modal collects amount + anonymity only |
+| Brick label resolution | `metadata.donor_name` → "Anonymous" | `custom_fields.wall_name` → `customer_details.name` → "Anonymous" | Supports "The Smith Family" style labels without a second name field for everyone |
+| Session creation | Browser called Stripe directly | `create-donation-checkout` edge function | Keeps `STRIPE_SECRET_KEY` server-side; pins the wall id to a secret so callers can't place bricks on another wall |
+| `is_anonymous` column | New column on `donations` | Not added — anonymity resolves to `name = 'Anonymous'` at webhook time | Avoids a migration for data the wall never displays separately |
+| `email_logs.wall_id` FK (open question) | Undecided | `wall_id` made nullable; `giving_wall_id` + `donation_id` columns added (no FK on `giving_wall_id`) | Preserves prayer-wall integrity while letting donation emails log |
+| Mock strategy | Not covered | `MockPaymentGateway` behind a domain `IPaymentGateway` port, using Stripe's real test card numbers and emitting the donation through `MockRealtimeClient` | Whole flow is exercisable with no keys, by the same realtime path production uses |
+
+Also corrected during implementation:
+
+- Migration 022 never published `donations` to `supabase_realtime`, so bricks
+  only appeared after a reload. Fixed in migration 026.
+- Repository `SELECT`s listed the `email` column, which migration 024 revokes
+  from `anon`/`authenticated` — those queries would fail with permission denied.
+- `SupabaseGivingWallRepository.setEmailOptOut` did a direct `UPDATE` that RLS
+  silently blocks; it now calls the `unsubscribe` edge function.
+- `container.ts` exported a raw repository (`givingWallContainer.repo`), which
+  ADR-001 forbids. Replaced with `getGivingWall`, `startDonationCheckout`,
+  `confirmSimulatedDonation`, and `unsubscribeDonor` use cases.
+
+Setup and test procedure: `docs/giving-wall-stripe-test-mode.md`.
+
 ## References
 
 - `supabase/migrations/001_initial_schema.sql` — base schema shape
