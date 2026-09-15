@@ -9,13 +9,13 @@ interface WallHeaderProps {
 export function WallHeader({ title, orgName, logoMark }: WallHeaderProps) {
   return (
     <header
-      className="flex items-center gap-4 px-8 py-6 border-b border-stone-200"
+      className="flex items-center gap-3 px-4 py-4 sm:gap-4 sm:px-8 sm:py-6 border-b border-stone-200"
       style={{ backgroundColor: 'var(--color-header-bg)', color: 'var(--color-header-text)', fontFamily: 'var(--font-header)' }}
     >
       {logoMark}
-      <div className="flex-1">
+      <div className="min-w-0 flex-1 break-words">
         <h1
-          className="text-[26px] font-semibold leading-tight tracking-tight"
+          className="text-[22px] sm:text-[26px] font-semibold leading-tight tracking-tight"
           style={{ color: 'var(--color-header-text)', fontFamily: 'var(--font-header)' }}
         >
           {title}

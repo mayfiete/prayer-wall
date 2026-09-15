@@ -39,7 +39,9 @@
     --color-modal-text:   #f5f5f4;
     --color-modal-accent: #d97706;
     --font-modal:         sans-serif;
-    /* Brick layout — overwritten at runtime by applyTheme() */
+    /* Layout settings come from the theme; dimensions are local to each grid. */
+    --stone-scale:          1;
+    --stone-aspect:         0.5;
     --stone-gap:            0px;
     --stone-screen-padding: 20px;
     --stone-w:              200px;
@@ -180,12 +182,11 @@
   /* ─── Role: next available stone (the CTA) ─────────────────────────────── */
   .tile-cta {
     cursor: pointer;
-    transform: scale(1.12);
     z-index: 2;
   }
 
   .tile-cta:hover {
-    transform: translateY(-2px) scale(1.18);
+    transform: translateY(-2px);
   }
 
   .tile-stone.tile-cta:hover {
