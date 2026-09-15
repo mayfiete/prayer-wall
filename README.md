@@ -53,7 +53,7 @@ Public headers and forms adapt to narrow screens. Dialog content scrolls within 
 ## Architecture
 
 ```mermaid
-flowchart TD
+graph TD;
     Visitor["Visitor"] --> Public["Prayer Foundation / Giving Wall"]
     Admin["Administrator"] --> AdminUI["Admin pages"]
 
@@ -113,7 +113,7 @@ The public business flows follow a layered architecture:
 ### Prayer signup and reminders
 
 ```mermaid
-flowchart TD
+graph TD;
     Form["Name, email, selected categories"] --> Validate["SubmitPrayerCommitment validates input"]
     Validate --> Save["Create commitment and category links"]
     Save --> Realtime["Realtime updates the foundation"]
