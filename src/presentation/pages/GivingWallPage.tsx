@@ -56,11 +56,11 @@ export function GivingWallPage() {
         style={{ backgroundColor: 'var(--color-wall-bg)' }}
       >
         <div
-          className="flex items-center gap-2 text-[14px] font-semibold pt-4 pb-3 px-6"
+          className="flex items-center gap-2 text-[14px] font-semibold pt-4 pb-3 px-4 sm:px-6"
           style={{ color: 'var(--color-wall-text)', fontFamily: 'var(--font-wall)' }}
         >
-          <Heart size={14} />
-          {wallCta}
+          <Heart size={14} className="shrink-0" />
+          <span className="min-w-0 break-words">{wallCta}</span>
         </div>
         <GivingWallGrid givingWallId={givingWallId} onCtaClick={() => setModalOpen(true)} />
       </section>

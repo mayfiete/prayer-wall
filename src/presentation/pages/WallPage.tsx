@@ -33,10 +33,10 @@ export function WallPage() {
       {categories.map((cat) => (
         <span
           key={cat.id}
-          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-[#d9d9d9]"
+          className="inline-flex max-w-full items-center break-words px-3 py-1 rounded-full text-xs font-medium border border-[#d9d9d9]"
           style={{ backgroundColor: 'color-mix(in srgb, var(--color-banner-bg) 85%, #000)', color: 'var(--color-banner-text)' }}
         >
-          {cat.name}
+          <span className="min-w-0">{cat.name}</span>
         </span>
       ))}
     </div>
@@ -59,11 +59,11 @@ export function WallPage() {
         style={{ backgroundColor: 'var(--color-wall-bg)' }}
       >
         <div
-          className="flex items-center gap-2 text-[14px] font-semibold pt-4 pb-3 px-6"
+          className="flex items-center gap-2 text-[14px] font-semibold pt-4 pb-3 px-4 sm:px-6"
           style={{ color: 'var(--color-wall-text)', fontFamily: 'var(--font-wall)' }}
         >
-          <BookOpen size={14} />
-          {wallCta}
+          <BookOpen size={14} className="shrink-0" />
+          <span className="min-w-0 break-words">{wallCta}</span>
         </div>
         <PrayerWallGrid wallId={WALL_ID} onCtaClick={() => setModalOpen(true)} />
       </section>

@@ -33,7 +33,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         aria-hidden="true"
       />
       <div
-        className="relative z-10 w-full max-w-md rounded-xl shadow-2xl animate-fade-in"
+        className="relative z-10 flex min-w-0 w-full max-w-md max-h-[calc(100dvh-2rem)] flex-col rounded-xl shadow-2xl animate-fade-in"
         style={{
           backgroundColor: 'var(--color-modal-bg)',
           color: 'var(--color-modal-text)',
@@ -42,22 +42,22 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         }}
       >
         <div
-          className="flex items-center justify-between px-6 py-4"
+          className="flex shrink-0 items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4"
           style={{ borderBottom: '1px solid color-mix(in srgb, var(--color-modal-text) 15%, transparent)' }}
         >
-          <h2 id="modal-title" className="text-lg font-semibold" style={{ color: 'var(--color-modal-text)', fontFamily: 'var(--font-modal)' }}>
+          <h2 id="modal-title" className="min-w-0 break-words text-lg font-semibold" style={{ color: 'var(--color-modal-text)', fontFamily: 'var(--font-modal)' }}>
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md transition-colors"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md transition-colors"
             style={{ color: 'color-mix(in srgb, var(--color-modal-text) 60%, transparent)' }}
             aria-label="Close"
           >
             <X size={18} />
           </button>
         </div>
-        <div className="px-6 py-5">{children}</div>
+        <div className="min-h-0 overflow-y-auto overscroll-contain break-words px-4 py-5 sm:px-6">{children}</div>
       </div>
     </div>
   )

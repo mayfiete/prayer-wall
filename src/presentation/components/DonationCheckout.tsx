@@ -132,7 +132,7 @@ export function DonationCheckout({
         <span className="text-sm font-medium" style={{ color: 'color-mix(in srgb, var(--color-modal-text) 80%, transparent)' }}>
           Choose your gift
         </span>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 min-[400px]:grid-cols-3 gap-2">
           {PRESET_AMOUNTS_CENTS.map((cents) => {
             const active = !customAmount && amountCents === cents
             return (

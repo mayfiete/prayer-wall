@@ -142,22 +142,14 @@ export function applyTheme(theme: Partial<typeof THEME_DEFAULTS>) {
   root.style.setProperty('--color-modal-text',    t.color_modal_text)
   root.style.setProperty('--color-modal-accent',  t.color_modal_accent)
   root.style.setProperty('--font-modal',          t.font_modal)
-  // Brick layout — compute stone dimensions in JS so stones_per_row can vary
+  // Publish layout settings; each grid measures its own available width.
   const n      = Math.max(1, t.stones_per_row)
   const scale  = Math.max(0.25, t.brick_scale)
   const aspect = Math.max(0.2, t.brick_aspect)
   const ovx    = Math.round(t.brick_overlap_x * scale)
   const ovy    = Math.round(t.brick_overlap_y * scale)
-  const padding = 20
-  // Base stone width: fills viewport with n stones given the overlap, clamped between 80px–600px
-  const minW = Math.round(80  * scale)
-  const maxW = Math.round(600 * scale)
-  const vw   = typeof window !== 'undefined' ? window.innerWidth : 1024
-  const rawW = Math.round((vw - padding * 2 + ovx * (n - 1)) / n)
-  const stoneW = Math.min(maxW, Math.max(minW, rawW))
-  const stoneH = Math.round(stoneW * aspect)
-  root.style.setProperty('--stone-w',         `${stoneW}px`)
-  root.style.setProperty('--stone-h',         `${stoneH}px`)
+  root.style.setProperty('--stone-scale',     String(scale))
+  root.style.setProperty('--stone-aspect',    String(aspect))
   root.style.setProperty('--stone-overlap-x', `${ovx}px`)
   root.style.setProperty('--stone-overlap-y', `${ovy}px`)
   root.style.setProperty('--stones-per-row',  String(n))
