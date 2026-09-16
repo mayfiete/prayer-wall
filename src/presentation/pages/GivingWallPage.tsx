@@ -42,7 +42,7 @@ export function GivingWallPage() {
 
       {checkoutResult === 'success' && (
         <p className="px-6 py-2.5 text-sm font-medium text-center bg-emerald-50 border-b border-emerald-200 text-emerald-900">
-          Thank you — your gift was received. Your brick appears on the wall as soon as the payment is confirmed.
+          Your brick will appear on the wall as soon as payment is confirmed
         </p>
       )}
       {checkoutResult === 'cancelled' && (
