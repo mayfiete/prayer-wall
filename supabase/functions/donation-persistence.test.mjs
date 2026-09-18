@@ -182,4 +182,27 @@ test('donation persistence migration on a disposable Postgres database', { skip:
     await sql(repair)
     await sql(publicCommitmentRead)
   })
+
+  await t.test('donation reads expose only public columns to browser roles', async () => {
+    const repair = await readFile(new URL('../migrations/033_restrict_donation_public_reads.sql', import.meta.url), 'utf8')
+    const before = await sql('SELECT jsonb_agg(to_jsonb(d) ORDER BY id) FROM prayer_wall.donations d;')
+    await sql('GRANT SELECT (email, thank_you_sent, commitment_id) ON prayer_wall.donations TO PUBLIC;')
+    await sql(repair)
+    await sql(repair)
+    assert.equal(await sql('SELECT jsonb_agg(to_jsonb(d) ORDER BY id) FROM prayer_wall.donations d;'), before)
+    const publicColumns = 'id, giving_wall_id, name, amount_cents, currency, processor, processor_ref, email_opt_out, donated_at, created_at'
+    for (const role of ['anon', 'authenticated']) {
+      for (const column of ['email', 'thank_you_sent', 'commitment_id', '*']) {
+        await assert.rejects(sql(`SET ROLE ${role}; SELECT ${column} FROM prayer_wall.donations;`), /permission denied/)
+      }
+      const rows = JSON.parse((await sql(`SET ROLE ${role}; SELECT jsonb_agg(d) FROM (SELECT ${publicColumns} FROM prayer_wall.donations) d;`)).split('\n').at(-1))
+      assert.ok(rows.length > 0)
+      assert.deepEqual(Object.keys(rows[0]).sort(), publicColumns.split(', ').sort())
+      assert.equal(await sql(`SELECT has_table_privilege('${role}', 'prayer_wall.donations', 'SELECT');`), 'f')
+      await assert.rejects(sql(`SET ROLE ${role}; INSERT INTO prayer_wall.donations (giving_wall_id, name, amount_cents) VALUES ('${wallId}', 'Browser', 100);`), /permission denied|row-level security/)
+      await assert.rejects(sql(`SET ROLE ${role}; UPDATE prayer_wall.donations SET email = 'changed@example.com';`), /permission denied|row-level security/)
+    }
+    assert.equal((await sql("SET ROLE service_role; SELECT email FROM prayer_wall.donations WHERE processor_ref = 'pi_one';")).split('\n').at(-1), 'test@example.com')
+    await sql('SET ROLE service_role; SELECT thank_you_sent, commitment_id FROM prayer_wall.donations;')
+  })
 })
