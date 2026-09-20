@@ -82,6 +82,8 @@ Deno.serve(async (req: Request) => {
   const html = emailShell({
     title: `Thank you for your gift to ${BRAND.orgFull}`,
     bodyHtml,
+    eyebrow: `${BRAND.orgFull} · Giving Wall`,
+    footerText: `You're receiving this because you made a gift to the ${BRAND.org} Giving Wall.`,
     unsubscribeUrl: `${appUrl.replace(/\/$/, "")}/unsubscribe?donation=${donationId}`,
   });
 

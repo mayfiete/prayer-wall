@@ -9,26 +9,30 @@ export const BRAND = {
   product: "Prayer Foundation",
   eyebrow: "HCA Fredericksburg · Prayer Foundation",
   fromName: "HCA Prayer Foundation",
+  logoUrl: "https://swrcawckpsotialqnisq.supabase.co/storage/v1/object/public/email-assets/hca-logo.png",
+  logoAlt: "Heritage Christian Academy",
 };
 
 // Palette — warm, editorial, church-appropriate.
 export const COLORS = {
-  headerBg: "#9a3412",
-  headerEyebrow: "#fca5a5",
-  ink: "#1c1917",
-  body: "#44403c",
-  requestBg: "#fdf8f5",
-  requestBorder: "#9a3412",
-  requestLabel: "#9a3412",
-  praiseBg: "#f0fdf4",
-  praiseBorder: "#16a34a",
-  praiseLabel: "#166534",
-  passageBg: "#f0f9ff",
-  passageBorder: "#0369a1",
-  passageInk: "#1e3a5f",
-  passageMeta: "#64748b",
-  footer: "#a8a29e",
-  divider: "#e7e5e4",
+  headerBg: "#242149",
+  headerEyebrow: "#ffffff",
+  logoBg: "#60051d",
+  background: "#f4f4f4",
+  ink: "#000000",
+  body: "#222222",
+  requestBg: "#ffffff",
+  requestBorder: "#242149",
+  requestLabel: "#60051d",
+  praiseBg: "#ffffff",
+  praiseBorder: "#242149",
+  praiseLabel: "#60051d",
+  passageBg: "#f4f4f4",
+  passageBorder: "#242149",
+  passageInk: "#242149",
+  passageMeta: "#595959",
+  footer: "#595959",
+  divider: "#242149",
 };
 
 // The opening thank-you line that sits above the greeting.
@@ -57,30 +61,35 @@ export const PRAISES: string[] = [
 
 // ─── Reusable HTML fragments ─────────────────────────────────────────────────
 
+export function escapeHtml(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
 export function paragraph(text: string): string {
-  return `<p style="margin: 0 0 16px; font-size: 15px; color: ${COLORS.body}; line-height: 1.7;">${text}</p>`;
+  return `<p style="margin: 0 0 16px; font-size: 16px; color: ${COLORS.body}; line-height: 1.5;">${text}</p>`;
 }
 
 export function greeting(name: string): string {
   const who = name?.trim() ? name : "Prayer Foundation Supporter";
-  return `<p style="margin: 0 0 16px; font-size: 16px; color: ${COLORS.ink};">Dear ${who},</p>`;
+  return `<p style="margin: 0 0 16px; font-size: 16px; color: ${COLORS.ink}; line-height: 1.5;">Dear ${escapeHtml(who)},</p>`;
 }
 
 export function leadLine(): string {
-  return `<p style="margin: 0 0 20px; font-size: 15px; font-weight: bold; color: ${COLORS.requestLabel}; line-height: 1.7;">${THANK_YOU_LEAD}</p>`;
+  return `<p style="margin: 0 0 24px; font-size: 20px; text-align: center; color: ${COLORS.headerBg}; line-height: 1.5;">${THANK_YOU_LEAD}</p>`;
 }
 
 // A simple bullet list of the category names the supporter committed to pray for.
 export function commitmentList(categoryNames: string[]): string {
   if (categoryNames.length === 0) return "";
   const items = categoryNames
-    .map((n) => `<li style="margin: 0 0 4px;">${n}</li>`)
+    .map((n) => `<li style="margin: 0 0 4px;">${escapeHtml(n)}</li>`)
     .join("");
   return `
-    <p style="margin: 0 0 8px; font-size: 15px; color: ${COLORS.body}; line-height: 1.7;">
+    <p style="margin: 0 0 8px; font-size: 16px; color: ${COLORS.body}; line-height: 1.5;">
       This is a friendly reminder of your commitment to pray for the following:
     </p>
-    <ul style="margin: 0 0 24px; padding-left: 20px; color: ${COLORS.ink}; font-size: 15px; line-height: 1.8; font-weight: bold;">
+    <ul style="margin: 0 0 24px; padding-left: 24px; color: ${COLORS.ink}; font-size: 16px; line-height: 1.5; font-weight: bold;">
       ${items}
     </ul>`;
 }
@@ -95,12 +104,12 @@ export function prayerRequestsBlock(
   const sections = filled
     .map((g) => {
       const bullets = g.requests
-        .map((r) => `<li style="margin: 0 0 6px;">${r}</li>`)
+        .map((r) => `<li style="margin: 0 0 8px;">${escapeHtml(r)}</li>`)
         .join("");
       return `
         <div style="margin: 0 0 16px;">
-          <p style="margin: 0 0 6px; font-size: 13px; font-weight: bold; color: ${COLORS.requestLabel}; text-transform: uppercase; letter-spacing: 0.05em;">${g.categoryName}</p>
-          <ul style="margin: 0; padding-left: 20px; color: ${COLORS.body}; font-size: 15px; line-height: 1.7;">
+          <p style="margin: 0 0 8px; font-size: 16px; font-weight: bold; color: ${COLORS.requestLabel}; line-height: 1.5;">${escapeHtml(g.categoryName)}</p>
+          <ul style="margin: 0; padding-left: 24px; color: ${COLORS.body}; font-size: 16px; line-height: 1.5;">
             ${bullets}
           </ul>
         </div>`;
@@ -108,8 +117,8 @@ export function prayerRequestsBlock(
     .join("");
 
   return `
-    <div style="margin: 24px 0; padding: 20px 24px; background: ${COLORS.requestBg}; border-left: 3px solid ${COLORS.requestBorder}; border-radius: 4px;">
-      <p style="margin: 0 0 16px; font-size: 15px; font-weight: bold; color: ${COLORS.ink};">Prayer Requests:</p>
+    <div style="margin: 24px 0; padding: 24px 0 0; background: ${COLORS.requestBg}; border-top: 2px solid ${COLORS.requestBorder};">
+      <h2 style="margin: 0 0 16px; font-size: 20px; font-weight: bold; color: ${COLORS.ink}; line-height: 1.5;">Prayer Requests:</h2>
       ${sections}
     </div>`;
 }
@@ -118,9 +127,9 @@ export function prayerRequestsBlock(
 export function personalRequestBlock(request: string): string {
   if (!request?.trim()) return "";
   return `
-    <div style="margin: 24px 0; padding: 16px 20px; background: ${COLORS.requestBg}; border-left: 3px solid ${COLORS.requestBorder}; border-radius: 4px;">
-      <p style="margin: 0 0 8px; font-size: 13px; font-weight: bold; color: ${COLORS.requestLabel}; text-transform: uppercase; letter-spacing: 0.05em;">Your Personal Request</p>
-      <p style="margin: 0; color: ${COLORS.body}; font-size: 15px; line-height: 1.7;">${request}</p>
+    <div style="margin: 24px 0; padding: 24px 0 0; background: ${COLORS.requestBg}; border-top: 2px solid ${COLORS.requestBorder};">
+      <h2 style="margin: 0 0 12px; font-size: 20px; font-weight: bold; color: ${COLORS.requestLabel}; line-height: 1.5;">Your Personal Request</h2>
+      <p style="margin: 0; color: ${COLORS.body}; font-size: 16px; line-height: 1.5;">${escapeHtml(request)}</p>
     </div>`;
 }
 
@@ -128,12 +137,12 @@ export function personalRequestBlock(request: string): string {
 export function praisesBlock(praises: string[] = PRAISES): string {
   if (praises.length === 0) return "";
   const items = praises
-    .map((p) => `<li style="margin: 0 0 6px;">${p}</li>`)
+    .map((p) => `<li style="margin: 0 0 8px;">${escapeHtml(p)}</li>`)
     .join("");
   return `
-    <div style="margin: 24px 0; padding: 20px 24px; background: ${COLORS.praiseBg}; border-left: 3px solid ${COLORS.praiseBorder}; border-radius: 4px;">
-      <p style="margin: 0 0 12px; font-size: 13px; font-weight: bold; color: ${COLORS.praiseLabel}; text-transform: uppercase; letter-spacing: 0.05em;">Praises</p>
-      <ul style="margin: 0; padding-left: 20px; color: ${COLORS.body}; font-size: 15px; line-height: 1.7;">
+    <div style="margin: 24px 0; padding: 24px 0 0; background: ${COLORS.praiseBg}; border-top: 2px solid ${COLORS.praiseBorder};">
+      <h2 style="margin: 0 0 12px; font-size: 20px; font-weight: bold; color: ${COLORS.praiseLabel}; line-height: 1.5;">Praises</h2>
+      <ul style="margin: 0; padding-left: 24px; color: ${COLORS.body}; font-size: 16px; line-height: 1.5;">
         ${items}
       </ul>
     </div>`;
@@ -145,18 +154,18 @@ export function passageBlock(
 ): string {
   if (!passage || !passage.text) return "";
   const meta = passage.copyright
-    ? `${passage.reference} &middot; ${passage.copyright}`
-    : `${passage.reference} &middot; ${passage.translation}`;
+    ? `${escapeHtml(passage.reference)} &middot; ${escapeHtml(passage.copyright)}`
+    : `${escapeHtml(passage.reference)} &middot; ${escapeHtml(passage.translation)}`;
   return `
-    <div style="margin: 24px 0 0; padding: 16px 20px; background: ${COLORS.passageBg}; border-left: 3px solid ${COLORS.passageBorder}; border-radius: 4px;">
-      <p style="margin: 0 0 8px; font-size: 13px; font-weight: bold; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.05em;">A Word for Your Prayers</p>
-      <p style="margin: 0 0 8px; font-size: 15px; color: ${COLORS.passageInk}; line-height: 1.7; font-style: italic;">${passage.text}</p>
-      <p style="margin: 0; font-size: 12px; color: ${COLORS.passageMeta};">&mdash; ${meta}</p>
+    <div style="margin: 24px 0 0; padding: 16px 20px; background: ${COLORS.passageBg}; border-left: 3px solid ${COLORS.passageBorder};">
+      <h2 style="margin: 0 0 8px; font-size: 20px; font-weight: bold; color: ${COLORS.headerBg}; line-height: 1.5;">A Word for Your Prayers</h2>
+      <p style="margin: 0 0 8px; font-size: 16px; color: ${COLORS.passageInk}; line-height: 1.5; font-style: italic;">${escapeHtml(passage.text)}</p>
+      <p style="margin: 0; font-size: 12px; color: ${COLORS.passageMeta}; line-height: 1.5;">&mdash; ${meta}</p>
     </div>`;
 }
 
 export function closing(): string {
-  return `<p style="margin: 24px 0 0; font-size: 15px; color: ${COLORS.body}; line-height: 1.7;">${THANK_YOU_CLOSING}</p>`;
+  return `<p style="margin: 24px 0 0; font-size: 16px; color: ${COLORS.body}; line-height: 1.5;">${THANK_YOU_CLOSING}</p>`;
 }
 
 // ─── Outer shell (header + body + footer) ────────────────────────────────────
@@ -166,31 +175,61 @@ export function emailShell(opts: {
   bodyHtml: string;
   unsubscribeUrl: string;
   eyebrow?: string;
+  footerText?: string;
 }): string {
   const eyebrow = opts.eyebrow ?? BRAND.eyebrow;
+  const footerText = opts.footerText ??
+    `You're receiving this because you committed to pray with the ${BRAND.org} ${BRAND.product}.`;
   return `
     <!DOCTYPE html>
-    <html>
-    <body style="margin:0;padding:0;background:#f5f5f4;">
-      <div style="font-family: Georgia, 'Times New Roman', serif; max-width: 560px; margin: 32px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-
-        <div style="background: ${COLORS.headerBg}; padding: 28px 32px;">
-          <p style="margin:0; font-size: 12px; color: ${COLORS.headerEyebrow}; text-transform: uppercase; letter-spacing: 0.1em;">${eyebrow}</p>
-          <h1 style="margin: 8px 0 0; font-size: 22px; color: #ffffff; font-weight: normal;">${opts.title}</h1>
-        </div>
-
-        <div style="padding: 32px;">
-          ${opts.bodyHtml}
-        </div>
-
-        <div style="padding: 20px 32px; border-top: 1px solid ${COLORS.divider}; background: #fafaf9;">
-          <p style="margin: 0; font-size: 12px; color: ${COLORS.footer}; line-height: 1.6;">
-            You're receiving this because you committed to pray with the ${BRAND.org} ${BRAND.product}.
-            <a href="${opts.unsubscribeUrl}" style="color: ${COLORS.footer};">Unsubscribe</a>
-          </p>
-        </div>
-
-      </div>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>${escapeHtml(opts.title)}</title>
+      <style>
+        body, table, td, p, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        @media only screen and (max-width: 480px) {
+          .email-content { padding: 24px 16px !important; }
+          .email-heading { padding: 16px !important; }
+        }
+      </style>
+    </head>
+    <body style="margin: 0; padding: 0; width: 100%; background: ${COLORS.background};">
+      <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="${COLORS.background}" style="border-collapse: collapse;">
+        <tr>
+          <td align="center" style="font-family: 'Helvetica Neue', Helvetica, Arial, Verdana, sans-serif;">
+            <table role="presentation" align="center" width="660" border="0" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="width: 100%; max-width: 660px; border-collapse: collapse; color: ${COLORS.body};">
+              <tr>
+                <td align="center" bgcolor="${COLORS.logoBg}" style="padding: 0;">
+                  <img src="${BRAND.logoUrl}" alt="${BRAND.logoAlt}" width="660" style="display: block; width: 100%; max-width: 660px; height: auto; border: 0; color: #ffffff; font-size: 24px;">
+                </td>
+              </tr>
+              <tr>
+                <td class="email-heading" align="center" bgcolor="${COLORS.headerBg}" style="padding: 20px 24px; font-family: 'Helvetica Neue', Helvetica, Arial, Verdana, sans-serif;">
+                  <h1 style="margin: 0; font-size: 22px; color: #ffffff; font-weight: normal; line-height: 1.4;">${escapeHtml(opts.title)}</h1>
+                  <p style="margin: 8px 0 0; font-size: 12px; color: ${COLORS.headerEyebrow}; line-height: 1.5;">${escapeHtml(eyebrow)}</p>
+                </td>
+              </tr>
+              <tr>
+                <td class="email-content" style="padding: 28px 24px; font-family: 'Helvetica Neue', Helvetica, Arial, Verdana, sans-serif; font-size: 16px; line-height: 1.5; word-break: break-word;">
+                  ${opts.bodyHtml}
+                </td>
+              </tr>
+              <tr>
+                <td align="center" bgcolor="${COLORS.background}" style="padding: 20px 24px; border-top: 2px solid ${COLORS.divider}; font-family: 'Helvetica Neue', Helvetica, Arial, Verdana, sans-serif;">
+                  <p style="margin: 0 0 8px; font-size: 12px; color: ${COLORS.footer}; line-height: 1.5;">${BRAND.logoAlt}</p>
+                  <p style="margin: 0; font-size: 12px; color: ${COLORS.footer}; line-height: 1.5;">
+                    ${escapeHtml(footerText)}
+                    <a href="${escapeHtml(opts.unsubscribeUrl)}" style="color: ${COLORS.headerBg}; text-decoration: underline;">Unsubscribe</a>
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
     </body>
     </html>
   `;
