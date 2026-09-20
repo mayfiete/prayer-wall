@@ -86,6 +86,8 @@ When adding a new repository:
 - Sending domain: `prayerrhythm.com` (verified in Resend)
 - FROM_EMAIL secret: `noreply@prayerrhythm.com`
 - A 403 from Resend means the sending domain is not verified or FROM_EMAIL doesn't match a verified domain.
+- All application emails use `supabase/functions/_shared/email-layout.ts` and the public `email-assets/hca-logo.png` Storage asset. After shared layout changes, redeploy `send-confirmation`, `send-reminders`, and `send-donation-thanks`.
+- Email design and content regression tests: `node --test supabase/functions/email-layout.test.mjs` (synthetic data, mocked email/database calls, no emails sent). Plain-text fields are escaped by shared helpers; `paragraph()` and `bodyHtml` accept trusted template HTML only.
 
 ---
 
