@@ -56,7 +56,6 @@ Public headers and forms adapt to narrow screens. Dialog content scrolls within 
 graph TD;
     Visitor["Visitor"] --> Public["Prayer Foundation / Giving Wall"]
     Admin["Administrator"] --> AdminUI["Admin pages"]
-
     subgraph Frontend["React frontend - Vite and TypeScript"]
         AdminUI["Admin pages"]
         Public --> Shared["Shared components and responsive grid"]
@@ -68,7 +67,6 @@ graph TD;
         Ports --> Repos["Supabase repositories"]
         Ports --> Gateway["StripeCheckoutGateway"]
     end
-
     subgraph Backend["Supabase"]
         Auth["Auth"]
         DB["Postgres - prayer_wall schema"]
@@ -78,7 +76,6 @@ graph TD;
         Cron["Hourly pg_cron / pg_net"]
         Vault["Vault - scheduler credentials"]
     end
-
     AdminUI --> Auth
     AdminUI --> DB
     AdminUI --> Storage
