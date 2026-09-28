@@ -5,10 +5,8 @@ export interface StartCheckoutInput {
   /** Amount in smallest currency unit (cents for USD) */
   amountCents: number
   currency: string
-  /** When true the brick reads "Anonymous" regardless of the name the processor returns */
-  isAnonymous: boolean
-  /** Optional public name entered before hosted checkout */
-  fullName?: string
+  /** Public name for the brick, composed from the donor's first and last name */
+  fullName: string
 }
 
 /**

@@ -47,7 +47,7 @@ interface PendingSession {
   givingWallId: string
   amountCents: number
   currency: string
-  isAnonymous: boolean
+  fullName: string
 }
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -73,7 +73,7 @@ export class MockPaymentGateway implements ISimulatedPaymentGateway {
       givingWallId: input.givingWallId,
       amountCents: input.amountCents,
       currency: input.currency,
-      isAnonymous: input.isAnonymous,
+      fullName: input.fullName,
     })
     return { kind: 'simulated', sessionId }
   }
@@ -106,8 +106,9 @@ export class MockPaymentGateway implements ISimulatedPaymentGateway {
       throw new PaymentDeclinedError(outcome.declineCode, outcome.message ?? 'Your card was declined.')
     }
 
-    // Production parity: the webhook — not the browser — decides the brick label.
-    const brickName = session.isAnonymous ? 'Anonymous' : (input.wallName ?? input.name)
+    // Production parity: the webhook — not the browser — decides the brick label,
+    // preferring the name captured before checkout over the billing name.
+    const brickName = session.fullName || input.wallName || input.name
 
     const donation = await this.givingWallRepo.create({
       givingWallId: session.givingWallId,

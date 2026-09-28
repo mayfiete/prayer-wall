@@ -6,6 +6,7 @@ import { AdminAuthGuard } from '../components/AdminAuthGuard'
 import { ThemeAdmin } from './admin/ThemeAdmin'
 import { AssetAdmin } from './admin/AssetAdmin'
 import { RhythmsAdmin } from './admin/RhythmsAdmin'
+import { EmailCopyAdmin } from './admin/EmailCopyAdmin'
 import { GivingWallDonorsAdmin } from './admin/GivingWallDonorsAdmin'
 
 const GIVING_WALL_ID = (import.meta.env.VITE_GIVING_WALL_ID as string | undefined)?.trim() ?? ''
@@ -13,12 +14,13 @@ const GIVING_ORG_ID  = (import.meta.env.VITE_GIVING_ORG_ID  as string | undefine
                     ?? (import.meta.env.VITE_ORG_ID          as string | undefined)?.trim()
                     ?? ''
 
-type Tab = 'rhythms' | 'assets' | 'theme' | 'bricklayers'
+type Tab = 'rhythms' | 'assets' | 'theme' | 'emails' | 'bricklayers'
 
 const TAB_LABELS: Record<Tab, string> = {
   rhythms:     'Rhythms',
   assets:      'Assets',
   theme:       'Theme',
+  emails:      'Emails',
   bricklayers: 'Bricklayers',
 }
 
@@ -43,7 +45,7 @@ export function GivingWallAdminPage() {
 
         <nav className="bg-white border-b border-stone-200 px-8">
           <div className="flex">
-            {(['rhythms', 'assets', 'theme', 'bricklayers'] as Tab[]).map((t) => (
+            {(['rhythms', 'assets', 'theme', 'emails', 'bricklayers'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -63,6 +65,7 @@ export function GivingWallAdminPage() {
           {tab === 'rhythms'     && <RhythmsAdmin supabase={supabase} wallId={GIVING_WALL_ID} orgId={GIVING_ORG_ID} onDone={() => setTab('bricklayers')} />}
           {tab === 'assets'      && <AssetAdmin supabase={supabase} wallSlug="giving" onDone={() => setTab('theme')} />}
           {tab === 'theme'       && <ThemeAdmin supabase={supabase} wallId={GIVING_WALL_ID} onDone={() => setTab('bricklayers')} />}
+          {tab === 'emails'      && <EmailCopyAdmin supabase={supabase} wallId={GIVING_WALL_ID} scope="giving" />}
           {tab === 'bricklayers' && <GivingWallDonorsAdmin supabase={supabase} />}
         </main>
       </div>

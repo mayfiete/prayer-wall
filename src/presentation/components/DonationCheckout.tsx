@@ -40,10 +40,10 @@ export function DonationCheckout({
 
   const [amountCents, setAmountCents] = useState<number>(PRESET_AMOUNTS_CENTS[1])
   const [customAmount, setCustomAmount] = useState('')
-  const [isAnonymous, setIsAnonymous] = useState(false)
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [wallName, setWallName] = useState('')
   const [cardNumber, setCardNumber] = useState('')
   const [expiry, setExpiry] = useState('')
   const [cvc, setCvc] = useState('')
@@ -76,7 +76,7 @@ export function DonationCheckout({
     setSubmitting(true)
 
     try {
-      const handoff = await startDonationCheckout.execute({ givingWallId, amountCents, isAnonymous, fullName: wallName })
+      const handoff = await startDonationCheckout.execute({ givingWallId, amountCents, firstName, lastName })
 
       if (handoff.kind === 'redirect') {
         // Card details are entered on the processor's domain, never here.
@@ -90,7 +90,6 @@ export function DonationCheckout({
         sessionId: handoff.sessionId,
         name,
         email,
-        wallName,
         cardNumber,
         expiry,
         cvc,
@@ -165,28 +164,27 @@ export function DonationCheckout({
         </div>
       </div>
 
-      <label className="flex items-center gap-2 text-sm" style={{ color: mutedText }}>
-        <input
-          type="checkbox"
-          checked={isAnonymous}
-          onChange={(e) => setIsAnonymous(e.target.checked)}
-          className="accent-amber-500"
-        />
-        Show my brick as “Anonymous”
-      </label>
-
-      {!isAnonymous && (
-        <Input
-          label="Full Name (optional)"
-          id="donation-full-name"
-          type="text"
-          placeholder="Jane Smith or The Smith Family"
-          value={wallName}
-          onChange={(e) => setWallName(e.target.value)}
-          autoComplete="name"
-          maxLength={100}
-        />
-      )}
+      <Input
+        label="First Name"
+        id="donation-first-name"
+        type="text"
+        placeholder="Jane"
+        value={firstName}
+        onChange={(e) => setFirstName(e.target.value)}
+        autoComplete="given-name"
+        maxLength={100}
+        required
+      />
+      <Input
+        label="Last Name (optional)"
+        id="donation-last-name"
+        type="text"
+        placeholder="Smith"
+        value={lastName}
+        onChange={(e) => setLastName(e.target.value)}
+        autoComplete="family-name"
+        maxLength={100}
+      />
 
       {simulated && (
         <>

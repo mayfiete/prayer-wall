@@ -70,15 +70,14 @@ export class StripeCheckoutGateway implements IPaymentGateway {
       giving_wall_id: input.givingWallId,
       amount_cents: input.amountCents,
       currency: input.currency,
-      is_anonymous: input.isAnonymous,
-      full_name: input.isAnonymous ? undefined : input.fullName,
+      full_name: input.fullName,
       success_url: `${returnOrigin}?checkout=success`,
       cancel_url: `${returnOrigin}?checkout=cancelled`,
     }
+    // The donor's name is deliberately left out of the log line.
     console.info('[donation] create-donation-checkout →', {
       giving_wall_id: body.giving_wall_id,
       amount_cents: body.amount_cents,
-      is_anonymous: body.is_anonymous,
     })
 
     const { data, error } = await this.supabase.functions.invoke<CreateCheckoutResponse>(

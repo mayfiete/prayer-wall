@@ -6,7 +6,15 @@
 //                   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (auto-injected)
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { BRAND, closing, emailShell, greeting, paragraph } from "../_shared/email-layout.ts";
+import {
+  closing,
+  emailShell,
+  fromHeader,
+  greeting,
+  mergeEmailCopy,
+  renderParagraphs,
+} from "../_shared/email-layout.ts";
+import type { EmailCopyRow } from "../_shared/email-copy.ts";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -66,24 +74,30 @@ Deno.serve(async (req: Request) => {
     currency: donation.currency.toUpperCase(),
   }).format(donation.amount_cents / 100);
 
+  const { data: copyRows, error: copyErr } = await db
+    .from("email_copy")
+    .select("copy_key, value")
+    .eq("wall_id", donation.giving_wall_id);
+
+  if (copyErr) {
+    // Wording is not worth failing a receipt over — fall back to defaults.
+    console.error("DB error fetching email_copy:", copyErr.message);
+  }
+
+  const copy = mergeEmailCopy((copyRows ?? []) as EmailCopyRow[]);
+
   const bodyHtml = `
-    ${greeting(donation.name)}
-    ${paragraph(
-      `Thank you for your generous gift of <strong>${amountFormatted}</strong> to ` +
-        `${BRAND.orgFull}. Your support makes a lasting difference.`,
-    )}
-    ${paragraph(
-      `Your name has been added to the ${BRAND.org} Giving Wall as a permanent part of our foundation. ` +
-        "We are grateful for your partnership with our school.",
-    )}
-    ${closing()}
+    ${greeting(copy, donation.name)}
+    ${renderParagraphs(copy.donation_body, { amount: amountFormatted })}
+    ${closing(copy)}
   `;
 
   const html = emailShell({
-    title: `Thank you for your gift to ${BRAND.orgFull}`,
+    copy,
+    title: copy.donation_title,
     bodyHtml,
-    eyebrow: `${BRAND.orgFull} · Giving Wall`,
-    footerText: `You're receiving this because you made a gift to the ${BRAND.org} Giving Wall.`,
+    eyebrow: copy.donation_eyebrow,
+    footerText: copy.donation_footer_text,
     unsubscribeUrl: `${appUrl.replace(/\/$/, "")}/unsubscribe?donation=${donationId}`,
   });
 
@@ -94,9 +108,9 @@ Deno.serve(async (req: Request) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: `${BRAND.fromName} <${fromEmail}>`,
+      from: fromHeader(copy, fromEmail),
       to: [donation.email],
-      subject: `Thank you for your gift to ${BRAND.orgFull}`,
+      subject: copy.donation_subject,
       html,
       tags: [{ name: "type", value: "donation_thank_you" }],
     }),

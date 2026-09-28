@@ -102,6 +102,12 @@ export interface Database {
         }
         Relationships: []
       }
+      email_copy: {
+        Row: { id: string; wall_id: string; copy_key: string; value: string; updated_at: string }
+        Insert: { id?: string; wall_id: string; copy_key: string; value: string; updated_at?: string }
+        Update: { id?: string; wall_id?: string; copy_key?: string; value?: string; updated_at?: string }
+        Relationships: []
+      }
       wall_theme: {
         Row: {
           id: string

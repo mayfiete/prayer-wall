@@ -8,11 +8,21 @@ import { CategoryAdmin } from './admin/CategoryAdmin'
 import { AssetAdmin } from './admin/AssetAdmin'
 import { RhythmsAdmin } from './admin/RhythmsAdmin'
 import { ThemeAdmin } from './admin/ThemeAdmin'
+import { EmailCopyAdmin } from './admin/EmailCopyAdmin'
 import { WarriorsAdmin } from './admin/WarriorsAdmin'
 
 const WALL_ID = (import.meta.env.VITE_WALL_ID as string | undefined)?.trim() ?? ''
 
-type Tab = 'categories' | 'assets' | 'rhythms' | 'theme' | 'warriors'
+type Tab = 'categories' | 'assets' | 'rhythms' | 'theme' | 'emails' | 'warriors'
+
+const TAB_LABELS: Record<Tab, string> = {
+  categories: 'Categories',
+  rhythms:    'Rhythms',
+  assets:     'Assets',
+  theme:      'Theme',
+  emails:     'Emails',
+  warriors:   'Stonemasons',
+}
 
 export function AdminPage() {
   const [tab, setTab] = useState<Tab>('categories')
@@ -35,7 +45,7 @@ export function AdminPage() {
 
         <nav className="bg-white border-b border-stone-200 px-8">
           <div className="flex">
-            {(['categories', 'rhythms', 'assets', 'theme', 'warriors'] as Tab[]).map((t) => (
+            {(['categories', 'rhythms', 'assets', 'theme', 'emails', 'warriors'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -45,7 +55,7 @@ export function AdminPage() {
                     : 'border-transparent text-stone-500 hover:text-stone-800'
                 }`}
               >
-                {t === 'categories' ? 'Categories' : t === 'rhythms' ? 'Rhythms' : t === 'assets' ? 'Assets' : t === 'theme' ? 'Theme' : 'Stonemasons'}
+                {TAB_LABELS[t]}
               </button>
             ))}
           </div>
@@ -56,6 +66,7 @@ export function AdminPage() {
           {tab === 'rhythms'    && <RhythmsAdmin supabase={supabase} onDone={() => setTab('categories')} />}
           {tab === 'assets'     && <AssetAdmin supabase={supabase} wallSlug="prayer" onDone={() => setTab('categories')} />}
           {tab === 'theme'      && <ThemeAdmin supabase={supabase} wallId={WALL_ID} onDone={() => setTab('categories')} />}
+          {tab === 'emails'     && <EmailCopyAdmin supabase={supabase} wallId={WALL_ID} scope="prayer" />}
           {tab === 'warriors'   && <WarriorsAdmin supabase={supabase} onDone={() => setTab('categories')} />}
         </main>
       </div>

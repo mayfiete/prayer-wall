@@ -2,8 +2,9 @@ export interface StartDonationCheckoutDto {
   givingWallId: string
   amountCents: number
   currency?: string
-  isAnonymous?: boolean
-  fullName?: string
+  /** Required — the brick has to carry a name */
+  firstName: string
+  lastName?: string
 }
 
 export interface ConfirmSimulatedDonationDto {
