@@ -1,17 +1,19 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import {
-  BRAND,
   closing,
   commitmentList,
   emailShell,
+  fromHeader,
   greeting,
+  introParagraphs,
   leadLine,
-  paragraph,
+  mergeEmailCopy,
   praisesBlock,
   prayerRequestsBlock,
-  PSALM_INTRO_HTML,
+  renderParagraphs,
 } from "../_shared/email-layout.ts";
+import type { EmailCopy, EmailCopyRow } from "../_shared/email-copy.ts";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -49,27 +51,29 @@ interface MeditationRow {
 
 // ─── Email HTML builders ──────────────────────────────────────────────────────
 
-function buildConfirmationHtml(commitment: Commitment, unsubscribeUrl: string): string {
+function buildConfirmationHtml(
+  copy: EmailCopy,
+  commitment: Commitment,
+  unsubscribeUrl: string,
+): string {
   const bodyHtml = `
-    ${leadLine()}
-    ${greeting(commitment.name)}
-    ${paragraph(PSALM_INTRO_HTML)}
-    ${paragraph(
-      "Your commitment to pray with the " + BRAND.org + " " + BRAND.product +
-      " has been received. You'll begin receiving prayer reminders on the schedule set by our team, " +
-      "and a separate email with your full prayer guide is on its way to you now.",
-    )}
-    ${closing()}
+    ${leadLine(copy)}
+    ${greeting(copy, commitment.name)}
+    ${introParagraphs(copy)}
+    ${renderParagraphs(copy.confirmation_body)}
+    ${closing(copy)}
   `;
 
   return emailShell({
-    title: "Welcome to the Prayer Foundation",
+    copy,
+    title: copy.confirmation_title,
     bodyHtml,
     unsubscribeUrl,
   });
 }
 
 function buildSummaryHtml(
+  copy: EmailCopy,
   commitment: Commitment,
   categories: Category[],
   meditationMap: Map<string, string[]>,
@@ -85,23 +89,22 @@ function buildSummaryHtml(
   }));
 
   const requestsHtml = requestGroups.length > 0
-    ? commitmentList(filledCategories.map((c) => c.name)) + prayerRequestsBlock(requestGroups)
-    : paragraph(
-        "No prayer requests are available for your selected categories yet. " +
-        "Our team will add content soon.",
-      );
+    ? commitmentList(copy, filledCategories.map((c) => c.name)) +
+      prayerRequestsBlock(copy, requestGroups)
+    : renderParagraphs(copy.guide_empty_body);
 
   const bodyHtml = `
-    ${leadLine()}
-    ${greeting(commitment.name)}
-    ${paragraph(PSALM_INTRO_HTML)}
+    ${leadLine(copy)}
+    ${greeting(copy, commitment.name)}
+    ${introParagraphs(copy)}
     ${requestsHtml}
-    ${praisesBlock()}
-    ${closing()}
+    ${praisesBlock(copy)}
+    ${closing(copy)}
   `;
 
   return emailShell({
-    title: "Your Prayer Guide",
+    copy,
+    title: copy.guide_title,
     bodyHtml,
     unsubscribeUrl,
   });
@@ -265,17 +268,30 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  const fromDisplay = `${BRAND.fromName} <${fromEmail}>`;
+  // ── 5b. Load this wall's admin-edited email wording ───────────────────────
+  const { data: copyRows, error: copyErr } = await db
+    .from("email_copy")
+    .select("copy_key, value")
+    .eq("wall_id", commitment.wall_id);
+
+  if (copyErr) {
+    // Wording is not worth failing a welcome email over — fall back to defaults.
+    console.error("DB error fetching email_copy:", copyErr.message);
+  }
+
+  const copy = mergeEmailCopy((copyRows ?? []) as EmailCopyRow[]);
+
+  const fromDisplay = fromHeader(copy, fromEmail);
   const errors: string[] = [];
   let sent = 0;
 
   // ── 6. Send Email #1 — Confirmation ───────────────────────────────────────
-  const confirmHtml = buildConfirmationHtml(commitment as Commitment, unsubscribeUrl);
+  const confirmHtml = buildConfirmationHtml(copy, commitment as Commitment, unsubscribeUrl);
   const confirmResult = await sendEmail(
     resendApiKey,
     fromDisplay,
     commitment.email,
-    "Welcome to the Prayer Foundation",
+    copy.confirmation_subject,
     confirmHtml,
     "confirmation",
   );
@@ -298,6 +314,7 @@ Deno.serve(async (req: Request) => {
 
   // ── 7. Send Email #2 — Prayer & Meditation Summary ────────────────────────
   const summaryHtml = buildSummaryHtml(
+    copy,
     commitment as Commitment,
     categories,
     meditationMap,
@@ -307,7 +324,7 @@ Deno.serve(async (req: Request) => {
     resendApiKey,
     fromDisplay,
     commitment.email,
-    "Your Prayer Guide",
+    copy.guide_subject,
     summaryHtml,
     "summary",
   );

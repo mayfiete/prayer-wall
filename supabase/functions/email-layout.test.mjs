@@ -4,7 +4,15 @@ import { test } from 'node:test'
 import vm from 'node:vm'
 import ts from 'typescript'
 
-const source = await readFile(new URL('./_shared/email-layout.ts', import.meta.url), 'utf8')
+// email-layout.ts imports its copy registry from ./email-copy.ts, and a data:
+// URL module cannot resolve relative specifiers, so both files are inlined into
+// one module. The re-export lines are dropped because email-copy's own exports
+// become exports of the merged module.
+const copySource = await readFile(new URL('./_shared/email-copy.ts', import.meta.url), 'utf8')
+const layoutSource = await readFile(new URL('./_shared/email-layout.ts', import.meta.url), 'utf8')
+const source = `${copySource}\n${
+  layoutSource.replace(/^(?:import|export)[^;]*?from\s+"\.\/email-copy\.ts";\r?\n/gm, '')
+}`
 const { outputText } = ts.transpileModule(source, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
 })
@@ -55,60 +63,78 @@ test('shared shell uses the HCA newsletter design and preserves body and unsubsc
 })
 
 test('plain-text content cannot inject markup into the template', () => {
+  const copy = layout.EMAIL_COPY_DEFAULTS
   const input = '<img src=x onerror="alert(1)"> & Friends'
   const fragments = [
-    layout.greeting(input),
-    layout.commitmentList([input]),
-    layout.prayerRequestsBlock([{ categoryName: input, requests: [input] }]),
-    layout.personalRequestBlock(input),
-    layout.praisesBlock([input]),
-    layout.passageBlock({ reference: input, translation: input, text: input, copyright: input }),
+    layout.greeting(copy, input),
+    layout.commitmentList(copy, [input]),
+    layout.prayerRequestsBlock(copy, [{ categoryName: input, requests: [input] }]),
+    layout.personalRequestBlock(copy, input),
+    layout.praisesBlock({ ...copy, praises_items: input }),
+    layout.passageBlock(copy, { reference: input, translation: input, text: input, copyright: input }),
+    layout.closing({ ...copy, closing: input }),
     layout.emailShell({ title: input, eyebrow: input, footerText: input, bodyHtml: '', unsubscribeUrl }),
   ]
   for (const html of fragments) {
     assert.ok(!html.includes(input))
     assert.ok(html.includes('&lt;img src=x onerror=&quot;alert(1)&quot;&gt; &amp; Friends'))
   }
-  assert.ok(layout.paragraph(layout.PSALM_INTRO_HTML).includes('<strong>Psalm 127:1</strong>'))
+  assert.ok(layout.paragraph('<strong>Psalm 127:1</strong>').includes('<strong>Psalm 127:1</strong>'))
 })
 
 test('optional sections remain optional and blank names use the supporter greeting', () => {
-  assert.equal(layout.commitmentList([]), '')
-  assert.equal(layout.prayerRequestsBlock([{ categoryName: 'Empty', requests: [] }]), '')
-  assert.equal(layout.personalRequestBlock('  '), '')
-  assert.equal(layout.praisesBlock([]), '')
-  assert.equal(layout.passageBlock(null), '')
-  assert.match(layout.greeting('  '), /Dear Prayer Foundation Supporter,/)
+  const copy = layout.EMAIL_COPY_DEFAULTS
+  assert.equal(layout.commitmentList(copy, []), '')
+  assert.equal(layout.prayerRequestsBlock(copy, [{ categoryName: 'Empty', requests: [] }]), '')
+  assert.equal(layout.personalRequestBlock(copy, '  '), '')
+  assert.equal(layout.praisesBlock({ ...copy, praises_items: '' }), '')
+  assert.match(layout.praisesBlock(copy), /Praises/)
+  assert.equal(layout.passageBlock(copy, null), '')
+  assert.match(layout.greeting(copy, '  '), /Dear Prayer Foundation Supporter,/)
+})
+
+test('stored copy rows merge over defaults and blank values fall back', () => {
+  const merged = layout.mergeEmailCopy([
+    { copy_key: 'donation_subject', value: 'Custom subject' },
+    { copy_key: 'greeting', value: '' },
+    { copy_key: 'removed_key', value: 'x' },
+    { copy_key: 'praises_items', value: '' },
+  ])
+  assert.equal(merged.donation_subject, 'Custom subject')
+  assert.equal(merged.greeting, layout.EMAIL_COPY_DEFAULTS.greeting)
+  assert.equal(merged.praises_items, '')
 })
 
 test('confirmation and prayer guide both use the shared design', async () => {
   const { context } = await loadEmailModule('send-confirmation')
+  const copy = layout.EMAIL_COPY_DEFAULTS
   const commitment = { name: 'Alex & Family' }
-  const confirmation = context.buildConfirmationHtml(commitment, unsubscribeUrl)
+  const confirmation = context.buildConfirmationHtml(copy, commitment, unsubscribeUrl)
   assertBranding(confirmation)
   assert.match(confirmation, /Welcome to the Prayer Foundation/)
   assert.match(confirmation, /Dear Alex &amp; Family,/)
-  const guide = context.buildSummaryHtml(commitment, [{ id: 'school', name: 'School & Staff' }],
+  const guide = context.buildSummaryHtml(copy, commitment, [{ id: 'school', name: 'School & Staff' }],
     new Map([['school', ['Wisdom for teachers']]]), unsubscribeUrl)
   assertBranding(guide)
   assert.match(guide, /Your Prayer Guide/)
   assert.match(guide, /School &amp; Staff/)
   assert.match(guide, /Wisdom for teachers/)
-  const emptyGuide = context.buildSummaryHtml(commitment, [], new Map(), unsubscribeUrl)
+  const emptyGuide = context.buildSummaryHtml(copy, commitment, [], new Map(), unsubscribeUrl)
   assertBranding(emptyGuide)
   assert.match(emptyGuide, /No prayer requests are available/)
 })
 
 test('reminders keep personal requests, categories, and optional passages within the shared design', async () => {
   const { context } = await loadEmailModule('send-reminders')
-  const reminder = context.buildEmailHtml({ name: 'Alex', prayer_request: 'Family & friends' }, [],
+  const copy = layout.EMAIL_COPY_DEFAULTS
+  const reminder = context.buildEmailHtml(copy, { name: 'Alex', prayer_request: 'Family & friends' }, [],
     [{ categoryName: 'School', bodies: ['Wisdom for teachers'] }], null, unsubscribeUrl)
   assertBranding(reminder)
   assert.match(reminder, /A Prayer Reminder/)
   assert.match(reminder, /Family &amp; friends/)
   assert.match(reminder, /Wisdom for teachers/)
   assert.doesNotMatch(reminder, /A Word for Your Prayers/)
-  const withPoints = context.buildEmailHtml({ name: 'Alex', prayer_request: 'Legacy request' },
+  const withPoints = context.buildEmailHtml(copy, { name: 'Alex', prayer_request: 'Legacy request' },
     [{ body: 'Current request', is_answered: false }, { body: 'Answered request', is_answered: true }], [],
     { reference: 'Psalm 127:1', translation: 'KJV', text: 'Except the LORD build the house', copyright: null }, unsubscribeUrl)
   assertBranding(withPoints)
@@ -120,14 +146,19 @@ test('reminders keep personal requests, categories, and optional passages within
 test('donation thank-you keeps the amount and donation link with Giving Wall branding', async () => {
   let email
   const donationId = '00000000-0000-0000-0000-000000000001'
-  const donation = { id: donationId, name: 'Alex & Family', amount_cents: 2500, currency: 'usd', email: 'test@example.com' }
+  const donation = { id: donationId, giving_wall_id: '00000000-0000-0000-0000-000000000002',
+    name: 'Alex & Family', amount_cents: 2500, currency: 'usd', email: 'test@example.com', thank_you_sent: false }
   const db = {
     schema: () => db,
-    from: () => ({
+    from: (table) => table === 'donations' ? {
       select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: donation }) }) }),
       insert: async () => ({}),
       update: () => ({ eq: async () => ({}) }),
-    }),
+    } : {
+      // email_copy: one stored override — the subject must reach Resend
+      select: () => ({ eq: async () => ({ data: [{ copy_key: 'donation_subject', value: 'A custom subject' }], error: null }) }),
+      insert: async () => ({}),
+    },
   }
   const { handler } = await loadEmailModule('send-donation-thanks', {
     createClient: () => db,
@@ -141,6 +172,7 @@ test('donation thank-you keeps the amount and donation link with Giving Wall bra
     method: 'POST', body: JSON.stringify({ donation_id: donationId }),
   }))
   assert.equal(response.status, 200)
+  assert.equal(email.subject, 'A custom subject')
   assertBranding(email.html)
   assert.match(email.html, /Dear Alex &amp; Family,/)
   assert.match(email.html, /\$25\.00/)

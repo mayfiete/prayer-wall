@@ -6,19 +6,20 @@ import { ApiBibleProvider } from "../_shared/apibible-provider.ts";
 import { resolveBibleId } from "../_shared/bible-types.ts";
 import type { BibleTranslation } from "../_shared/bible-types.ts";
 import {
-  BRAND,
   closing,
   commitmentList,
   emailShell,
+  fromHeader,
   greeting,
+  introParagraphs,
   leadLine,
-  paragraph,
+  mergeEmailCopy,
   passageBlock,
   personalRequestBlock,
   praisesBlock,
   prayerRequestsBlock,
-  PSALM_INTRO_HTML,
 } from "../_shared/email-layout.ts";
+import type { EmailCopy, EmailCopyRow } from "../_shared/email-copy.ts";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -98,6 +99,7 @@ function isDue(rhythm: Rhythm, now: Date): boolean {
 type PassageResult = { reference: string; translation: string; text: string; copyright: string | null };
 
 function buildEmailHtml(
+  copy: EmailCopy,
   warrior: Commitment,
   points: PrayerPoint[],
   categoryMeditations: CategoryMeditation[],
@@ -113,20 +115,28 @@ function buildEmailHtml(
   }));
 
   const bodyHtml = `
-    ${leadLine()}
-    ${greeting(warrior.name)}
-    ${paragraph(PSALM_INTRO_HTML)}
-    ${commitmentList(categoryNames)}
-    ${prayerRequestsBlock(requestGroups)}
-    ${personalRequestBlock(openPoints.length === 0 ? warrior.prayer_request : "")}
-    ${openPoints.length > 0 ? prayerRequestsBlock([{ categoryName: "Your Personal Requests", requests: openPoints.map((p) => p.body) }]) : ""}
-    ${passageBlock(passage)}
-    ${praisesBlock()}
-    ${closing()}
+    ${leadLine(copy)}
+    ${greeting(copy, warrior.name)}
+    ${introParagraphs(copy)}
+    ${commitmentList(copy, categoryNames)}
+    ${prayerRequestsBlock(copy, requestGroups)}
+    ${personalRequestBlock(copy, openPoints.length === 0 ? warrior.prayer_request : "")}
+    ${
+    openPoints.length > 0
+      ? prayerRequestsBlock(
+        copy,
+        [{ categoryName: copy.personal_requests_label, requests: openPoints.map((p) => p.body) }],
+      )
+      : ""
+  }
+    ${passageBlock(copy, passage)}
+    ${praisesBlock(copy)}
+    ${closing(copy)}
   `;
 
   return emailShell({
-    title: "A Prayer Reminder",
+    copy,
+    title: copy.reminder_title,
     bodyHtml,
     unsubscribeUrl,
   });
@@ -286,6 +296,32 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  // 4b. Load admin-edited wording for every wall represented in this run.
+  // Reminders always belong to one wall in practice, but resolving per wall
+  // keeps a second wall from inheriting the first wall's copy.
+  const reminderWallIds = [...new Set((warriors ?? []).map((w) => w.wall_id as string))];
+  const copyByWall = new Map<string, EmailCopy>();
+  if (reminderWallIds.length > 0) {
+    const { data: copyRows, error: copyErr } = await supabase
+      .from("email_copy")
+      .select("wall_id, copy_key, value")
+      .in("wall_id", reminderWallIds);
+
+    if (copyErr) {
+      // Wording is not worth skipping a send over — fall back to defaults.
+      console.error("Failed to load email_copy:", copyErr.message);
+    }
+
+    const rowsByWall = new Map<string, EmailCopyRow[]>();
+    for (const row of (copyRows ?? []) as Array<EmailCopyRow & { wall_id: string }>) {
+      if (!rowsByWall.has(row.wall_id)) rowsByWall.set(row.wall_id, []);
+      rowsByWall.get(row.wall_id)!.push(row);
+    }
+    for (const id of reminderWallIds) {
+      copyByWall.set(id, mergeEmailCopy(rowsByWall.get(id)));
+    }
+  }
+
   // 5. Send emails
   const results = await Promise.allSettled(
     (warriors ?? []).map(async (warrior) => {
@@ -332,7 +368,10 @@ Deno.serve(async (req: Request) => {
         passage = await findPassageForText(searchText, bibleProvider, bibleId);
       }
 
+      const copy = copyByWall.get(warrior.wall_id as string) ?? mergeEmailCopy(null);
+
       const html = buildEmailHtml(
+        copy,
         warrior as Commitment,
         (points ?? []) as PrayerPoint[],
         categoryMeditations,
@@ -347,9 +386,9 @@ Deno.serve(async (req: Request) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: `${BRAND.fromName} <${fromEmail}>`,
+          from: fromHeader(copy, fromEmail),
           to: warrior.email,
-          subject: "A friendly reminder to pray",
+          subject: copy.reminder_subject,
           html,
         }),
       });

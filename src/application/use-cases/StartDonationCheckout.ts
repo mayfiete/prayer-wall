@@ -6,6 +6,8 @@ import { ValidationError } from '../../domain/errors/DomainError'
 export const MIN_DONATION_CENTS = 100
 /** $50,000 — sanity ceiling; larger gifts should be handled offline by the school */
 export const MAX_DONATION_CENTS = 5_000_000
+/** Matches the column width the brick name is stored in */
+export const MAX_NAME_LENGTH = 100
 
 export class StartDonationCheckout {
   constructor(private readonly paymentGateway: IPaymentGateway) {}
@@ -26,16 +28,20 @@ export class StartDonationCheckout {
       )
     }
 
-    const fullName = dto.isAnonymous ? undefined : dto.fullName?.trim() || undefined
-    if (fullName && fullName.length > 100) {
-      throw new ValidationError('Full Name must be 100 characters or fewer')
+    const firstName = dto.firstName?.trim() ?? ''
+    if (!firstName) {
+      throw new ValidationError('Enter your first name')
+    }
+
+    const fullName = [firstName, dto.lastName?.trim()].filter(Boolean).join(' ')
+    if (fullName.length > MAX_NAME_LENGTH) {
+      throw new ValidationError(`Your name must be ${MAX_NAME_LENGTH} characters or fewer`)
     }
 
     return this.paymentGateway.startCheckout({
       givingWallId: dto.givingWallId,
       amountCents: dto.amountCents,
       currency: dto.currency ?? 'usd',
-      isAnonymous: dto.isAnonymous ?? false,
       fullName,
     })
   }
