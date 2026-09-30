@@ -145,7 +145,7 @@
     z-index: 2;
     width: 90%;
     font-family: var(--brick-name-font, 'Libre Baskerville', Georgia, serif);
-    font-size: calc(clamp(14px, 2.2vw, 22px) * var(--brick-name-size, 1.0));
+    font-size: calc(var(--wall-name-size, clamp(14px, 2.2vw, 22px)) * var(--brick-name-size, 1.0));
     font-weight: 700;
     font-style: italic;
     color: var(--brick-name-color, #000);

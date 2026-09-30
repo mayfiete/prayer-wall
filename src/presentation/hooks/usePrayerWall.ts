@@ -28,7 +28,7 @@ export function usePrayerWall(wallId: string) {
   const addPrayer = useCallback((prayer: Prayer) => {
     setPrayers((prev) => {
       if (prev.some((p) => p.id === prayer.id)) return prev
-      return [...prev, prayer]
+      return [prayer, ...prev]
     })
   }, [])
 

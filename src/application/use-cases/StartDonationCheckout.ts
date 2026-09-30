@@ -28,6 +28,10 @@ export class StartDonationCheckout {
       )
     }
 
+    if (dto.monthlyConsent !== true) {
+      throw new ValidationError('Please agree to the monthly donation before continuing')
+    }
+
     const firstName = dto.firstName?.trim() ?? ''
     if (!firstName) {
       throw new ValidationError('Enter your first name')
@@ -41,6 +45,7 @@ export class StartDonationCheckout {
     return this.paymentGateway.startCheckout({
       givingWallId: dto.givingWallId,
       amountCents: dto.amountCents,
+      monthlyConsent: dto.monthlyConsent,
       currency: dto.currency ?? 'usd',
       fullName,
     })

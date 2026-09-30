@@ -40,6 +40,7 @@ export function DonationCheckout({
 
   const [amountCents, setAmountCents] = useState<number>(PRESET_AMOUNTS_CENTS[1])
   const [customAmount, setCustomAmount] = useState('')
+  const [monthlyConsent, setMonthlyConsent] = useState(false)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [name, setName] = useState('')
@@ -53,15 +54,17 @@ export function DonationCheckout({
   const [completed, setCompleted] = useState<Donation | null>(null)
 
   const selectPreset = (cents: number) => {
+    setMonthlyConsent(false)
     setAmountCents(cents)
     setCustomAmount('')
   }
 
   const changeCustomAmount = (value: string) => {
+    setMonthlyConsent(false)
     const cleaned = value.replace(/[^\d.]/g, '')
     setCustomAmount(cleaned)
     const dollars = Number.parseFloat(cleaned)
-    if (Number.isFinite(dollars)) setAmountCents(Math.round(dollars * 100))
+    setAmountCents(Number.isFinite(dollars) ? Math.round(dollars * 100) : 0)
   }
 
   const fillTestCard = (number: string) => {
@@ -76,7 +79,7 @@ export function DonationCheckout({
     setSubmitting(true)
 
     try {
-      const handoff = await startDonationCheckout.execute({ givingWallId, amountCents, firstName, lastName })
+      const handoff = await startDonationCheckout.execute({ givingWallId, amountCents, firstName, lastName, monthlyConsent })
 
       if (handoff.kind === 'redirect') {
         // Card details are entered on the processor's domain, never here.
@@ -117,7 +120,7 @@ export function DonationCheckout({
         </p>
         <p className="text-sm" style={{ color: 'color-mix(in srgb, var(--color-modal-text) 65%, transparent)' }}>
           {successBody ??
-            `Thank you for your gift of ${formatCurrency(completed.amountCents, completed.currency)}. Look for “${completed.name}” on the wall.`}
+            `Thank you for your monthly gift of ${formatCurrency(completed.amountCents, completed.currency)}. Look for “${completed.name}” on the wall.`}
         </p>
       </div>
     )
@@ -129,7 +132,7 @@ export function DonationCheckout({
     <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-5" noValidate>
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium" style={{ color: 'color-mix(in srgb, var(--color-modal-text) 80%, transparent)' }}>
-          Choose your gift
+          Choose your monthly gift
         </span>
         <div className="grid grid-cols-2 min-[400px]:grid-cols-3 gap-2">
           {PRESET_AMOUNTS_CENTS.map((cents) => {
@@ -147,7 +150,7 @@ export function DonationCheckout({
                 }}
                 aria-pressed={active}
               >
-                {formatCurrency(cents)}
+                {formatCurrency(cents)}/month
               </button>
             )
           })}
@@ -267,19 +270,32 @@ export function DonationCheckout({
         </>
       )}
 
+      <label htmlFor="monthly-consent" className="flex items-start gap-3 text-sm" style={{ color: 'var(--color-modal-text)' }}>
+        <input
+          id="monthly-consent"
+          type="checkbox"
+          checked={monthlyConsent}
+          onChange={(e) => setMonthlyConsent(e.target.checked)}
+          required
+          disabled={submitting}
+          className="mt-1 h-4 w-4 shrink-0"
+        />
+        <span>I agree to support Heritage Christian Academy with a monthly donation of {formatCurrency(amountCents)}, charged automatically each month until canceled.</span>
+      </label>
+
       {error && (
         <p className="text-sm text-red-400 bg-red-900/20 border border-red-800 rounded-md px-3 py-2">
           {error}
         </p>
       )}
 
-      <Button type="submit" disabled={submitting} size="lg" className="w-full mt-1">
+      <Button type="submit" disabled={submitting || !monthlyConsent} size="lg" className="w-full mt-1">
         {submitting
           ? 'Processing…'
           : (submitLabel ??
             (simulated
-              ? `Give ${formatCurrency(amountCents)}`
-              : `Continue to secure checkout · ${formatCurrency(amountCents)}`))}
+              ? `Give ${formatCurrency(amountCents)}/month`
+              : `Continue to secure checkout · ${formatCurrency(amountCents)}/month`))}
       </Button>
 
       <p className="flex items-center justify-center gap-1.5 text-xs text-center" style={{ color: mutedText }}>

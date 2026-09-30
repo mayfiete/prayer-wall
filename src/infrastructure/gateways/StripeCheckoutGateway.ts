@@ -69,6 +69,7 @@ export class StripeCheckoutGateway implements IPaymentGateway {
     const body = {
       giving_wall_id: input.givingWallId,
       amount_cents: input.amountCents,
+      monthly_consent: input.monthlyConsent,
       currency: input.currency,
       full_name: input.fullName,
       success_url: `${returnOrigin}?checkout=success`,

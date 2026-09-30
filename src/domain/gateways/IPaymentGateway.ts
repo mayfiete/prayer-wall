@@ -4,6 +4,7 @@ export interface StartCheckoutInput {
   givingWallId: string
   /** Amount in smallest currency unit (cents for USD) */
   amountCents: number
+  monthlyConsent: boolean
   currency: string
   /** Public name for the brick, composed from the donor's first and last name */
   fullName: string

@@ -12,7 +12,7 @@ export class MockPrayerRepository implements IPrayerRepository {
     await delay(400)
     return this.prayers
       .filter((p) => p.wallId === wallId)
-      .sort((a, b) => a.committedAt.getTime() - b.committedAt.getTime())
+      .sort((a, b) => b.committedAt.getTime() - a.committedAt.getTime())
   }
 
   async findById(id: string): Promise<Prayer | null> {

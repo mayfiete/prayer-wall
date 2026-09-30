@@ -9,6 +9,10 @@ at the bottom of that file), `supabase/migrations/026_giving_wall_stripe.sql`
 
 ---
 
+## Monthly donations
+
+New checkouts create monthly subscriptions and require explicit agreement to the selected monthly amount. See [the rollout notes](mobile-wall-monthly-donations-rollout.md) for coordinated deployment, verification, and renewal behavior. Earlier one-time gifts are not converted.
+
 ## How the flow works
 
 ```

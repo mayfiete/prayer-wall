@@ -88,10 +88,10 @@ function buildSummaryHtml(
     requests: meditationMap.get(c.id) ?? [],
   }));
 
-  const requestsHtml = requestGroups.length > 0
-    ? commitmentList(copy, filledCategories.map((c) => c.name)) +
-      prayerRequestsBlock(copy, requestGroups)
-    : renderParagraphs(copy.guide_empty_body);
+  const requestsHtml = commitmentList(copy, categories.map((c) => c.name)) +
+    (requestGroups.length > 0
+      ? prayerRequestsBlock(copy, requestGroups)
+      : renderParagraphs(copy.guide_empty_body));
 
   const bodyHtml = `
     ${leadLine(copy)}
@@ -179,7 +179,7 @@ Deno.serve(async (req: Request) => {
   console.log("DEBUG supabaseUrl:", supabaseUrl ? supabaseUrl.slice(0, 30) : "MISSING");
   console.log("DEBUG serviceRoleKey present:", !!serviceRoleKey, "length:", serviceRoleKey?.length ?? 0);
 
-  const supabase = createClient(supabaseUrl, serviceRoleKey);
+  const supabase = createClient(supabaseUrl, serviceRoleKey, { db: { schema: "prayer_wall" } });
   const db = supabase.schema("prayer_wall");
 
   const unsubscribeUrl = `${appUrl}/unsubscribe?id=${commitmentId}`;

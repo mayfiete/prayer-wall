@@ -67,7 +67,7 @@ async function loadHandler(name, env, sessionMode, options = {}) {
 function checkoutRequest() {
   return new Request('http://localhost/checkout', {
     method: 'POST',
-    body: JSON.stringify({ giving_wall_id: wallId, amount_cents: 100, currency: 'usd' }),
+    body: JSON.stringify({ giving_wall_id: wallId, amount_cents: 100, currency: 'usd', monthly_consent: true }),
   })
 }
 
@@ -153,6 +153,44 @@ for (const [label, mode, eventMode, sessionMode, expectedStatus] of [
 }
 
 const webhookEnv = { STRIPE_WEBHOOK_SECRET: 'whsec_fixture', GIVING_WALL_ID: wallId }
+test('checkout creates monthly subscriptions with consent recorded on Stripe', async () => {
+  const { handler, calls } = await loadHandler('create-donation-checkout', {
+    STRIPE_SECRET_KEY: 'sk_test_fixture', GIVING_WALL_ID: wallId,
+  }, false)
+  assert.equal((await handler(checkoutRequest())).status, 200)
+  assert.equal(calls.checkout.get('mode'), 'subscription')
+  assert.equal(calls.checkout.get('line_items[0][price_data][recurring][interval]'), 'month')
+  assert.equal(calls.checkout.get('metadata[monthly_consent]'), 'true')
+  assert.equal(calls.checkout.get('subscription_data[metadata][giving_wall_id]'), wallId)
+  assert.equal(calls.checkout.has('submit_type'), false)
+  assert.equal(calls.checkout.has('payment_intent_data[metadata][giving_wall_id]'), false)
+})
+
+for (const monthly_consent of [undefined, false, 'true']) {
+  test(`checkout rejects missing or invalid monthly consent: ${monthly_consent}`, async () => {
+    const { handler, calls } = await loadHandler('create-donation-checkout', {
+      STRIPE_SECRET_KEY: 'sk_test_fixture', GIVING_WALL_ID: wallId,
+    }, false)
+    const response = await handler(new Request('http://localhost/checkout', {
+      method: 'POST', body: JSON.stringify({ amount_cents: 100, monthly_consent }),
+    }))
+    assert.equal(response.status, 400)
+    assert.equal(calls.stripe, 0)
+  })
+}
+
+test('paid subscription checkout creates one brick across duplicate deliveries and renewal events', async () => {
+  const { handler, calls } = await loadHandler('giving-wall-webhook', webhookEnv)
+  const session = { mode: 'subscription', subscription: 'sub_fixture', payment_intent: null }
+  for (const id of ['evt_subscription', 'evt_duplicate']) {
+    assert.equal((await handler(await webhookRequest(false, false, true, session, { id }))).status, 200)
+  }
+  await handler(await webhookRequest(false, false, true, {}, { id: 'evt_renewal', type: 'invoice.paid' }))
+  assert.equal(calls.rpc[0].p_processor_ref, 'cs_fixture')
+  assert.equal(calls.donations, 1)
+  assert.equal(calls.emails, 1)
+})
+
 const donorFields = [
   { key: 'firstname', text: { value: ' Mary Jane ' } },
   { key: 'lastname', text: { value: ' van der Berg ' } },
@@ -164,7 +202,7 @@ for (const anonymous of [false, true]) {
       STRIPE_SECRET_KEY: 'sk_test_fixture', GIVING_WALL_ID: wallId,
     }, false)
     await handler(new Request('http://localhost/checkout', {
-      method: 'POST', body: JSON.stringify({ amount_cents: 100, is_anonymous: anonymous, full_name: ' Mary Jane van der Berg ' }),
+      method: 'POST', body: JSON.stringify({ amount_cents: 100, monthly_consent: true, is_anonymous: anonymous, full_name: ' Mary Jane van der Berg ' }),
     }))
     const params = calls.checkout
     const fields = [0, 1, 2].map((i) => ({ key: params.get(`custom_fields[${i}][key]`), optional: params.get(`custom_fields[${i}][optional]`) }))
@@ -196,7 +234,7 @@ for (const full_name of [42, {}, 'x'.repeat(101)]) {
       STRIPE_SECRET_KEY: 'sk_test_fixture', GIVING_WALL_ID: wallId,
     }, false)
     const response = await handler(new Request('http://localhost/checkout', {
-      method: 'POST', body: JSON.stringify({ amount_cents: 100, full_name }),
+      method: 'POST', body: JSON.stringify({ amount_cents: 100, monthly_consent: true, full_name }),
     }))
     assert.equal(response.status, 400)
     assert.equal(calls.stripe, 0)
