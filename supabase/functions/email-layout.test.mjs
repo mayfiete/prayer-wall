@@ -124,6 +124,15 @@ test('confirmation and prayer guide both use the shared design', async () => {
   assert.match(emptyGuide, /No prayer requests are available/)
 })
 
+test('selected categories remain in the prayer guide even without active requests', async () => {
+  const { context } = await loadEmailModule('send-confirmation')
+  const categories = ['Students', 'Teachers', 'Families', 'Leadership'].map((name, i) => ({ id: String(i), name }))
+  for (const requests of [new Map([['0', ['Wisdom for students']]]), new Map()]) {
+    const html = context.buildSummaryHtml(layout.EMAIL_COPY_DEFAULTS, { name: 'Alex' }, categories, requests, unsubscribeUrl)
+    for (const { name } of categories) assert.ok(html.includes(name), `missing selected category ${name}`)
+  }
+})
+
 test('reminders keep personal requests, categories, and optional passages within the shared design', async () => {
   const { context } = await loadEmailModule('send-reminders')
   const copy = layout.EMAIL_COPY_DEFAULTS

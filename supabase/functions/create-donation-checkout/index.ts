@@ -26,6 +26,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 interface CheckoutRequestBody {
   giving_wall_id?: unknown;
   amount_cents?: unknown;
+  monthly_consent?: unknown;
   currency?: unknown;
   is_anonymous?: unknown;
   full_name?: unknown;
@@ -95,6 +96,10 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Payments are not configured yet" }, 500);
   }
 
+  if (body.monthly_consent !== true) {
+    return json({ error: "Please agree to the monthly donation before continuing" }, 400);
+  }
+
   const amountCents = Number(body.amount_cents);
   if (!Number.isInteger(amountCents) || amountCents < MIN_AMOUNT_CENTS || amountCents > MAX_AMOUNT_CENTS) {
     return json({ error: `amount_cents must be a whole number between ${MIN_AMOUNT_CENTS} and ${MAX_AMOUNT_CENTS}` }, 400);
@@ -117,19 +122,23 @@ Deno.serve(async (req: Request) => {
 
   // Stripe's API is form-encoded, so nested params use bracket notation.
   const params = new URLSearchParams({
-    "mode": "payment",
-    "submit_type": "donate",
+    "mode": "subscription",
     "billing_address_collection": "required",
     "success_url": successUrl,
     "cancel_url": cancelUrl,
     "line_items[0][quantity]": "1",
     "line_items[0][price_data][currency]": currency,
     "line_items[0][price_data][unit_amount]": String(amountCents),
-    "line_items[0][price_data][product_data][name]": `Gift to ${orgName}`,
+    "line_items[0][price_data][recurring][interval]": "month",
+    "line_items[0][price_data][product_data][name]": `Monthly gift to ${orgName}`,
     "line_items[0][price_data][product_data][description]": "Your name is added to the giving wall",
     "metadata[giving_wall_id]": givingWallId,
     "metadata[is_anonymous]": String(isAnonymous),
-    "payment_intent_data[metadata][giving_wall_id]": givingWallId,
+    "metadata[monthly_consent]": "true",
+    "metadata[monthly_consent_at]": new Date().toISOString(),
+    "metadata[monthly_amount_cents]": String(amountCents),
+    "subscription_data[metadata][giving_wall_id]": givingWallId,
+    "subscription_data[metadata][monthly_consent]": "true",
   });
 
   if (fullName) params.set("metadata[full_name]", fullName);

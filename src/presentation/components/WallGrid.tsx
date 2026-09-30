@@ -15,7 +15,7 @@ interface WallGridProps {
 }
 
 export function WallGrid({ items, ctaBrick, loading, error }: WallGridProps) {
-  const { containerRef, columns: stonesPerRow, style } = useWallLayout()
+  const { containerRef, columns: stonesPerRow, mobile, style } = useWallLayout()
   const FULL = stonesPerRow
   const OFFSET = Math.max(1, stonesPerRow - 1)
 
@@ -25,13 +25,13 @@ export function WallGrid({ items, ctaBrick, loading, error }: WallGridProps) {
     let idx = 0
     let rowIdx = 0
     while (idx < all.length) {
-      const size = rowIdx % 2 === 0 ? FULL : OFFSET
+      const size = (rowIdx % 2 === 0) !== mobile ? FULL : OFFSET
       result.push(all.slice(idx, idx + size))
       idx += size
       rowIdx += 1
     }
     return result
-  }, [items, ctaBrick, FULL, OFFSET])
+  }, [items, ctaBrick, FULL, OFFSET, mobile])
 
   return (
     <div ref={containerRef} className="min-w-0 w-full flex-1">
@@ -46,7 +46,7 @@ export function WallGrid({ items, ctaBrick, loading, error }: WallGridProps) {
           {rows.map((row, rowIdx) => (
             <div
               key={rowIdx}
-              className={`stone-row${stonesPerRow > 1 && rowIdx % 2 === 1 ? ' stone-row--offset' : ''}`}
+              className={`stone-row${stonesPerRow > 1 && (rowIdx % 2 === 1) !== mobile ? ' stone-row--offset' : ''}`}
             >
               {row.map((item) => (
                 <Fragment key={item.key}>{item.node}</Fragment>

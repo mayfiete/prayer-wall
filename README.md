@@ -16,6 +16,7 @@ The frontend is built with Vite and Tailwind CSS. Supabase provides the database
 - [Edge Functions and email](#edge-functions-and-email)
 - [Deployment](#deployment)
 - [Verification and troubleshooting](#verification-and-troubleshooting)
+- [Security posture and remaining work](#security-posture-and-remaining-work)
 - [Repository guide](#repository-guide)
 
 ## Products and features
@@ -33,16 +34,17 @@ The prayer admin area includes:
 - **Stonemasons:** manage prayer participants, prayer points, and individual rhythm assignments.
 - **Assets:** upload wall textures and logos.
 - **Theme:** edit colors, fonts, layout settings, and interface copy with live preview.
+- **Emails:** edit sender name, shared wording, confirmation, prayer guide, and reminder copy for this wall.
 
 The current reminder worker selects recipients through **category-to-rhythm assignments**. Individual rhythm assignments exist in the admin and database, but the worker does not currently use `commitment_rhythms` to select recipients.
 
 ### Giving Wall
 
-Visitors choose a preset or custom gift amount, optionally provide a Full Name, and can choose to appear as Anonymous. In Supabase mode, the app redirects them to **Stripe-hosted Checkout** to enter payment details.
+Visitors choose a preset or custom gift amount, enter a required first name and optionally a last name. The frontend combines these into the name sent to Checkout; it currently does **not** offer an Anonymous toggle. In Supabase mode, the app redirects them to **Stripe-hosted Checkout** to enter payment details.
 
 A verified, paid Checkout event records the donation and a linked commitment. Realtime then updates the giving wall, and the webhook requests a thank-you email. A successful donation does **not** subscribe the donor to prayer reminders.
 
-The giving admin area includes Rhythms, Assets, Theme, and **Bricklayers**. The Bricklayers view lists recorded donations, amounts, dates, processor references, email opt-out status, and a total. A Rhythms tab is available, but the current email worker is a category-based prayer reminder worker; a separate recurring donor-email campaign is not implemented.
+The giving admin area includes Rhythms, Assets, Theme, Emails, and **Bricklayers**. The Emails tab edits this wall's sender name, shared wording, and donation thank-you text. The Bricklayers view lists recorded donations, amounts, dates, processor references, email opt-out status, and a total. A Rhythms tab is available, but the current email worker is a category-based prayer reminder worker; a separate recurring donor-email campaign is not implemented.
 
 ### Shared presentation
 
@@ -143,7 +145,7 @@ sequenceDiagram
     participant Thanks as send-donation-thanks
     participant Mail as Resend
 
-    Visitor->>App: Choose amount, optional Full Name, anonymity
+    Visitor->>App: Choose amount, first name, optional last name
     App->>Checkout: Request Checkout Session
     Checkout->>Stripe: Create hosted Checkout Session
     Stripe-->>Checkout: Session URL
@@ -164,7 +166,7 @@ sequenceDiagram
 
 Stripe's redirect and webhook are independent; the brick can appear after the visitor returns. The redirect does not create a donation. The webhook handles `checkout.session.completed` and `checkout.session.async_payment_succeeded`, and only records paid sessions. Event auditing and an idempotent database function protect against duplicate payment records on retries.
 
-Only the webhook's service-role path may create production donations. The `record_paid_donation` function creates the donation and linked commitment in one transaction. The commitment has `reminder_active = false`. Explicit anonymity takes precedence over the optional Full Name and Stripe billing-name fallback.
+Only the webhook's service-role path may create production donations. The `record_paid_donation` function creates the donation and linked commitment in one transaction. The commitment has `reminder_active = false`. The webhook supports anonymity metadata for legacy/other callers and uses a name from Checkout metadata or Stripe billing details when available, but the current frontend does not expose anonymity.
 
 ## Routes
 
@@ -180,7 +182,7 @@ Only the webhook's service-role path may create production donations. The `recor
 | `/unsubscribe?id=<commitment-id>` | Stop prayer reminders. |
 | `/unsubscribe?donation=<donation-id>` | Opt out of donation emails. |
 
-Admin login uses Supabase email/password authentication and checks the configured `VITE_ADMIN_EMAIL`. That frontend check is not a substitute for database grants and row-level security (RLS).
+Admin login uses Supabase email/password authentication and checks the configured `VITE_ADMIN_EMAIL` in the browser. This is only a UI guard: some database and Storage policies grant privileges to **every** authenticated Supabase user, regardless of that email. See [Security posture and remaining work](#security-posture-and-remaining-work) before creating additional accounts.
 
 ## Local development
 
@@ -272,7 +274,8 @@ Application tables live in the **`prayer_wall`** Postgres schema. The current un
 | `commitments`, `commitment_categories` | Prayer participants and chosen categories; paid donations also have linked commitments. |
 | `message_categories`, `prayer_meditations`, `prayer_points` | Shared prayer content and personal prayer needs. |
 | `email_rhythms`, `category_rhythms`, `commitment_rhythms` | Schedule definitions and assignments. |
-| `wall_theme` | Per-wall presentation settings and editable copy. |
+| `wall_theme` | Per-wall presentation settings and public interface copy. |
+| `email_copy` | Per-wall, admin-edited plain-text email wording overrides (migration `034`). |
 | `donations` | Paid amounts in cents, currency, display name, payment references, and linked commitments. |
 | `webhook_events` | Stripe event audit and processing status. |
 | `email_logs` | Delivery attempts, email types, statuses, and provider message IDs. |
@@ -295,6 +298,8 @@ The directory contains historical alternatives and two files numbered `018`; do 
 - `028_fix_cron_reminders.sql` replaces the broken scheduler configuration from `012` with Vault-backed hourly calls. Create its required Vault secrets first.
 - `029_walls_app_type.sql` establishes the current discriminator and refuses to run if a separate `giving_walls` table exists. Existing separate-table installations require reconciliation first.
 - Apply `030_donation_commitments.sql`, `031_donation_full_name.sql`, and `032_restore_commitment_public_reads.sql` in that order for current donation persistence and public commitment reads.
+- Apply `033_restrict_donation_public_reads.sql` after `024` to remove broad donation SELECT grants; **do not rerun `024` afterward**. It allows only an explicit public column projection. Run the disposable-stack API/Realtime privacy tests below to verify effective grants.
+- Apply `034_email_copy.sql` for admin email editing. The table is not publicly readable, but its write policies currently trust any authenticated user; see [Security posture and remaining work](#security-posture-and-remaining-work).
 
 The migration headers and [giving-wall setup guide](docs/giving-wall-stripe-test-mode.md) explain prerequisites and deployment order. The older [Supabase setup notes](docs/supabase-setup.md) provide background but contain historical names and scheduling examples; use the current files above for migrations and cron setup.
 
@@ -310,6 +315,12 @@ The migration headers and [giving-wall setup guide](docs/giving-wall-stripe-test
 | `unsubscribe` | Opt-out endpoint supporting both products; the giving frontend uses it because browsers cannot update donation rows. |
 
 The prayer frontend currently disables reminders through its repository; the `unsubscribe` Edge Function also supports commitment IDs for direct endpoint use.
+
+### Editable email wording
+
+The **Emails** tab on each admin page edits that wall's copy in `prayer_wall.email_copy`. Prayer and giving have separate wall IDs and separate overrides. Unsaved fields show “edited”; save persists differences from the shipped defaults and clears that indicator. Reset all to defaults must also be saved. Existing emails are not changed; new emails read overrides at send time. `{{name}}` and `{{amount}}` are substituted where supported; wording is plain text and HTML-escaped, not an HTML editor. Layout and logo live in `supabase/functions/_shared/email-layout.ts`; shipped defaults and field definitions live in `supabase/functions/_shared/email-copy.ts`.
+
+Apply migration `034` and reload the PostgREST schema before using the editor. After changing shared layout or shipped defaults, redeploy **all three** email functions (`send-confirmation`, `send-reminders`, `send-donation-thanks`); deploying the frontend alone cannot change function code. Database overrides take effect for the next email without a function redeploy, provided the copy-aware function is deployed. Check Edge Function logs for `email_copy` query errors: the senders currently fall back to defaults on query failure. Donation thank-yous are one-time sends, so a saved edit does not resend an already sent receipt.
 
 ### Reminder scheduling
 
@@ -352,7 +363,7 @@ npx supabase functions deploy create-donation-checkout --project-ref YOUR_PROJEC
 
 The reminder function authenticates with `x-cron-secret`; the webhook authenticates with `Stripe-Signature`, so neither relies on a Supabase user JWT. The unsubscribe endpoint supports links opened without a signed-in session. Other browser-invoked functions use the configured Supabase client's credentials.
 
-For the current Full Name checkout flow, apply the required schema first, deploy the webhook before the checkout function, then release the frontend. Register the Stripe endpoint at `https://YOUR_PROJECT_REF.supabase.co/functions/v1/giving-wall-webhook` for `checkout.session.completed` and `checkout.session.async_payment_succeeded`. Redeploy modified functions; frontend deployment alone does not update them.
+For the current checkout name flow, apply the required schema first, deploy the webhook before the checkout function, then release the frontend. Register the Stripe endpoint at `https://YOUR_PROJECT_REF.supabase.co/functions/v1/giving-wall-webhook` for `checkout.session.completed` and `checkout.session.async_payment_succeeded`. Redeploy modified functions; frontend deployment alone does not update them.
 
 ## Verification and troubleshooting
 
@@ -362,23 +373,40 @@ For the current Full Name checkout flow, apply the required schema first, deploy
 | `npm run build` | TypeScript project build and production assets. |
 | `npm run preview` | Preview built frontend locally. |
 | `npm run lint` | Repository ESLint check. |
-| `node --test tests/*.test.mjs` | Frontend/use-case regressions, including checkout naming, donation loading, and responsive layout calculations. |
+| `node --test tests/*.test.mjs` | Frontend/use-case regressions, including checkout naming, donation loading, and responsive layout calculations. Checkout naming tests currently expect an obsolete optional Full Name/Anonymous UI and fail on the required first/optional last name form. |
 | `node --test supabase/functions/stripe-mode.test.mjs` | Stripe test/live mode guards with external services mocked. |
+| `node --test supabase/functions/email-layout.test.mjs` | Email layout, copy defaults, escaping, and mocked sending; sends no emails. |
 | `node --test supabase/functions/donation-persistence.test.mjs` | Donation persistence migration integration checks against disposable Postgres; requires `DONATION_TEST_CONTAINER`. |
+| `node --test supabase/functions/donation-access.test.mjs` | API/Realtime donor privacy on a disposable local Supabase CLI stack; requires the `DONATION_ACCESS_TEST_*` variables below. |
 
 There is no `npm test` script. The regression tests require installed dependencies and do not submit real payments. Responsive tests exercise the actual grid code with mocked DOM/React boundaries; they do not replace visual browser testing. Check both walls at phone, tablet, and desktop widths, resize an already-open page, and open forms in a short viewport.
 
-The donation persistence integration test requires Docker and `DONATION_TEST_CONTAINER` set to the name of a running **disposable, empty Postgres container**. It creates roles and applies schema changes through `docker exec`; never point it at a real project. Without that environment variable, the integration test is skipped.
+The donation persistence integration test requires Docker and `DONATION_TEST_CONTAINER` set to a **fresh, disposable Postgres container with logical replication enabled**. It creates roles and applies schema changes through `docker exec`; never point it at a real project. Without that environment variable, the integration test is skipped. The API/Realtime test requires a fresh disposable local Supabase CLI stack with `prayer_wall` exposed as an API schema: set `DONATION_ACCESS_TEST_CONTAINER` to its database container, `DONATION_ACCESS_TEST_URL` to its loopback API URL, `DONATION_ACCESS_TEST_ANON_KEY` to its anon key, and `DONATION_ACCESS_TEST_JWT_SECRET` to its JWT secret. It inserts synthetic donations directly; never use production credentials.
 
 | Symptom | Checks |
 | --- | --- |
 | Missing Supabase configuration | Use mock mode for public demos or set the project URL and anon key; admin requires Supabase. |
-| Empty wall or permission errors | Verify wall IDs, exposed `prayer_wall` schema, grants/RLS, and applicable migrations. Confirm `032` for public commitment reads. |
+| Empty wall or permission errors | Verify wall IDs, exposed `prayer_wall` schema, grants/RLS, and applicable migrations. Confirm `032` for public commitment reads and `033` for donation privacy. |
+| Email text saved but outgoing email unchanged | Confirm migration `034`, matching prayer/giving wall ID, and redeployed copy-aware email functions; inspect function logs for a failed `email_copy` read. Already sent donation receipts are not resent. |
 | Payment completed but no brick | Inspect Stripe delivery, `webhook_events`, function logs, matching wall IDs/mode, and migrations `030`–`032`; verify donation Realtime. |
 | Reminders do not arrive | Check migration `028`, Vault/Edge secret agreement, active category rhythms, subscription status, and scheduler/function logs. |
 | Resend returns 403 | Check the verified sending domain and matching `FROM_EMAIL`. |
 | Texture or logo is missing | Match `VITE_ASSETS_BUCKET`, Storage policies, and the appropriate prayer/giving asset folders. |
 | ESLint fails loading `reactHooks.configs.flat.recommended` | The current ESLint configuration expects an export missing from the installed React Hooks plugin. This is a tooling configuration issue; a passing build does not mean lint passed. |
+
+## Security posture and remaining work
+
+**Do not treat the current deployment as security-audited.** This section describes code and migrations in this repository, not independently verified production permissions, secrets, rate limits, or compliance status. The anon key and every `VITE_*` setting are public browser configuration; never use frontend email checks as authorization. Keep service-role, Resend, and Stripe secrets only in server-side secret stores. Use separate test and live projects and rotate exposed credentials.
+
+Implemented safeguards include Stripe-hosted Checkout (no app-owned card entry in Supabase mode), raw-body webhook signature and timestamp checks, paid-session/wall/mode validation, and idempotent donation recording. Migration `033` is intended to restrict browser donation reads to an explicit public projection, and email templates escape untrusted text. Verify the actual deployed policies and Realtime payloads with disposable-stack tests before relying on them; a code review alone does not prove production migration state.
+
+**Known gaps to address before claiming admin or email security:**
+
+- **Admin authorization (high priority):** `AdminAuthGuard` checks `VITE_ADMIN_EMAIL` only in the browser. `034_email_copy.sql`, as well as existing admin table and Storage policies, grant access to *any* authenticated Supabase user; `webhook_events` raw Stripe payloads are also readable by authenticated users. Enforce an admin role/allowlist in server-side RLS and Storage policies and review grants for all admin tables. Restrict account creation and access operationally in the meantime; a UI-only change is insufficient.
+- **Email invocation (high priority):** `send-donation-thanks` checks UUID format but not that its caller is the webhook/service role. JWT verification alone may accept a public anon token. `send-confirmation` can be invoked for an existing commitment without owner authorization and has no resend/rate limit. Add function-level caller authorization and abuse controls while preserving the intended signup flow.
+- **Donation opt-out:** `send-donation-thanks` checks `thank_you_sent` but not `email_opt_out`; an unsent donation that has opted out can still receive a thank-you on invocation. Enforce the flag before sending and test this path.
+- **Public data and retention:** Migration `033` intentionally makes `processor_ref` and `email_opt_out` publicly readable. Decide whether these belong on the public API; if not, publish a narrower corrective migration and align browser projections and privacy tests. Webhook auditing retains raw signed Stripe events (which can contain donor details); set an access/retention policy.
+- **Operations:** Check effective anon/authenticated/service-role database grants, Storage policies, Edge Function JWT settings, function logs, and any project-side abuse/rate limits in the actual environment. Do not infer them from migration filenames. Mock checkout must not be enabled on a public production build. Hosted Checkout reduces card-handling scope but does not establish PCI compliance.
 
 ## Repository guide
 

@@ -1,6 +1,7 @@
 export interface StartDonationCheckoutDto {
   givingWallId: string
   amountCents: number
+  monthlyConsent: boolean
   currency?: string
   /** Required — the brick has to carry a name */
   firstName: string

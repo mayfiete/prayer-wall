@@ -97,10 +97,11 @@ test('both walls reflow on container resize and restore the configured desktop m
   assert.equal(count(app.render()), 5)
 })
 
-test('single-column walls do not offset alternate rows off screen', () => {
+test('mobile walls alternate two over three even with a large desktop stone theme', () => {
   const app = mount(320, { stones_per_row: 1, brick_scale: 2 })
-  assert.equal(count(app.render()), 1)
-  assert.ok(rows(app.render()).every(row => !row.props.className.includes('--offset')))
+  assert.deepEqual(Array.from(rows(app.render()).slice(0, 4), row => row.props.children.length), [2, 3, 2, 3])
+  assert.ok(rows(app.render())[0].props.className.includes('--offset'))
+  assert.ok(!rows(app.render())[1].props.className.includes('--offset'))
 })
 
 test('resizing while data loads is reflected when the wall appears', () => {
@@ -140,4 +141,17 @@ test('rows fit phone, tablet and desktop widths with default and extreme theme s
     }
     app.unmount()
   }
+})
+
+test('mobile rows fill and center within the wall even with a small desktop scale', () => {
+  const app = mount(639, { brick_scale: 0.4, brick_overlap_x: 300 })
+  const tree = app.render()
+  const style = wall(tree).props.style
+  const width = parseFloat(style['--stone-w'])
+  const overlap = parseFloat(style['--stone-overlap-x'])
+  const fullSpan = 3 * width - 2 * overlap
+  assert.ok(Math.abs(599 - fullSpan) < 3, 'three-stone row should fill available width within rounding tolerance')
+  const offset = (width - overlap) / 2
+  const shortSpan = 2 * width - overlap
+  assert.ok(Math.abs(offset - (599 - offset - shortSpan)) < 3, 'two-stone row should be centered')
 })
