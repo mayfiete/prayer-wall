@@ -25,11 +25,11 @@ export function CommitmentPage() {
     <div className="min-h-screen flex flex-col bg-stone-100 font-body">
       <MockBanner />
 
-      <header className="flex items-center gap-4 px-8 py-5 bg-white border-b border-stone-200">
-        <Link to="/" className="text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors" aria-label="Back to Prayer Wall">
+      <header className="flex items-center gap-3 px-4 py-4 sm:px-8 sm:py-5 bg-white border-b border-stone-200">
+        <Link to="/" className="flex h-11 w-11 shrink-0 items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors" aria-label="Back to Prayer Wall">
           <ArrowLeft size={20} />
         </Link>
-        <div className="flex-1">
+        <div className="min-w-0 flex-1 break-words">
           <h1 className="font-sans text-[22px] font-semibold text-[var(--color-heading)] leading-tight">
             Add your stone
           </h1>
@@ -39,7 +39,10 @@ export function CommitmentPage() {
         </div>
       </header>
 
-      <main className="flex-1 px-6 py-6 bg-white">
+      <main className="flex-1 py-4 sm:py-6 bg-white">
+        <div className="px-4 pb-4 sm:px-8">
+          <button type="button" className="wall-action" onClick={() => setModalOpen(true)}>Commit to pray</button>
+        </div>
         <PrayerWallGrid wallId={WALL_ID} onCtaClick={() => setModalOpen(true)} />
       </main>
 

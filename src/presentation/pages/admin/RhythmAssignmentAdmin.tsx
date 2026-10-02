@@ -83,7 +83,7 @@ export function RhythmAssignmentAdmin({ supabase, commitmentId }: RhythmAssignme
                 />
                 <label
                   htmlFor={`rhythm-${commitmentId}-${r.id}`}
-                  className={`text-xs cursor-pointer ${r.is_active ? 'text-stone-700' : 'text-stone-400 italic'}`}
+                  className={`flex min-h-11 min-w-0 flex-1 flex-wrap items-center text-sm cursor-pointer ${r.is_active ? 'text-stone-700' : 'text-stone-400 italic'}`}
                 >
                   {r.name}
                   {!r.is_active && <span className="ml-1 text-stone-300">(paused)</span>}

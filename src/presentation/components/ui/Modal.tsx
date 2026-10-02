@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { X } from 'lucide-react'
 
 interface ModalProps {
@@ -9,31 +9,35 @@ interface ModalProps {
 }
 
 export function Modal({ open, onClose, title, children }: ModalProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const titleId = useId()
+
   useEffect(() => {
-    if (!open) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+    const dialog = dialogRef.current
+    if (!open || !dialog) return
+    const previousOverflow = document.body.style.overflow
+    const previousFocus = document.activeElement as HTMLElement | null
+    dialog.showModal()
+    document.body.style.overflow = 'hidden'
+    return () => {
+      dialog.close()
+      document.body.style.overflow = previousOverflow
+      if (previousFocus?.isConnected) previousFocus.focus()
     }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
+    <dialog
+      ref={dialogRef}
+      className="wall-dialog"
+      aria-labelledby={titleId}
+      onCancel={e => { e.preventDefault(); onClose() }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      <div
-        className="relative z-10 flex min-w-0 w-full max-w-md max-h-[calc(100dvh-2rem)] flex-col rounded-xl shadow-2xl animate-fade-in"
+        className="wall-dialog-panel flex min-w-0 w-full flex-col shadow-2xl"
         style={{
           backgroundColor: 'var(--color-modal-bg)',
           color: 'var(--color-modal-text)',
@@ -42,23 +46,23 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         }}
       >
         <div
-          className="flex shrink-0 items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4"
+          className="dialog-heading flex shrink-0 items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4"
           style={{ borderBottom: '1px solid color-mix(in srgb, var(--color-modal-text) 15%, transparent)' }}
         >
-          <h2 id="modal-title" className="min-w-0 break-words text-lg font-semibold" style={{ color: 'var(--color-modal-text)', fontFamily: 'var(--font-modal)' }}>
+          <h2 id={titleId} className="min-w-0 break-words text-lg font-semibold" style={{ fontFamily: 'var(--font-modal)' }}>
             {title}
           </h2>
           <button
+            type="button"
             onClick={onClose}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md transition-colors"
-            style={{ color: 'color-mix(in srgb, var(--color-modal-text) 60%, transparent)' }}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             aria-label="Close"
           >
-            <X size={18} />
+            <X size={22} />
           </button>
         </div>
-        <div className="min-h-0 overflow-y-auto overscroll-contain break-words px-4 py-5 sm:px-6">{children}</div>
+        <div className="dialog-content min-h-0 flex-1 overflow-y-auto overscroll-contain break-words px-4 py-5 sm:px-6">{children}</div>
       </div>
-    </div>
+    </dialog>
   )
 }

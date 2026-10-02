@@ -18,10 +18,10 @@ export function CategorySelector({ categories, selected, onChange }: CategorySel
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-xs" style={{ color: 'color-mix(in srgb, var(--color-modal-text) 60%, transparent)' }}>
+      <p className="text-sm" style={{ color: 'color-mix(in srgb, var(--color-modal-text) 75%, transparent)' }}>
         Select one or more areas you will pray for
       </p>
-      <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {categories.map((cat) => {
           const isSelected = selected.includes(cat.id)
           const isDisabled = false
@@ -33,7 +33,7 @@ export function CategorySelector({ categories, selected, onChange }: CategorySel
               disabled={isDisabled}
               aria-pressed={isSelected}
               className={[
-                'flex min-w-0 items-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium text-left',
+                'flex min-h-12 min-w-0 items-center gap-3 px-3 py-3 rounded-lg text-base sm:text-sm font-medium text-left',
                 'border transition-all duration-150 focus:outline-none focus-visible:ring-2',
                 isDisabled ? 'cursor-not-allowed opacity-50' : '',
               ].join(' ')}

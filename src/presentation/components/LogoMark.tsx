@@ -12,14 +12,14 @@ export function LogoMark({ fallbackIcon }: LogoMarkProps) {
 
   if (imageUrl) {
     return (
-      <div className="w-[60px] h-[60px] rounded-full shrink-0 overflow-hidden flex items-center justify-center bg-[var(--color-header-bg)]">
+      <div className="w-12 h-12 sm:w-[60px] sm:h-[60px] rounded-full shrink-0 overflow-hidden flex items-center justify-center bg-[var(--color-header-bg)]">
         <img src={imageUrl} alt="Logo" className="w-full h-full object-contain" />
       </div>
     )
   }
 
   return (
-    <div className="w-[60px] h-[60px] rounded-full bg-[var(--color-primary)] flex items-center justify-center shrink-0">
+    <div className="w-12 h-12 sm:w-[60px] sm:h-[60px] rounded-full bg-[var(--color-primary)] flex items-center justify-center shrink-0">
       {fallbackIcon}
     </div>
   )

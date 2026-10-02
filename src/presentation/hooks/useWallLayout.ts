@@ -23,14 +23,14 @@ export function useWallLayout() {
       // Keep enough space between names, even with a dense desktop theme.
       const minimumStep = Math.max(80, 96 * scale)
       const overlapX = mobile
-        ? Math.max(0, Math.min(read('--stone-overlap-x', 149), available * 0.16))
+        ? Math.max(0, Math.min(read('--stone-overlap-x', 149), available * 0.08))
         : Math.max(0, Math.min(read('--stone-overlap-x', 149), available / 2, maxWidth / 2))
-      const columns = mobile ? 3 : Math.max(1, Math.min(maximum, Math.floor((available - overlapX) / minimumStep)))
+      const columns = mobile ? (container.clientWidth < 480 ? 2 : 3) : Math.max(1, Math.min(maximum, Math.floor((available - overlapX) / minimumStep)))
       const fittedWidth = (available + overlapX * (columns - 1)) / columns
       // Phone rows fill the wall independently of the desktop stone-size setting.
       const width = Math.floor(mobile ? fittedWidth : Math.min(maxWidth, fittedWidth))
-      const height = Math.max(1, Math.round(width * aspect))
-      const overlapY = Math.max(0, Math.min(read('--stone-overlap-y', 67), height / 2))
+      const height = Math.max(1, Math.round(width * (mobile ? Math.max(0.6, aspect) : aspect)))
+      const overlapY = Math.max(0, Math.min(read('--stone-overlap-y', 67), height * (mobile ? 0.18 : 0.5)))
       setLayout(previous => {
         if (previous.columns === columns && previous.width === width && previous.height === height &&
             previous.overlapX === overlapX && previous.overlapY === overlapY && previous.mobile === mobile) return previous
@@ -49,7 +49,7 @@ export function useWallLayout() {
   const style = {
     '--stone-w': `${layout.width}px`,
     '--stone-h': `${layout.height}px`,
-    ...(layout.mobile ? { '--wall-name-size': `${Math.max(10, Math.min(14, layout.width * 0.085))}px` } : {}),
+    ...(layout.mobile ? { '--wall-name-size': `${Math.max(14, Math.min(18, layout.width * 0.09))}px` } : {}),
     '--stone-overlap-x': `${layout.overlapX}px`,
     '--stone-overlap-y': `${layout.overlapY}px`,
   } as CSSProperties

@@ -18,9 +18,11 @@ export function Input({ label, error, id, className = '', ...props }: InputProps
       </label>
       <input
         id={inputId}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${inputId}-error` : undefined}
         {...props}
         className={[
-          'min-w-0 w-full rounded-md border px-3 py-2',
+          'min-h-12 min-w-0 w-full rounded-lg border px-3 py-3 text-base',
           'focus:outline-none focus:ring-2 focus:border-transparent',
           'disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
           error ? 'border-red-500' : '',
@@ -34,7 +36,7 @@ export function Input({ label, error, id, className = '', ...props }: InputProps
           '--tw-ring-color': 'var(--color-modal-accent)',
         }}
       />
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p id={`${inputId}-error`} className="text-sm text-red-400">{error}</p>}
     </div>
   )
 }
