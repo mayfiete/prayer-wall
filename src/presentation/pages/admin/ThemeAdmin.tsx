@@ -294,7 +294,7 @@ export function ThemeAdmin({ supabase, wallId: WALL_ID, onDone }: ThemeAdminProp
       <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
         <div>
           <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Wall Section</h3>
-          <p className="text-xs text-stone-400 mt-0.5">The stone grid area where bricklayers appear.</p>
+          <p className="text-xs text-stone-400 mt-0.5">The stone grid area where participants appear.</p>
         </div>
         <ColorRow
           label="Background"
@@ -319,7 +319,7 @@ export function ThemeAdmin({ supabase, wallId: WALL_ID, onDone }: ThemeAdminProp
       <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
         <div>
           <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Pop-up (Modal)</h3>
-          <p className="text-xs text-stone-400 mt-0.5">The "Commit to pray" dialog that opens when a bricklayer adds their stone.</p>
+          <p className="text-xs text-stone-400 mt-0.5">The "Commit to pray" dialog that opens when someone adds their stone.</p>
         </div>
         <ColorRow
           label="Background"
@@ -505,7 +505,7 @@ export function ThemeAdmin({ supabase, wallId: WALL_ID, onDone }: ThemeAdminProp
       </section>
 
       {/* Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <button
           onClick={handleReset}
           className="flex items-center gap-1.5 text-sm text-stone-400 hover:text-stone-700 transition-colors"
@@ -514,7 +514,7 @@ export function ThemeAdmin({ supabase, wallId: WALL_ID, onDone }: ThemeAdminProp
           Reset to defaults
         </button>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
           {saved && (
             <span className="flex items-center gap-1.5 text-sm text-emerald-600">
               <CheckCircle size={15} />
@@ -545,7 +545,7 @@ interface ColorRowProps {
 
 function ColorRow({ label, description, value, onChange }: ColorRowProps) {
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex flex-wrap items-center gap-3 sm:gap-4">
       <div className="relative shrink-0">
         <input
           type="color"
@@ -555,7 +555,7 @@ function ColorRow({ label, description, value, onChange }: ColorRowProps) {
           title={label}
         />
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 basis-[calc(100%-4rem)] grow sm:basis-0">
         <p className="text-sm font-medium text-stone-800">{label}</p>
         <p className="text-xs text-stone-400">{description}</p>
       </div>
@@ -642,7 +642,7 @@ function TextRow({ label, description, value, onChange, multiline }: TextRowProp
 function SliderRow({ label, description, value, min, max, step, onChange }: SliderRowProps) {
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-medium text-stone-800">{label}</p>
         <p className="text-xs text-stone-400">{description}</p>
       </div>

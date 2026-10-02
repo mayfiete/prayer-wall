@@ -147,7 +147,7 @@ export function StatementsAdmin({ categoryId, categoryName }: Readonly<Statement
         {statements.map((stmt, idx) => (
           <li
             key={stmt.id}
-            className={`flex items-start gap-2 rounded-md border px-3 py-2 bg-white ${
+            className={`flex flex-wrap items-start gap-2 rounded-md border px-3 py-2 bg-white ${
               stmt.isActive ? 'border-stone-200' : 'border-stone-100 opacity-60'
             }`}
           >
@@ -170,7 +170,7 @@ export function StatementsAdmin({ categoryId, categoryName }: Readonly<Statement
               </button>
             </div>
 
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 basis-[calc(100%-4rem)] grow sm:basis-0">
               {editingId === stmt.id ? (
                 <textarea
                   autoFocus
@@ -187,7 +187,7 @@ export function StatementsAdmin({ categoryId, categoryName }: Readonly<Statement
               ) : (
                 <button
                   onClick={() => startEdit(stmt)}
-                  className="text-xs text-stone-700 text-left leading-relaxed hover:text-[var(--color-primary)] transition-colors w-full"
+                  className="text-xs text-stone-700 text-left break-words leading-relaxed hover:text-[var(--color-primary)] transition-colors w-full"
                   title="Click to edit"
                 >
                   {stmt.body}

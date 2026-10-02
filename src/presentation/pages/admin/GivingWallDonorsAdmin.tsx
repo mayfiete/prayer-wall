@@ -56,7 +56,7 @@ export function GivingWallDonorsAdmin({ supabase }: GivingWallDonorsAdminProps) 
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-[var(--color-heading)]">Bricklayers</h2>
           <p className="text-xs text-stone-400 mt-0.5">{donations.length} donation{donations.length !== 1 ? 's' : ''}</p>
@@ -71,34 +71,51 @@ export function GivingWallDonorsAdmin({ supabase }: GivingWallDonorsAdminProps) 
       {donations.length === 0 ? (
         <p className="text-sm text-stone-400">No donations yet.</p>
       ) : (
-        <div className="bg-white border border-stone-200 rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-stone-100 text-xs text-stone-400 uppercase tracking-wide">
-                <th className="px-5 py-3 text-left font-medium">Name</th>
-                <th className="px-5 py-3 text-left font-medium">Amount</th>
-                <th className="px-5 py-3 text-left font-medium">Date</th>
-                <th className="px-5 py-3 text-left font-medium">Processor ref</th>
-                <th className="px-5 py-3 text-left font-medium">Email opt-out</th>
-              </tr>
-            </thead>
-            <tbody>
-              {donations.map((d) => (
-                <tr key={d.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50 transition-colors">
-                  <td className="px-5 py-3 font-medium text-stone-800">{d.name}</td>
-                  <td className="px-5 py-3 text-stone-700">{formatAmount(d.amount_cents, d.currency)}</td>
-                  <td className="px-5 py-3 text-stone-500">{new Date(d.donated_at).toLocaleDateString()}</td>
-                  <td className="px-5 py-3 text-stone-400 font-mono text-xs">{d.processor_ref ?? '—'}</td>
-                  <td className="px-5 py-3">
-                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${d.email_opt_out ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600'}`}>
-                      {d.email_opt_out ? 'Opted out' : 'Active'}
-                    </span>
-                  </td>
+        <>
+          <ul className="space-y-3 md:hidden">
+            {donations.map(d => (
+              <li key={d.id} className="rounded-xl border border-stone-200 bg-white p-4">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h3 className="min-w-0 break-words font-semibold text-stone-800">{d.name}</h3>
+                  <p className="font-semibold text-stone-800">{formatAmount(d.amount_cents, d.currency)}</p>
+                </div>
+                <dl className="mt-3 space-y-2 text-sm">
+                  <div><dt className="text-stone-500">Date</dt><dd>{new Date(d.donated_at).toLocaleDateString()}</dd></div>
+                  <div><dt className="text-stone-500">Processor reference</dt><dd className="break-all font-mono">{d.processor_ref ?? 'Not available'}</dd></div>
+                  <div><dt className="text-stone-500">Email status</dt><dd>{d.email_opt_out ? 'Opted out' : 'Active'}</dd></div>
+                </dl>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden overflow-x-auto rounded-lg border border-stone-200 bg-white md:block">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-stone-100 text-xs text-stone-400 uppercase tracking-wide">
+                  <th className="px-5 py-3 text-left font-medium">Name</th>
+                  <th className="px-5 py-3 text-left font-medium">Amount</th>
+                  <th className="px-5 py-3 text-left font-medium">Date</th>
+                  <th className="px-5 py-3 text-left font-medium">Processor ref</th>
+                  <th className="px-5 py-3 text-left font-medium">Email opt-out</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {donations.map((d) => (
+                  <tr key={d.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50 transition-colors">
+                    <td className="px-5 py-3 font-medium text-stone-800">{d.name}</td>
+                    <td className="px-5 py-3 text-stone-700">{formatAmount(d.amount_cents, d.currency)}</td>
+                    <td className="px-5 py-3 text-stone-500">{new Date(d.donated_at).toLocaleDateString()}</td>
+                    <td className="px-5 py-3 text-stone-400 font-mono text-xs">{d.processor_ref ?? '—'}</td>
+                    <td className="px-5 py-3">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${d.email_opt_out ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600'}`}>
+                        {d.email_opt_out ? 'Opted out' : 'Active'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   )

@@ -134,7 +134,7 @@ export function DonationCheckout({
         <span className="text-sm font-medium" style={{ color: 'color-mix(in srgb, var(--color-modal-text) 80%, transparent)' }}>
           Choose your monthly gift
         </span>
-        <div className="grid grid-cols-2 min-[400px]:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {PRESET_AMOUNTS_CENTS.map((cents) => {
             const active = !customAmount && amountCents === cents
             return (
@@ -142,7 +142,7 @@ export function DonationCheckout({
                 key={cents}
                 type="button"
                 onClick={() => selectPreset(cents)}
-                className="rounded-md border px-3 py-2 text-sm font-semibold transition-colors"
+                className="min-h-12 rounded-lg border px-2 py-3 text-sm font-semibold transition-colors last:col-span-2 sm:last:col-span-1"
                 style={{
                   backgroundColor: active ? 'var(--color-modal-accent)' : 'transparent',
                   color: active ? 'var(--color-modal-bg)' : 'var(--color-modal-text)',
@@ -154,17 +154,16 @@ export function DonationCheckout({
               </button>
             )
           })}
-          <Input
-            label=""
-            id="custom-amount"
-            type="text"
-            inputMode="decimal"
-            placeholder="Other $"
-            value={customAmount}
-            onChange={(e) => changeCustomAmount(e.target.value)}
-            className="text-sm"
-          />
         </div>
+        <Input
+          label="Other monthly amount"
+          id="custom-amount"
+          type="text"
+          inputMode="decimal"
+          placeholder="Other $"
+          value={customAmount}
+          onChange={(e) => changeCustomAmount(e.target.value)}
+        />
       </div>
 
       <Input
