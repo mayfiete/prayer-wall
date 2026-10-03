@@ -89,7 +89,12 @@
   }
 
   .stone-row--offset {
-    margin-left: calc((var(--stone-w, 80px) - var(--stone-overlap-x)) / 2);
+    margin-left: var(--stone-offset-x, calc((var(--stone-w, 80px) - var(--stone-overlap-x)) / 2));
+  }
+
+  /* Phone: lone CTA stone centred above the two-up rows */
+  .stone-row--solo {
+    margin-left: calc((100% - var(--stone-w, 80px)) / 2);
   }
 
   /* ─── Shared tile structure ────────────────────────────────────────────── */

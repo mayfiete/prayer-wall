@@ -206,7 +206,7 @@ export function RhythmsAdmin({ supabase, onDone, wallId: wallIdProp, orgId: orgI
         <div>
           <h2 className="text-lg font-semibold text-[var(--color-heading)]">Prayer Rhythms</h2>
           <p className="text-xs text-stone-400 mt-0.5">
-            Define reusable reminder schedules. Assign them to individual Bricklayers.
+            Define reusable reminder schedules. Assign them to individual participants.
           </p>
         </div>
         {!showForm && (
@@ -391,14 +391,14 @@ export function RhythmsAdmin({ supabase, onDone, wallId: wallIdProp, orgId: orgI
         <p className="font-semibold text-stone-600">How it works</p>
         <p>
           Each rhythm is a named schedule — like <em>"Weekly Sunday at 9 AM"</em> or <em>"Daily at 7 AM"</em>.
-          You create rhythms here, then assign one or more to each Bricklayer on the Bricklayers tab.
+          You create rhythms here, then assign one or more to each person from their entry in the admin list.
         </p>
         <p>
-          When a rhythm fires, the bricklayer receives a personal email with their name, their prayer request,
+          When a rhythm fires, the participant receives a personal email with their name, their prayer request,
           and a prayer point to reflect on. Only active rhythms send emails.
         </p>
         <p className="text-xs text-stone-400">
-          Emails are delivered via a scheduled background job. A bricklayer with no rhythm assigned will not receive reminders.
+          Emails are delivered via a scheduled background job. A participant with no rhythm assigned will not receive reminders.
         </p>
       </div>
 

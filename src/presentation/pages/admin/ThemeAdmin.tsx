@@ -294,7 +294,7 @@ export function ThemeAdmin({ supabase, wallId: WALL_ID, onDone }: ThemeAdminProp
       <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
         <div>
           <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Wall Section</h3>
-          <p className="text-xs text-stone-400 mt-0.5">The stone grid area where bricklayers appear.</p>
+          <p className="text-xs text-stone-400 mt-0.5">The stone grid area where participants appear.</p>
         </div>
         <ColorRow
           label="Background"
@@ -319,7 +319,7 @@ export function ThemeAdmin({ supabase, wallId: WALL_ID, onDone }: ThemeAdminProp
       <section className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
         <div>
           <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Pop-up (Modal)</h3>
-          <p className="text-xs text-stone-400 mt-0.5">The "Commit to pray" dialog that opens when a bricklayer adds their stone.</p>
+          <p className="text-xs text-stone-400 mt-0.5">The "Commit to pray" dialog that opens when someone adds their stone.</p>
         </div>
         <ColorRow
           label="Background"
