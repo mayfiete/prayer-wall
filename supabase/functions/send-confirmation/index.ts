@@ -12,6 +12,7 @@ import {
   praisesBlock,
   prayerRequestsBlock,
   renderParagraphs,
+  replyToAddress,
 } from "../_shared/email-layout.ts";
 import type { EmailCopy, EmailCopyRow } from "../_shared/email-copy.ts";
 
@@ -54,7 +55,6 @@ interface MeditationRow {
 function buildConfirmationHtml(
   copy: EmailCopy,
   commitment: Commitment,
-  unsubscribeUrl: string,
 ): string {
   const bodyHtml = `
     ${leadLine(copy)}
@@ -68,7 +68,6 @@ function buildConfirmationHtml(
     copy,
     title: copy.confirmation_title,
     bodyHtml,
-    unsubscribeUrl,
   });
 }
 
@@ -77,7 +76,6 @@ function buildSummaryHtml(
   commitment: Commitment,
   categories: Category[],
   meditationMap: Map<string, string[]>,
-  unsubscribeUrl: string,
 ): string {
   const filledCategories = categories.filter(
     (c) => (meditationMap.get(c.id) ?? []).length > 0,
@@ -106,7 +104,6 @@ function buildSummaryHtml(
     copy,
     title: copy.guide_title,
     bodyHtml,
-    unsubscribeUrl,
   });
 }
 
@@ -119,6 +116,7 @@ async function sendEmail(
   subject: string,
   html: string,
   tag: string,
+  replyTo: string,
 ): Promise<{ id: string | null; ok: boolean; message: string }> {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -128,6 +126,7 @@ async function sendEmail(
     },
     body: JSON.stringify({
       from,
+      reply_to: replyTo,
       to: [to],
       subject,
       html,
@@ -174,15 +173,12 @@ Deno.serve(async (req: Request) => {
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const resendApiKey   = Deno.env.get("RESEND_API_KEY")!;
   const fromEmail      = Deno.env.get("FROM_EMAIL") ?? "noreply@yourdomain.com";
-  const appUrl         = Deno.env.get("APP_URL") ?? "https://your-app.com";
 
   console.log("DEBUG supabaseUrl:", supabaseUrl ? supabaseUrl.slice(0, 30) : "MISSING");
   console.log("DEBUG serviceRoleKey present:", !!serviceRoleKey, "length:", serviceRoleKey?.length ?? 0);
 
   const supabase = createClient(supabaseUrl, serviceRoleKey, { db: { schema: "prayer_wall" } });
   const db = supabase.schema("prayer_wall");
-
-  const unsubscribeUrl = `${appUrl}/unsubscribe?id=${commitmentId}`;
 
   // ── 3. Fetch commitment ────────────────────────────────────────────────────
   const { data: commitment, error: commitmentErr } = await db
@@ -286,7 +282,8 @@ Deno.serve(async (req: Request) => {
   let sent = 0;
 
   // ── 6. Send Email #1 — Confirmation ───────────────────────────────────────
-  const confirmHtml = buildConfirmationHtml(copy, commitment as Commitment, unsubscribeUrl);
+  const replyTo = replyToAddress(copy);
+  const confirmHtml = buildConfirmationHtml(copy, commitment as Commitment);
   const confirmResult = await sendEmail(
     resendApiKey,
     fromDisplay,
@@ -294,6 +291,7 @@ Deno.serve(async (req: Request) => {
     copy.confirmation_subject,
     confirmHtml,
     "confirmation",
+    replyTo,
   );
 
   await db.from("email_logs").insert({
@@ -318,7 +316,6 @@ Deno.serve(async (req: Request) => {
     commitment as Commitment,
     categories,
     meditationMap,
-    unsubscribeUrl,
   );
   const summaryResult = await sendEmail(
     resendApiKey,
@@ -327,6 +324,7 @@ Deno.serve(async (req: Request) => {
     copy.guide_subject,
     summaryHtml,
     "summary",
+    replyTo,
   );
 
   await db.from("email_logs").insert({

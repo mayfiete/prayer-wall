@@ -205,19 +205,31 @@ export function fromHeader(copy: EmailCopy, fromEmail: string): string {
   return `${copy.from_name.replace(/[<>\r\n]/g, "").trim()} <${fromEmail}>`;
 }
 
+const EMAIL_ADDRESS_RE = /^[^\s@<>",;]+@[^\s@<>",;.]+(?:\.[^\s@<>",;.]+)+$/;
+
+/**
+ * The Reply-To and opt-out contact. Admin-edited, so a malformed value falls back
+ * to the shipped default rather than producing a broken header or mailto link.
+ */
+export function replyToAddress(copy: EmailCopy): string {
+  const value = copy.reply_to_email.trim();
+  return value.length <= 254 && EMAIL_ADDRESS_RE.test(value) ? value : EMAIL_COPY_DEFAULTS.reply_to_email;
+}
+
 // ─── Outer shell (header + body + footer) ────────────────────────────────────
 
 export function emailShell(opts: {
   copy?: EmailCopy;
   title: string;
   bodyHtml: string;
-  unsubscribeUrl: string;
   eyebrow?: string;
   footerText?: string;
 }): string {
   const copy = opts.copy ?? EMAIL_COPY_DEFAULTS;
   const eyebrow = opts.eyebrow ?? copy.eyebrow;
   const footerText = opts.footerText ?? copy.footer_text;
+  const optOutEmail = replyToAddress(copy);
+  const addressLines = copyLines(copy.postal_address).map(escapeHtml).join("<br>");
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -258,10 +270,16 @@ export function emailShell(opts: {
               <tr>
                 <td align="center" bgcolor="${COLORS.background}" style="padding: 20px 24px; border-top: 2px solid ${COLORS.divider}; font-family: 'Helvetica Neue', Helvetica, Arial, Verdana, sans-serif;">
                   <p style="margin: 0 0 8px; font-size: 12px; color: ${COLORS.footer}; line-height: 1.5;">${escapeHtml(copy.logo_alt)}</p>
+                  <p style="margin: 0 0 8px; font-size: 12px; color: ${COLORS.footer}; line-height: 1.5;">${escapeHtml(footerText)}</p>
                   <p style="margin: 0; font-size: 12px; color: ${COLORS.footer}; line-height: 1.5;">
-                    ${escapeHtml(footerText)}
-                    <a href="${escapeHtml(opts.unsubscribeUrl)}" style="color: ${COLORS.headerBg}; text-decoration: underline;">${escapeHtml(copy.unsubscribe_label)}</a>
-                  </p>
+                    ${escapeHtml(copy.optout_text)}
+                    <a href="mailto:${escapeHtml(optOutEmail)}?subject=Unsubscribe" style="color: ${COLORS.headerBg}; text-decoration: underline;">${escapeHtml(optOutEmail)}</a>.
+                  </p>${
+    addressLines
+      ? `
+                  <p style="margin: 8px 0 0; font-size: 12px; color: ${COLORS.footer}; line-height: 1.5;">${addressLines}</p>`
+      : ""
+  }
                 </td>
               </tr>
             </table>

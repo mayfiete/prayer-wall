@@ -18,6 +18,7 @@ import {
   personalRequestBlock,
   praisesBlock,
   prayerRequestsBlock,
+  replyToAddress,
 } from "../_shared/email-layout.ts";
 import type { EmailCopy, EmailCopyRow } from "../_shared/email-copy.ts";
 
@@ -104,7 +105,6 @@ function buildEmailHtml(
   points: PrayerPoint[],
   categoryMeditations: CategoryMeditation[],
   passage: PassageResult | null,
-  unsubscribeUrl: string,
 ): string {
   const openPoints = points.filter((p) => !p.is_answered);
 
@@ -138,7 +138,6 @@ function buildEmailHtml(
     copy,
     title: copy.reminder_title,
     bodyHtml,
-    unsubscribeUrl,
   });
 }
 
@@ -159,7 +158,6 @@ Deno.serve(async (req: Request) => {
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const resendApiKey   = Deno.env.get("RESEND_API_KEY")!;
   const fromEmail      = Deno.env.get("FROM_EMAIL") ?? "noreply@yourdomain.com";
-  const appUrl         = Deno.env.get("APP_URL") ?? "https://your-app.com";
 
   // DECISION: db: { schema: 'prayer_wall' } is required — all tables live in that schema, not public.
   // Omitting this causes all queries to silently target public and return empty results.
@@ -332,8 +330,6 @@ Deno.serve(async (req: Request) => {
         .eq("commitment_id", warrior.id)
         .order("display_order", { ascending: true });
 
-      const unsubscribeUrl = `${appUrl}/unsubscribe?id=${warrior.id}`;
-
       // Build stacked meditations: for each category this warrior belongs to that
       // has a due rhythm, pick one active meditation from that category.
       const warriorCategoryIds = [...(commitmentCategoryMap.get(warrior.id) ?? new Set<string>())];
@@ -376,7 +372,6 @@ Deno.serve(async (req: Request) => {
         (points ?? []) as PrayerPoint[],
         categoryMeditations,
         passage,
-        unsubscribeUrl,
       );
 
       const res = await fetch("https://api.resend.com/emails", {
@@ -387,6 +382,7 @@ Deno.serve(async (req: Request) => {
         },
         body: JSON.stringify({
           from: fromHeader(copy, fromEmail),
+          reply_to: replyToAddress(copy),
           to: warrior.email,
           subject: copy.reminder_subject,
           html,

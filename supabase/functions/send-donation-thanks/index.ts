@@ -4,6 +4,7 @@
 //
 // Secrets required: RESEND_API_KEY, FROM_EMAIL, APP_URL,
 //                   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (auto-injected)
+// (APP_URL is no longer used here — opt-out is by replying to the Reply-To address.)
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import {
@@ -13,6 +14,7 @@ import {
   greeting,
   mergeEmailCopy,
   renderParagraphs,
+  replyToAddress,
 } from "../_shared/email-layout.ts";
 import type { EmailCopyRow } from "../_shared/email-copy.ts";
 
@@ -67,7 +69,6 @@ Deno.serve(async (req: Request) => {
 
   const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
   const fromEmail = Deno.env.get("FROM_EMAIL") ?? "noreply@prayerrhythm.com";
-  const appUrl = Deno.env.get("APP_URL") ?? "https://your-app.com";
 
   const amountFormatted = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -98,7 +99,6 @@ Deno.serve(async (req: Request) => {
     bodyHtml,
     eyebrow: copy.donation_eyebrow,
     footerText: copy.donation_footer_text,
-    unsubscribeUrl: `${appUrl.replace(/\/$/, "")}/unsubscribe?donation=${donationId}`,
   });
 
   const res = await fetch("https://api.resend.com/emails", {
@@ -109,6 +109,7 @@ Deno.serve(async (req: Request) => {
     },
     body: JSON.stringify({
       from: fromHeader(copy, fromEmail),
+      reply_to: replyToAddress(copy),
       to: [donation.email],
       subject: copy.donation_subject,
       html,
