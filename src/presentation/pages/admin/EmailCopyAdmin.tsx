@@ -140,7 +140,7 @@ export function EmailCopyAdmin({ supabase, wallId, scope, onDone }: EmailCopyAdm
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         {groups.map(({ group, groupFields }) => (
-          <section key={group} className="bg-white border border-stone-200 rounded-lg px-4 py-5 sm:px-5 space-y-4">
+          <section key={group} className="bg-white border border-stone-200 rounded-lg px-5 py-5 space-y-4">
             <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
               {EMAIL_COPY_GROUP_LABELS[group]}
             </h3>
@@ -156,7 +156,7 @@ export function EmailCopyAdmin({ supabase, wallId, scope, onDone }: EmailCopyAdm
           </section>
         ))}
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-4">
+        <div className="flex items-center justify-between pb-4">
           <button
             onClick={handleReset}
             className="flex items-center gap-1.5 text-sm text-stone-400 hover:text-stone-700 transition-colors"
@@ -165,7 +165,7 @@ export function EmailCopyAdmin({ supabase, wallId, scope, onDone }: EmailCopyAdm
             Reset all to defaults
           </button>
 
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-4">
             {saved && (
               <span className="flex items-center gap-1.5 text-sm text-emerald-600">
                 <CheckCircle size={15} />

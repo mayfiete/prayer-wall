@@ -47,7 +47,7 @@ export function Button({
       disabled={disabled}
       style={{ ...variantStyles[variant], ...style }}
       className={[
-        'inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-lg whitespace-normal break-words text-center transition-colors duration-150',
+        'inline-flex items-center justify-center gap-2 rounded-md transition-colors duration-150',
         'focus:outline-none focus-visible:ring-2',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         variantClasses[variant],

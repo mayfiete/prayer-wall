@@ -91,7 +91,7 @@ export function CategoryAdmin({ supabase }: CategoryAdminProps) {
         {sorted.map((cat, idx) => (
           <div key={cat.id} className="bg-white">
             {/* Category row */}
-            <div className="admin-category-row flex flex-wrap items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4">
+            <div className="flex items-center gap-3 px-4 py-3">
               {/* Reorder */}
               <div className="flex flex-col gap-0.5 shrink-0">
                 <button
@@ -113,7 +113,7 @@ export function CategoryAdmin({ supabase }: CategoryAdminProps) {
               </div>
 
               {/* Name / edit */}
-              <div className="min-w-0 basis-[calc(100%-4rem)] grow sm:basis-0">
+              <div className="flex-1 min-w-0">
                 {editingId === cat.id ? (
                   <input
                     autoFocus
@@ -129,7 +129,7 @@ export function CategoryAdmin({ supabase }: CategoryAdminProps) {
                 ) : (
                   <button
                     onClick={() => startEdit(cat)}
-                    className={`text-sm text-left w-full break-words font-medium ${cat.isActive ? 'text-stone-800 hover:text-[var(--color-primary)]' : 'text-stone-400 line-through hover:text-stone-600'}`}
+                    className={`text-sm text-left w-full truncate font-medium ${cat.isActive ? 'text-stone-800 hover:text-[var(--color-primary)]' : 'text-stone-400 line-through hover:text-stone-600'}`}
                     title="Click to rename"
                   >
                     {cat.name}
@@ -218,12 +218,12 @@ export function CategoryAdmin({ supabase }: CategoryAdminProps) {
         ))}
       </div>
 
-      <form onSubmit={(e) => void handleAdd(e)} className="flex flex-col gap-2 sm:flex-row">
+      <form onSubmit={(e) => void handleAdd(e)} className="flex gap-2">
         <input
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="New category name"
-          className="min-w-0 flex-1 border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
+          className="flex-1 border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
         />
         <button
           type="submit"

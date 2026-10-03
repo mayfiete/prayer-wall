@@ -116,7 +116,7 @@ export function WarriorsAdmin({ supabase, onDone }: BricklayersAdminProps) {
       {/* Add form */}
       <form onSubmit={e => void handleAdd(e)} className="bg-white border border-stone-200 rounded-lg px-4 py-4 space-y-3">
         <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Add a Stonemason</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-xs text-stone-500 mb-0.5">Name *</label>
             <input
@@ -169,7 +169,7 @@ export function WarriorsAdmin({ supabase, onDone }: BricklayersAdminProps) {
             {editingId === w.id ? (
               /* Edit mode */
               <div className="px-4 py-3 space-y-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-xs text-stone-500 mb-0.5">Name</label>
                     <input
@@ -216,7 +216,7 @@ export function WarriorsAdmin({ supabase, onDone }: BricklayersAdminProps) {
             ) : (
               /* View mode */
               <div>
-                <div className="flex flex-wrap items-start gap-2 px-3 py-3 sm:gap-3 sm:px-4">
+                <div className="flex items-start gap-3 px-4 py-3">
                   {/* Expand toggle */}
                   <button
                     onClick={() => toggleExpand(w.id)}
@@ -230,14 +230,14 @@ export function WarriorsAdmin({ supabase, onDone }: BricklayersAdminProps) {
 
                   {/* Name + email + request */}
                   <button
-                    className="min-w-0 basis-[calc(100%-4rem)] grow text-left sm:basis-0"
+                    className="flex-1 min-w-0 text-left"
                     onClick={() => startEdit(w)}
                     title="Click to edit"
                   >
-                    <p className="text-sm font-medium break-words text-stone-800 hover:text-[var(--color-primary)]">
+                    <p className="text-sm font-medium truncate text-stone-800 hover:text-[var(--color-primary)]">
                       {w.name}
                     </p>
-                    <p className="text-xs text-stone-500 break-all">{w.email}</p>
+                    <p className="text-xs text-stone-400 truncate">{w.email}</p>
                     {w.prayer_request && (
                       <p className="text-xs text-stone-500 mt-0.5 line-clamp-2 leading-relaxed">{w.prayer_request}</p>
                     )}

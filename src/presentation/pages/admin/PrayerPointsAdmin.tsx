@@ -114,20 +114,20 @@ export function PrayerPointsAdmin({ supabase, commitmentId, bricklayerName }: Pr
 
                 {/* Body / edit inline */}
                 {editingId === p.id ? (
-                  <div className="min-w-0 flex-1 flex flex-wrap gap-1">
+                  <div className="flex-1 flex gap-1">
                     <input
                       autoFocus
                       value={editBody}
                       onChange={e => setEditBody(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') void commitEdit(p.id); if (e.key === 'Escape') setEditingId(null) }}
-                      className="min-w-0 w-full flex-1 border border-[var(--color-primary)] rounded px-2 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
+                      className="flex-1 border border-[var(--color-primary)] rounded px-2 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
                     />
                     <button onClick={() => void commitEdit(p.id)} className="text-xs px-2 py-0.5 bg-[var(--color-primary)] text-white rounded hover:opacity-90">Save</button>
                     <button onClick={() => setEditingId(null)} className="text-xs px-2 py-0.5 bg-stone-100 text-stone-500 rounded hover:bg-stone-200">✕</button>
                   </div>
                 ) : (
                   <button
-                    className={`min-w-0 flex-1 break-words text-left text-xs leading-relaxed ${p.is_answered ? 'line-through text-stone-400' : 'text-stone-700 hover:text-[var(--color-primary)]'}`}
+                    className={`flex-1 text-left text-xs leading-relaxed ${p.is_answered ? 'line-through text-stone-400' : 'text-stone-700 hover:text-[var(--color-primary)]'}`}
                     onClick={() => { setEditingId(p.id); setEditBody(p.body) }}
                     title="Click to edit"
                   >
@@ -138,7 +138,7 @@ export function PrayerPointsAdmin({ supabase, commitmentId, bricklayerName }: Pr
                 {/* Delete */}
                 <button
                   onClick={() => void handleDelete(p.id)}
-                  className="shrink-0 text-stone-200 hover:text-red-500 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 transition-opacity mt-0.5"
+                  className="shrink-0 text-stone-200 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5"
                   aria-label="Delete prayer point"
                 >
                   <Trash2 size={12} />
@@ -153,7 +153,7 @@ export function PrayerPointsAdmin({ supabase, commitmentId, bricklayerName }: Pr
               value={newBody}
               onChange={e => setNewBody(e.target.value)}
               placeholder="Add a prayer point…"
-              className="min-w-0 w-full flex-1 border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
+              className="flex-1 border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
             />
             <button
               type="submit"

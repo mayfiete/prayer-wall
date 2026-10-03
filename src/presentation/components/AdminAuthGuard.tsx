@@ -54,7 +54,7 @@ export function AdminAuthGuard({ supabase, children }: AdminAuthGuardProps) {
 
   if (checking) {
     return (
-      <div className="admin-shell min-h-dvh flex items-center justify-center bg-stone-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-stone-100">
         <span className="text-stone-400 text-sm">Checking session...</span>
       </div>
     )
@@ -62,18 +62,16 @@ export function AdminAuthGuard({ supabase, children }: AdminAuthGuardProps) {
 
   if (!authed) {
     return (
-      <div className="admin-shell min-h-dvh flex items-center justify-center bg-stone-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-stone-100">
         <form
           onSubmit={handleLogin}
-          className="w-full max-w-sm bg-white rounded-xl shadow p-5 sm:p-8 space-y-4"
+          className="w-full max-w-sm bg-white rounded-xl shadow p-8 space-y-4"
         >
           <h1 className="text-xl font-semibold text-stone-900">Admin Login</h1>
           {loginError && <p className="text-sm text-red-600">{loginError}</p>}
           <div className="space-y-1">
-            <label htmlFor="admin-email" className="block text-sm font-medium text-stone-700">Email</label>
+            <label className="block text-sm font-medium text-stone-700">Email</label>
             <input
-              id="admin-email"
-              autoComplete="username"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -82,10 +80,8 @@ export function AdminAuthGuard({ supabase, children }: AdminAuthGuardProps) {
             />
           </div>
           <div className="space-y-1">
-            <label htmlFor="admin-password" className="block text-sm font-medium text-stone-700">Password</label>
+            <label className="block text-sm font-medium text-stone-700">Password</label>
             <input
-              id="admin-password"
-              autoComplete="current-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

@@ -137,11 +137,11 @@ export function AssetAdmin({ supabase, onDone, wallSlug = 'prayer' }: AssetAdmin
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
         onClick={() => inputRef.current?.click()}
-        className="border-2 border-dashed border-stone-300 rounded-xl p-5 sm:p-10 text-center cursor-pointer hover:border-amber-400 transition-colors"
+        className="border-2 border-dashed border-stone-300 rounded-xl p-10 text-center cursor-pointer hover:border-amber-400 transition-colors"
       >
         <Upload className="mx-auto mb-3 text-stone-400" size={32} />
         <p className="text-sm text-stone-500">
-          {uploading ? 'Uploading...' : 'Choose an image or drop one here'}
+          {uploading ? 'Uploading...' : 'Drop image here or click to browse'}
         </p>
         <input
           ref={inputRef}
@@ -183,11 +183,11 @@ export function AssetAdmin({ supabase, onDone, wallSlug = 'prayer' }: AssetAdmin
           onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) void handleLogoFile(f) }}
           onDragOver={e => e.preventDefault()}
           onClick={() => logoInputRef.current?.click()}
-          className="border-2 border-dashed border-stone-300 rounded-xl p-5 sm:p-10 text-center cursor-pointer hover:border-amber-400 transition-colors"
+          className="border-2 border-dashed border-stone-300 rounded-xl p-10 text-center cursor-pointer hover:border-amber-400 transition-colors"
         >
           <Upload className="mx-auto mb-3 text-stone-400" size={32} />
           <p className="text-sm text-stone-500">
-            {logoUploading ? 'Uploading...' : 'Choose an image or drop one here'}
+            {logoUploading ? 'Uploading...' : 'Drop image here or click to browse'}
           </p>
           <input
             ref={logoInputRef}

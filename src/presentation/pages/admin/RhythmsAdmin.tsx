@@ -202,7 +202,7 @@ export function RhythmsAdmin({ supabase, onDone, wallId: wallIdProp, orgId: orgI
     <div className="max-w-2xl mx-auto space-y-6">
 
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex items-start justify-between">
         <div>
           <h2 className="text-lg font-semibold text-[var(--color-heading)]">Prayer Rhythms</h2>
           <p className="text-xs text-stone-400 mt-0.5">
@@ -247,14 +247,13 @@ export function RhythmsAdmin({ supabase, onDone, wallId: wallIdProp, orgId: orgI
             <button
               type="button"
               onClick={() => updateDraft('isActive', !draft.isActive)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 ${
+                draft.isActive ? 'bg-[var(--color-primary)]' : 'bg-stone-200'
+              }`}
               role="switch"
-              aria-label="Active rhythm"
               aria-checked={draft.isActive}
             >
-              <span aria-hidden="true" className={`flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${draft.isActive ? 'bg-[var(--color-primary)]' : 'bg-stone-200'}`}>
-                <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${draft.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
-              </span>
+              <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${draft.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
           </div>
 
@@ -310,7 +309,7 @@ export function RhythmsAdmin({ supabase, onDone, wallId: wallIdProp, orgId: orgI
             <p className="text-[11px] text-stone-400 mt-1">Rhythm stops firing after this date. Leave blank to run indefinitely.</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Send time</label>
               <div className="relative">
@@ -326,7 +325,7 @@ export function RhythmsAdmin({ supabase, onDone, wallId: wallIdProp, orgId: orgI
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 justify-end">
+          <div className="flex gap-2 justify-end">
             <button type="button" onClick={() => { setShowForm(false); setEditingId(null) }} className="px-4 py-2 bg-stone-100 text-stone-600 rounded-md text-sm font-medium hover:bg-stone-200">
               Cancel
             </button>
@@ -346,7 +345,7 @@ export function RhythmsAdmin({ supabase, onDone, wallId: wallIdProp, orgId: orgI
       ) : (
         <div className="border border-stone-200 rounded-lg overflow-hidden divide-y divide-stone-200">
           {rhythms.map(r => (
-            <div key={r.id} className="bg-white flex flex-wrap items-start gap-2 px-3 py-3 sm:gap-3 sm:px-4">
+            <div key={r.id} className="bg-white flex items-start gap-3 px-4 py-3">
               {/* Active toggle */}
               <button
                 onClick={() => void handleToggleActive(r)}
@@ -357,9 +356,9 @@ export function RhythmsAdmin({ supabase, onDone, wallId: wallIdProp, orgId: orgI
               </button>
 
               {/* Details */}
-              <div className="min-w-0 basis-[calc(100%-4rem)] grow sm:basis-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm font-medium text-stone-800 break-words">{r.name}</p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-stone-800 truncate">{r.name}</p>
                   {savedId === r.id && (
                     <span className="flex items-center gap-1 text-xs text-emerald-600">
                       <CheckCircle size={12} /> Saved

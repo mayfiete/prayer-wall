@@ -31,31 +31,24 @@ export function GivingWallAdminPage() {
 
   return (
     <AdminAuthGuard supabase={supabase}>
-      <div className="admin-shell min-h-screen bg-stone-100">
-        <header className="bg-white border-b border-stone-200 px-4 py-4 sm:px-8 sm:py-5 flex flex-wrap items-center justify-between gap-2">
+      <div className="min-h-screen bg-stone-100">
+        <header className="bg-white border-b border-stone-200 px-8 py-5 flex items-center justify-between">
           <h1 className="text-xl font-semibold text-stone-900">Giving Wall Admin</h1>
           <Link
             to="/giving"
-            className="flex min-h-11 items-center gap-1.5 text-sm text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors"
+            className="flex items-center gap-1.5 text-sm text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors"
           >
             <ArrowLeft size={15} />
             View Wall
           </Link>
         </header>
 
-        <nav aria-label="Admin sections" className="bg-white border-b border-stone-200 px-4 sm:px-8">
-          <label className="block py-3 md:hidden">
-            <span className="mb-1 block text-sm font-medium text-stone-600">Manage</span>
-            <select value={tab} onChange={e => setTab(e.target.value as Tab)} className="min-h-12 w-full rounded-lg border border-stone-300 bg-white px-3 text-base text-stone-900">
-              {(Object.keys(TAB_LABELS) as Tab[]).map(t => <option key={t} value={t}>{TAB_LABELS[t]}</option>)}
-            </select>
-          </label>
-          <div className="hidden flex-wrap md:flex">
+        <nav className="bg-white border-b border-stone-200 px-8">
+          <div className="flex">
             {(['rhythms', 'assets', 'theme', 'emails', 'bricklayers'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                aria-current={tab === t ? 'page' : undefined}
                 className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
                   tab === t
                     ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
@@ -68,7 +61,7 @@ export function GivingWallAdminPage() {
           </div>
         </nav>
 
-        <main className="min-w-0 px-4 py-6 sm:px-8 sm:py-8">
+        <main className="px-8 py-8">
           {tab === 'rhythms'     && <RhythmsAdmin supabase={supabase} wallId={GIVING_WALL_ID} orgId={GIVING_ORG_ID} onDone={() => setTab('bricklayers')} />}
           {tab === 'assets'      && <AssetAdmin supabase={supabase} wallSlug="giving" onDone={() => setTab('theme')} />}
           {tab === 'theme'       && <ThemeAdmin supabase={supabase} wallId={GIVING_WALL_ID} onDone={() => setTab('bricklayers')} />}

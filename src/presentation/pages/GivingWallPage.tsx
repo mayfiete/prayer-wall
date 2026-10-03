@@ -38,11 +38,7 @@ export function GivingWallPage() {
         logoMark={<LogoMark fallbackIcon={<Heart className="w-8 h-8 text-white" />} />}
       />
 
-      <WallBanner heading={bannerHeading} body={bannerBody} action={
-        <button type="button" className="wall-action" onClick={() => setModalOpen(true)}>
-          Make a gift
-        </button>
-      } />
+      <WallBanner heading={bannerHeading} body={bannerBody} />
 
       {checkoutResult === 'success' && (
         <p className="px-6 py-2.5 text-sm font-medium text-center bg-emerald-50 border-b border-emerald-200 text-emerald-900">

@@ -52,19 +52,7 @@ export function WallPage() {
         logoMark={<LogoMark fallbackIcon={<PrayerHandsIcon className="prayer-hands-icon" />} />}
       />
 
-      <WallBanner heading={bannerHeading} body={bannerBody} footer={
-        categoryPills && <>
-          <details className="text-sm sm:hidden">
-            <summary className="min-h-11 cursor-pointer py-3 font-medium">Explore prayer areas</summary>
-            {categoryPills}
-          </details>
-          <div className="hidden sm:block">{categoryPills}</div>
-        </>
-      } action={
-        <button type="button" className="wall-action" onClick={() => setModalOpen(true)}>
-          Commit to pray
-        </button>
-      } />
+      <WallBanner heading={bannerHeading} body={bannerBody} footer={categoryPills} />
 
       <section
         className="flex-1 flex flex-col px-0 overflow-x-clip"

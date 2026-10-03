@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useContainer } from '../context/AppContext'
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react'
+import { Button } from '../components/ui/Button'
 
 type Status = 'loading' | 'success' | 'error' | 'invalid'
 
@@ -28,7 +29,7 @@ export function UnsubscribePage() {
   }, [commitmentId, donationId, unsubscribeDonor, unsubscribeFromReminders])
 
   return (
-    <div className="min-h-dvh flex items-center justify-center bg-stone-950 px-4 py-8 sm:p-6">
+    <div className="min-h-screen flex items-center justify-center bg-stone-950 p-6">
       <div className="max-w-sm w-full text-center flex flex-col items-center gap-5">
         {status === 'loading' && (
           <>
@@ -48,8 +49,10 @@ export function UnsubscribePage() {
                 ? 'You will no longer receive emails about your gift. Thank you for your generosity.'
                 : 'You will no longer receive weekly prayer reminders. Thank you for your time on the prayer wall.'}
             </p>
-            <Link to={donationId ? '/giving' : '/'} className="flex min-h-12 w-full items-center justify-center rounded-lg border border-stone-600 px-4 py-3 text-stone-100">
-              {donationId ? 'Return to the giving wall' : 'Return to the prayer wall'}
+            <Link to={donationId ? '/giving' : '/'}>
+              <Button variant="secondary">
+                {donationId ? 'Return to the giving wall' : 'Return to the prayer wall'}
+              </Button>
             </Link>
           </>
         )}
@@ -63,8 +66,8 @@ export function UnsubscribePage() {
             <p className="text-stone-400 text-sm">
               We couldn't process your request. Please try again or contact us.
             </p>
-            <Link to="/" className="flex min-h-12 w-full items-center justify-center rounded-lg border border-stone-600 px-4 py-3 text-stone-100">
-              Return home
+            <Link to="/">
+              <Button variant="ghost">Return home</Button>
             </Link>
           </>
         )}
@@ -78,8 +81,8 @@ export function UnsubscribePage() {
             <p className="text-stone-400 text-sm">
               This unsubscribe link is missing required information.
             </p>
-            <Link to="/" className="flex min-h-12 w-full items-center justify-center rounded-lg border border-stone-600 px-4 py-3 text-stone-100">
-              Return home
+            <Link to="/">
+              <Button variant="ghost">Return home</Button>
             </Link>
           </>
         )}

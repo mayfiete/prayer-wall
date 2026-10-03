@@ -25,13 +25,22 @@ export function WallGrid({ items, ctaBrick, loading, error }: WallGridProps) {
     let idx = 0
     let rowIdx = 0
     while (idx < all.length) {
-      const size = (rowIdx % 2 === 0) !== mobile ? FULL : OFFSET
+      // Phone: the CTA stone sits alone on top, then rows of two.
+      const size = mobile ? (rowIdx === 0 ? 1 : 2) : rowIdx % 2 === 0 ? FULL : OFFSET
       result.push(all.slice(idx, idx + size))
       idx += size
       rowIdx += 1
     }
     return result
   }, [items, ctaBrick, FULL, OFFSET, mobile])
+
+  const rowClass = (rowIdx: number) => {
+    if (mobile) {
+      if (rowIdx === 0) return ' stone-row--solo'
+      return rowIdx % 2 === 0 ? ' stone-row--offset' : ''
+    }
+    return stonesPerRow > 1 && rowIdx % 2 === 1 ? ' stone-row--offset' : ''
+  }
 
   return (
     <div ref={containerRef} className="min-w-0 w-full flex-1">
@@ -46,7 +55,7 @@ export function WallGrid({ items, ctaBrick, loading, error }: WallGridProps) {
           {rows.map((row, rowIdx) => (
             <div
               key={rowIdx}
-              className={`stone-row${stonesPerRow > 1 && (rowIdx % 2 === 1) !== mobile ? ' stone-row--offset' : ''}`}
+              className={`stone-row${rowClass(rowIdx)}`}
             >
               {row.map((item) => (
                 <Fragment key={item.key}>{item.node}</Fragment>

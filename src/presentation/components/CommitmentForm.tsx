@@ -64,10 +64,10 @@ export function CommitmentForm({ wallId, orgId, categories, onSuccess, successHe
 
   if (submitted) {
     return (
-      <div role="status" className="flex flex-col items-center gap-3 py-4 text-center animate-fade-in">
+      <div className="flex flex-col items-center gap-3 py-4 text-center animate-fade-in">
         <CheckCircle2 className="text-amber-500" size={48} />
-        <p className="font-semibold text-lg" style={{ color: 'var(--color-modal-text)' }}>{successHeading ?? 'Your stone has been placed!'}</p>
-        <p className="text-sm" style={{ color: 'var(--color-modal-text)' }}>{successBody ?? 'You will receive weekly prayer reminders by email.'}</p>
+        <p className="text-stone-100 font-semibold text-lg font-serif">{successHeading ?? 'Your stone has been placed!'}</p>
+        <p className="text-stone-400 text-sm">{successBody ?? 'You will receive weekly prayer reminders by email.'}</p>
       </div>
     )
   }
@@ -112,7 +112,7 @@ export function CommitmentForm({ wallId, orgId, categories, onSuccess, successHe
       <Button type="submit" disabled={submitting} size="lg" className="w-full mt-1">
         {submitting ? 'Adding your stone…' : (submitLabel ?? 'Add my stone to the foundation!')}
       </Button>
-      <p className="text-sm text-center leading-relaxed" style={{ color: 'color-mix(in srgb, var(--color-modal-text) 75%, transparent)' }}>
+      <p className="text-xs text-stone-500 text-center">
         Your email is never displayed publicly. You can unsubscribe from reminders at any time.
       </p>
     </form>
