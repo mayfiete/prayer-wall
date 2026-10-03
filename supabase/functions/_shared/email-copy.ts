@@ -77,11 +77,32 @@ const FIELDS = [
     defaultValue: "Thank you, again, for your continued support!",
   },
   {
-    key: "unsubscribe_label",
-    label: "Unsubscribe link text",
+    key: "optout_text",
+    label: "Opt-out instruction",
     group: "shared",
     scope: "both",
-    defaultValue: "Unsubscribe",
+    defaultValue: "To stop receiving these emails, reply to this message or email",
+    help: "The reply-to email address is appended after this sentence.",
+  },
+  {
+    key: "reply_to_email",
+    label: "Reply-to / opt-out email",
+    group: "shared",
+    scope: "both",
+    defaultValue: "ivangee@hcafredericksburg.org",
+    help: "Replies to every email go here, and it is shown as the opt-out contact. " +
+      "Whoever reads this inbox must act on opt-out requests within 10 business days.",
+  },
+  {
+    key: "postal_address",
+    label: "Postal address",
+    group: "shared",
+    scope: "both",
+    defaultValue: "9215 Courthouse Road\nSpotsylvania, VA 22553",
+    allowBlank: true,
+    multiline: true,
+    help: "Street address or PO box shown in the footer of every email; U.S. email law " +
+      "(CAN-SPAM) expects a valid postal address. One line per row.",
   },
 
   {

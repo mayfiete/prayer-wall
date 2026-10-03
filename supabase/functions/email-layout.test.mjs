@@ -18,7 +18,6 @@ const { outputText } = ts.transpileModule(source, {
 })
 const layout = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`)
 const logoUrl = 'https://swrcawckpsotialqnisq.supabase.co/storage/v1/object/public/email-assets/hca-logo.png'
-const unsubscribeUrl = 'https://example.com/unsubscribe?id=fixture&source=email'
 
 function assertBranding(html) {
   assert.ok(html.includes(`src="${logoUrl}"`))
@@ -53,13 +52,29 @@ async function loadEmailModule(name, overrides = {}) {
   return { context, handler }
 }
 
-test('shared shell uses the HCA newsletter design and preserves body and unsubscribe links', () => {
-  const html = layout.emailShell({ title: 'Prayer Guide', bodyHtml: '<p>Our prayer guide</p>', unsubscribeUrl })
+test('shared shell uses the HCA newsletter design and preserves body and opt-out contact', () => {
+  const html = layout.emailShell({ title: 'Prayer Guide', bodyHtml: '<p>Our prayer guide</p>' })
   assertBranding(html)
   assert.match(html, /<h1[^>]*>Prayer Guide<\/h1>/)
   assert.ok(html.includes('<p>Our prayer guide</p>'))
-  assert.ok(html.includes('href="https://example.com/unsubscribe?id=fixture&amp;source=email"'))
+  assert.ok(html.includes('href="mailto:ivangee@hcafredericksburg.org?subject=Unsubscribe"'))
+  assert.match(html, /reply to this message or email/)
+  assert.doesNotMatch(html, /\/unsubscribe/)
   assert.match(html, /committed to pray/)
+})
+
+test('footer shows the postal address only when set, and bad reply-to values fall back', () => {
+  const copy = layout.EMAIL_COPY_DEFAULTS
+  assert.ok(layout.emailShell({ title: 'T', bodyHtml: '' }).includes('9215 Courthouse Road<br>Spotsylvania, VA 22553'))
+  assert.doesNotMatch(layout.emailShell({ copy: { ...copy, postal_address: '' }, title: 'T', bodyHtml: '' }), /<br>/)
+  const withAddress = layout.emailShell({
+    copy: { ...copy, postal_address: '1 Main St <b>\nFredericksburg, VA 22401' }, title: 'T', bodyHtml: '',
+  })
+  assert.ok(withAddress.includes('1 Main St &lt;b&gt;<br>Fredericksburg, VA 22401'))
+  assert.equal(layout.replyToAddress({ ...copy, reply_to_email: ' office@example.org ' }), 'office@example.org')
+  for (const bad of ['not an email', 'a@b', 'x@y.org, evil@z.org', 'a"b@c.org']) {
+    assert.equal(layout.replyToAddress({ ...copy, reply_to_email: bad }), copy.reply_to_email)
+  }
 })
 
 test('plain-text content cannot inject markup into the template', () => {
@@ -73,7 +88,7 @@ test('plain-text content cannot inject markup into the template', () => {
     layout.praisesBlock({ ...copy, praises_items: input }),
     layout.passageBlock(copy, { reference: input, translation: input, text: input, copyright: input }),
     layout.closing({ ...copy, closing: input }),
-    layout.emailShell({ title: input, eyebrow: input, footerText: input, bodyHtml: '', unsubscribeUrl }),
+    layout.emailShell({ title: input, eyebrow: input, footerText: input, bodyHtml: '' }),
   ]
   for (const html of fragments) {
     assert.ok(!html.includes(input))
@@ -109,17 +124,17 @@ test('confirmation and prayer guide both use the shared design', async () => {
   const { context } = await loadEmailModule('send-confirmation')
   const copy = layout.EMAIL_COPY_DEFAULTS
   const commitment = { name: 'Alex & Family' }
-  const confirmation = context.buildConfirmationHtml(copy, commitment, unsubscribeUrl)
+  const confirmation = context.buildConfirmationHtml(copy, commitment)
   assertBranding(confirmation)
   assert.match(confirmation, /Welcome to the Prayer Foundation/)
   assert.match(confirmation, /Dear Alex &amp; Family,/)
   const guide = context.buildSummaryHtml(copy, commitment, [{ id: 'school', name: 'School & Staff' }],
-    new Map([['school', ['Wisdom for teachers']]]), unsubscribeUrl)
+    new Map([['school', ['Wisdom for teachers']]]))
   assertBranding(guide)
   assert.match(guide, /Your Prayer Guide/)
   assert.match(guide, /School &amp; Staff/)
   assert.match(guide, /Wisdom for teachers/)
-  const emptyGuide = context.buildSummaryHtml(copy, commitment, [], new Map(), unsubscribeUrl)
+  const emptyGuide = context.buildSummaryHtml(copy, commitment, [], new Map())
   assertBranding(emptyGuide)
   assert.match(emptyGuide, /No prayer requests are available/)
 })
@@ -128,7 +143,7 @@ test('selected categories remain in the prayer guide even without active request
   const { context } = await loadEmailModule('send-confirmation')
   const categories = ['Students', 'Teachers', 'Families', 'Leadership'].map((name, i) => ({ id: String(i), name }))
   for (const requests of [new Map([['0', ['Wisdom for students']]]), new Map()]) {
-    const html = context.buildSummaryHtml(layout.EMAIL_COPY_DEFAULTS, { name: 'Alex' }, categories, requests, unsubscribeUrl)
+    const html = context.buildSummaryHtml(layout.EMAIL_COPY_DEFAULTS, { name: 'Alex' }, categories, requests)
     for (const { name } of categories) assert.ok(html.includes(name), `missing selected category ${name}`)
   }
 })
@@ -137,7 +152,7 @@ test('reminders keep personal requests, categories, and optional passages within
   const { context } = await loadEmailModule('send-reminders')
   const copy = layout.EMAIL_COPY_DEFAULTS
   const reminder = context.buildEmailHtml(copy, { name: 'Alex', prayer_request: 'Family & friends' }, [],
-    [{ categoryName: 'School', bodies: ['Wisdom for teachers'] }], null, unsubscribeUrl)
+    [{ categoryName: 'School', bodies: ['Wisdom for teachers'] }], null)
   assertBranding(reminder)
   assert.match(reminder, /A Prayer Reminder/)
   assert.match(reminder, /Family &amp; friends/)
@@ -145,7 +160,7 @@ test('reminders keep personal requests, categories, and optional passages within
   assert.doesNotMatch(reminder, /A Word for Your Prayers/)
   const withPoints = context.buildEmailHtml(copy, { name: 'Alex', prayer_request: 'Legacy request' },
     [{ body: 'Current request', is_answered: false }, { body: 'Answered request', is_answered: true }], [],
-    { reference: 'Psalm 127:1', translation: 'KJV', text: 'Except the LORD build the house', copyright: null }, unsubscribeUrl)
+    { reference: 'Psalm 127:1', translation: 'KJV', text: 'Except the LORD build the house', copyright: null })
   assertBranding(withPoints)
   assert.match(withPoints, /Current request/)
   assert.match(withPoints, /Except the LORD build the house/)
@@ -188,5 +203,7 @@ test('donation thank-you keeps the amount and donation link with Giving Wall bra
   assert.match(email.html, /HCA Fredericksburg · Giving Wall/)
   assert.match(email.html, /because you made a gift/)
   assert.doesNotMatch(email.html, /committed to pray|Prayer Foundation/)
-  assert.ok(email.html.includes(`/unsubscribe?donation=${donationId}`))
+  assert.equal(email.reply_to, 'ivangee@hcafredericksburg.org')
+  assert.ok(email.html.includes('mailto:ivangee@hcafredericksburg.org'))
+  assert.doesNotMatch(email.html, /\/unsubscribe/)
 })
