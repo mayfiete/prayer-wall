@@ -92,9 +92,19 @@
     margin-left: var(--stone-offset-x, calc((var(--stone-w, 80px) - var(--stone-overlap-x)) / 2));
   }
 
-  /* Phone: lone CTA stone centred above the two-up rows */
-  .stone-row--solo {
-    margin-left: calc((100% - var(--stone-w, 80px)) / 2);
+  /* Mobile courses alternate one centered stone with two equal-sized stones. */
+  .stone-row--mobile {
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  /* The image has transparent margins; crop those rather than shrink the names. */
+  .stone-row--mobile .tile-stone {
+    background-size: 150% auto;
+  }
+
+  .stone-row--mobile .stone-name {
+    width: 75%;
   }
 
   /* ─── Shared tile structure ────────────────────────────────────────────── */

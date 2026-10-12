@@ -97,11 +97,21 @@ test('both walls reflow on container resize and restore the configured desktop m
   assert.equal(count(app.render()), 5)
 })
 
-test('mobile walls alternate two over three even with a large desktop stone theme', () => {
-  const app = mount(320, { stones_per_row: 1, brick_scale: 2 })
-  assert.deepEqual(Array.from(rows(app.render()).slice(0, 4), row => row.props.children.length), [2, 3, 2, 3])
-  assert.ok(rows(app.render())[0].props.className.includes('--offset'))
-  assert.ok(!rows(app.render())[1].props.className.includes('--offset'))
+test('mobile walls alternate one and two equal-sized stones in reading order', () => {
+  for (const width of [320, 375, 430, 639]) {
+    const app = mount(width, { stones_per_row: 10, brick_scale: 2 })
+    const tree = app.render()
+    assert.deepEqual(Array.from(rows(tree).slice(0, 6), row => row.props.children.length), [1, 2, 1, 2, 1, 2])
+    const content = rows(tree).flatMap(row => row.props.children.map(item => item.props.children))
+    assert.deepEqual(Array.from(content), ['Join', ...Array.from({ length: 20 }, (_, i) => `Person ${i}`)])
+    const wide = rows(tree)[0].props.style
+    const pair = rows(tree)[1].props.style
+    assert.equal(parseFloat(wide['--stone-w']), parseFloat(pair['--stone-w']))
+    assert.equal(parseFloat(wide['--stone-h']), parseFloat(pair['--stone-h']))
+    assert.ok(parseFloat(pair['--stone-h']) >= 96, 'paired names need a readable stone height')
+    assert.equal(parseFloat(pair['--wall-name-size']), 14)
+    app.unmount()
+  }
 })
 
 test('resizing while data loads is reflected when the wall appears', () => {
@@ -122,7 +132,7 @@ test('live theme changes update the layout and observers are cleaned up', () => 
 test('rows fit phone, tablet and desktop widths with default and extreme theme settings', () => {
   for (const theme of [{}, { stones_per_row: 10, brick_scale: 2, brick_overlap_x: 300, brick_overlap_y: 300, brick_aspect: 0.3 }]) {
     const app = mount(1440, theme)
-    for (const width of [320, 390, 768, 1024, 1440, 2560, 320]) {
+    for (const width of [320, 375, 390, 430, 639, 640, 768, 1024, 1440, 2560, 320]) {
       app.resize(width)
       const tree = app.render()
       const style = wall(tree).props.style
@@ -134,24 +144,34 @@ test('rows fit phone, tablet and desktop widths with default and extreme theme s
       assert.ok(height > overlapY, 'rows must advance vertically')
       for (const row of rows(tree)) {
         const length = row.props.children.length
-        const offset = row.props.className.includes('--offset') ? (stoneWidth - overlapX) / 2 : 0
-        const right = offset + stoneWidth + (length - 1) * (stoneWidth - overlapX)
-        assert.ok(right <= width - 40, `row exceeds available space at ${width}px`)
+        const rowStyle = row.props.style ?? style
+        const rowWidth = parseFloat(rowStyle['--stone-w'])
+        const rowHeight = parseFloat(rowStyle['--stone-h'])
+        const rowOverlapY = parseFloat(rowStyle['--stone-overlap-y'])
+        assert.ok(rowHeight > rowOverlapY, 'rows must advance vertically')
+        if (row.props.className.includes('--mobile')) {
+          const gap = parseFloat(rowStyle['--stone-gap'])
+          const rowSpan = rowWidth * length + gap * (length - 1)
+          assert.ok(rowSpan <= width - 40, `mobile row exceeds available space at ${width}px`)
+          assert.equal(parseFloat(rowStyle['--stone-overlap-x']), 0)
+        } else {
+          const offset = row.props.className.includes('--offset') ? (rowWidth - overlapX) / 2 : 0
+          assert.ok(offset >= 0, 'stone must stay inside the left edge')
+          const right = offset + rowWidth + (length - 1) * (rowWidth - overlapX)
+          assert.ok(right <= width - 40, `row exceeds available space at ${width}px`)
+        }
       }
     }
     app.unmount()
   }
 })
 
-test('mobile rows fill and center within the wall even with a small desktop scale', () => {
+test('equal mobile stones fit two columns and desktop row sizing returns after resize', () => {
   const app = mount(639, { brick_scale: 0.4, brick_overlap_x: 300 })
-  const tree = app.render()
-  const style = wall(tree).props.style
-  const width = parseFloat(style['--stone-w'])
-  const overlap = parseFloat(style['--stone-overlap-x'])
-  const fullSpan = 3 * width - 2 * overlap
-  assert.ok(Math.abs(599 - fullSpan) < 3, 'three-stone row should fill available width within rounding tolerance')
-  const offset = (width - overlap) / 2
-  const shortSpan = 2 * width - overlap
-  assert.ok(Math.abs(offset - (599 - offset - shortSpan)) < 3, 'two-stone row should be centered')
+  const wide = rows(app.render())[0].props.style
+  assert.ok(2 * parseFloat(wide['--stone-w']) + parseFloat(wide['--stone-gap']) <= 420)
+  assert.ok(parseFloat(wide['--stone-w']) <= 599)
+  app.resize(1440)
+  assert.equal(rows(app.render())[0].props.style, undefined)
+  app.unmount()
 })
