@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react'
 
 const GIVING_WALL_ID = (import.meta.env.VITE_GIVING_WALL_ID as string | undefined)?.trim() ?? ''
 
-// email is revoked from authenticated by migration 024, so it can't be selected.
+// Private reads use the database RPC, which checks the approved Auth UUIDs.
 type DonationRow = Pick<
   Database['prayer_wall']['Tables']['donations']['Row'],
   'id' | 'name' | 'amount_cents' | 'currency' | 'processor_ref' | 'email_opt_out' | 'donated_at'
@@ -27,10 +27,7 @@ export function GivingWallDonorsAdmin({ supabase }: GivingWallDonorsAdminProps) 
   useEffect(() => {
     if (!GIVING_WALL_ID) { setLoading(false); return }
     supabase
-      .from('donations')
-      .select('id, giving_wall_id, name, amount_cents, currency, processor, processor_ref, email_opt_out, donated_at, created_at')
-      .eq('giving_wall_id', GIVING_WALL_ID)
-      .order('donated_at', { ascending: false })
+      .rpc('admin_read_donations', { p_wall_id: GIVING_WALL_ID })
       .then(({ data, error: err }) => {
         if (err) setError(err.message)
         else setDonations(data ?? [])

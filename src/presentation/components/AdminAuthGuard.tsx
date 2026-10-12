@@ -2,16 +2,11 @@ import { useState, useEffect } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '../../infrastructure/supabase/types'
+import { canAccessAdmin } from '../../infrastructure/auth/admin-access'
 
 interface AdminAuthGuardProps {
   supabase: SupabaseClient<Database>
   children: ReactNode
-}
-
-const ADMIN_EMAIL = (import.meta.env.VITE_ADMIN_EMAIL as string | undefined)?.toLowerCase() ?? ''
-
-function isAdminEmail(email?: string | null) {
-  return !!ADMIN_EMAIL && email?.toLowerCase() === ADMIN_EMAIL
 }
 
 export function AdminAuthGuard({ supabase, children }: AdminAuthGuardProps) {
@@ -23,28 +18,39 @@ export function AdminAuthGuard({ supabase, children }: AdminAuthGuardProps) {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (data.session && isAdminEmail(data.session.user.email)) {
-        setAuthed(true)
-      } else {
-        if (data.session) await supabase.auth.signOut()
-        setAuthed(false)
+    let active = true
+    let version = 0
+    const check = async (signedIn: boolean) => {
+      const request = ++version
+      setAuthed(false)
+      setChecking(signedIn)
+      if (!signedIn) return
+      await new Promise<void>(resolve => setTimeout(resolve, 0))
+      if (!active || request !== version) return
+      const allowed = await canAccessAdmin(supabase)
+      if (active && request === version) {
+        setAuthed(allowed)
+        setChecking(false)
       }
-      setChecking(false)
+    }
+    // Schedule outside the auth callback to avoid awaiting Supabase within it.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      void check(!!session)
     })
+    return () => { active = false; version++; subscription.unsubscribe() }
   }, [supabase])
 
   async function handleLogin(e: FormEvent) {
     e.preventDefault()
     setLoginError('')
     setSubmitting(true)
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
     setSubmitting(false)
     if (error) {
       setLoginError(error.message)
       return
     }
-    if (!isAdminEmail(data.user?.email)) {
+    if (!await canAccessAdmin(supabase)) {
       await supabase.auth.signOut()
       setLoginError('This account is not authorized for admin access.')
       return
