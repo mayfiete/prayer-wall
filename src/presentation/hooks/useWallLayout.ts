@@ -1,8 +1,5 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 
-/** Phone offset rows shift right by this fraction of a stone width. */
-const MOBILE_OFFSET = 0.25
-
 export function useWallLayout() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [layout, setLayout] = useState({ columns: 1, width: 200, height: 100, overlapX: 0, overlapY: 0, offsetX: 0, mobile: false })
@@ -26,17 +23,16 @@ export function useWallLayout() {
       // Keep enough space between names, even with a dense desktop theme.
       const minimumStep = Math.max(80, 96 * scale)
       const overlapX = mobile
-        ? Math.max(0, Math.min(read('--stone-overlap-x', 149), available * 0.16))
+        ? 0
         : Math.max(0, Math.min(read('--stone-overlap-x', 149), available / 2, maxWidth / 2))
-      const columns = mobile ? 2 : Math.max(1, Math.min(maximum, Math.floor((available - overlapX) / minimumStep)))
-      // Phone: two stones per row, with alternate rows nudged right by a fraction of a stone.
-      // Size so that an offset row (2 stones + offset) still fits the available width.
+      const columns = mobile ? 1 : Math.max(1, Math.min(maximum, Math.floor((available - overlapX) / minimumStep)))
+      // Cap the mobile wall span; every stone is sized to fit a two-stone course.
+      const offsetX = 0
       const fittedWidth = mobile
-        ? (available + overlapX) / (2 + MOBILE_OFFSET)
+        ? Math.min(420, available)
         : (available + overlapX * (columns - 1)) / columns
       // Phone rows fill the wall independently of the desktop stone-size setting.
       const width = Math.floor(mobile ? fittedWidth : Math.min(maxWidth, fittedWidth))
-      const offsetX = mobile ? Math.round(width * MOBILE_OFFSET) : 0
       const height = Math.max(1, Math.round(width * aspect))
       const overlapY = Math.max(0, Math.min(read('--stone-overlap-y', 67), height / 2))
       setLayout(previous => {
@@ -64,5 +60,19 @@ export function useWallLayout() {
     ...(layout.mobile ? { '--stone-offset-x': `${layout.offsetX}px` } : {}),
   } as CSSProperties
 
-  return { containerRef, columns: layout.columns, mobile: layout.mobile, style }
+  const mobileRowStyle = (): CSSProperties => {
+    const gap = 8
+    const width = Math.max(1, (layout.width - gap) / 2)
+    const height = Math.max(96, Math.round(layout.height / 2))
+    return {
+      '--stone-w': `${width}px`,
+      '--stone-h': `${height}px`,
+      '--stone-gap': `${gap}px`,
+      '--stone-overlap-x': '0px',
+      '--stone-overlap-y': `${Math.min(layout.overlapY, 12, height / 8)}px`,
+      '--wall-name-size': '14px',
+    } as CSSProperties
+  }
+
+  return { containerRef, columns: layout.columns, mobile: layout.mobile, style, mobileRowStyle }
 }

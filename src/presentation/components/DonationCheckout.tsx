@@ -130,6 +130,10 @@ export function DonationCheckout({
 
   return (
     <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-5" noValidate>
+      <p className="text-base leading-relaxed" style={{ color: 'var(--color-modal-text)' }}>
+        Your gift supports Heritage Christian Academy every month. The amount you choose
+        will be charged automatically each month until canceled.
+      </p>
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium" style={{ color: 'color-mix(in srgb, var(--color-modal-text) 80%, transparent)' }}>
           Choose your monthly gift
@@ -288,6 +292,15 @@ export function DonationCheckout({
           {error}
         </p>
       )}
+
+      <p className="text-sm leading-relaxed" style={{ color: 'var(--color-modal-text)' }}>
+        By donating, you authorize the payment shown and agree to our Terms and Refund Policy.
+        Payments are processed by Stripe; we do not store your full card details.
+        Payment questions? Contact{' '}
+        <a className="underline break-words" href="mailto:ivangee@hcafredericksburg.org">
+          ivangee@hcafredericksburg.org
+        </a>.
+      </p>
 
       <Button type="submit" disabled={submitting || !monthlyConsent} size="lg" className="w-full mt-1">
         {submitting
