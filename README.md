@@ -182,7 +182,7 @@ Only the webhook's service-role path may create production donations. The `recor
 | `/unsubscribe?id=<commitment-id>` | Stop prayer reminders. |
 | `/unsubscribe?donation=<donation-id>` | Opt out of donation emails. |
 
-Admin login uses Supabase email/password authentication and checks the configured `VITE_ADMIN_EMAIL` in the browser. This is only a UI guard: some database and Storage policies grant privileges to **every** authenticated Supabase user, regardless of that email. See [Security posture and remaining work](#security-posture-and-remaining-work) before creating additional accounts.
+Admin login uses Supabase email/password authentication and the database `is_app_admin()` check. Migration 035 restricts administrator access to two approved Auth UUIDs and protects private reads and admin writes. Activate it using [Admin Allowlist Setup](docs/ADMIN_ALLOWLIST_SETUP.md); the local code change does not update the deployed database automatically.
 
 ## Local development
 
@@ -240,7 +240,7 @@ Vite embeds `VITE_*` values into the browser bundle at build time. Set them befo
 | `VITE_ORG_NAME` | Organization display name. |
 | `VITE_GIVING_WALL_ID` | Giving wall ID for the public wall, theme, and admin. Mock public checkout supplies its own ID. |
 | `VITE_GIVING_ORG_ID` | Optional giving-admin organization override; falls back to `VITE_ORG_ID`. |
-| `VITE_ADMIN_EMAIL` | Email allowed by the frontend admin guard. |
+| `VITE_ADMIN_EMAIL` | Obsolete; administrator access is controlled by database migration 035. |
 | `VITE_ASSETS_BUCKET` | Storage bucket for textures and logos. Code defaults to `wall-assets`; the example uses `prayer-wall-images`. Match the bucket you provision. |
 
 ### Edge Function secrets
@@ -402,7 +402,7 @@ Implemented safeguards include Stripe-hosted Checkout (no app-owned card entry i
 
 **Known gaps to address before claiming admin or email security:**
 
-- **Admin authorization (high priority):** `AdminAuthGuard` checks `VITE_ADMIN_EMAIL` only in the browser. `034_email_copy.sql`, as well as existing admin table and Storage policies, grant access to *any* authenticated Supabase user; `webhook_events` raw Stripe payloads are also readable by authenticated users. Enforce an admin role/allowlist in server-side RLS and Storage policies and review grants for all admin tables. Restrict account creation and access operationally in the meantime; a UI-only change is insufficient.
+- **Admin authorization:** Migration 035 implements a two-user Auth UUID allowlist, protected private-read RPCs and restrictive admin table/Storage policies. Follow [Admin Allowlist Setup](docs/ADMIN_ALLOWLIST_SETUP.md). Until the migration and updated app are deployed, the earlier broad authenticated policies remain a security exposure. Deployed API and Realtime privacy still require verification.
 - **Email invocation (high priority):** `send-donation-thanks` checks UUID format but not that its caller is the webhook/service role. JWT verification alone may accept a public anon token. `send-confirmation` can be invoked for an existing commitment without owner authorization and has no resend/rate limit. Add function-level caller authorization and abuse controls while preserving the intended signup flow.
 - **Donation opt-out:** `send-donation-thanks` checks `thank_you_sent` but not `email_opt_out`; an unsent donation that has opted out can still receive a thank-you on invocation. Enforce the flag before sending and test this path.
 - **Public data and retention:** Migration `033` intentionally makes `processor_ref` and `email_opt_out` publicly readable. Decide whether these belong on the public API; if not, publish a narrower corrective migration and align browser projections and privacy tests. Webhook auditing retains raw signed Stripe events (which can contain donor details); set an access/retention policy.

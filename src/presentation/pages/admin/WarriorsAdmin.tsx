@@ -34,10 +34,7 @@ export function WarriorsAdmin({ supabase, onDone }: BricklayersAdminProps) {
   const load = useCallback(async () => {
     setLoading(true)
     const { data, error } = await supabase
-      .from('commitments')
-      .select('*')
-      .eq('wall_id', WALL_ID)
-      .order('committed_at', { ascending: false })
+      .rpc('admin_read_commitments', { p_wall_id: WALL_ID })
     if (error) setOpError(error.message)
     else setBricklayers((data ?? []) as CommitmentRow[])
     setLoading(false)

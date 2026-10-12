@@ -458,6 +458,15 @@ export interface Database {
     }
     Views: Record<string, never>
     Functions: {
+      is_app_admin: { Args: Record<string, never>; Returns: boolean }
+      admin_read_commitments: {
+        Args: { p_wall_id: string }
+        Returns: Database['prayer_wall']['Tables']['commitments']['Row'][]
+      }
+      admin_read_donations: {
+        Args: { p_wall_id: string }
+        Returns: Database['prayer_wall']['Tables']['donations']['Row'][]
+      }
       record_paid_donation: {
         Args: {
           p_wall_id: string
