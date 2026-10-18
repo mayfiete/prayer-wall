@@ -119,17 +119,20 @@ export function commitmentList(copy: EmailCopy, categoryNames: string[]): string
     </ul>`;
 }
 
-// "Prayer Requests" — grouped by category, each request as a bullet.
-export function guideImagesBlock(copy: EmailCopy): string {
+// Only public images belonging to this project's Storage may be embedded.
+export function guideImagesBlock(copy: EmailCopy, storageUrl: string): string {
+  let storageOrigin: string;
+  try { storageOrigin = new URL(storageUrl).origin; } catch { return ""; }
   return copyLines(copy.guide_images).filter((value) => {
     try {
       const url = new URL(value);
-      return url.protocol === "https:" && !url.username && !url.password &&
+      return url.protocol === "https:" && url.origin === storageOrigin && !url.username && !url.password &&
         url.pathname.startsWith("/storage/v1/object/public/wall-assets/");
     } catch { return false; }
   }).map((url, index) => `<p style="margin: 24px 0 0;"><img src="${escapeHtml(url)}" alt="Prayer guide image ${index + 1}" width="612" style="display: block; width: 100%; max-width: 612px; height: auto; border: 0;"></p>`).join("");
 }
 
+// "Prayer Requests" — grouped by category, each request as a bullet.
 export function prayerRequestsBlock(
   copy: EmailCopy,
   groups: Array<{ categoryName: string; requests: string[] }>,

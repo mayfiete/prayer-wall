@@ -149,7 +149,6 @@ export function EmailCopyAdmin({ supabase, wallId, scope, onDone }: EmailCopyAdm
             {groupFields.map(field => (
               field.key === 'guide_images' ? <GuideImagesEditor
                 key={field.key}
-                supabase={supabase}
                 wallId={wallId}
                 value={draft[field.key] ?? ''}
                 onChange={value => update(field.key, value)}

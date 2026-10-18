@@ -99,7 +99,7 @@ function buildSummaryHtml(
     ${requestsHtml}
     ${praisesBlock(copy)}
     ${closing(copy)}
-    ${guideImagesBlock(copy)}
+    ${guideImagesBlock(copy, Deno.env.get("SUPABASE_URL") ?? "")}
   `;
 
   return emailShell({

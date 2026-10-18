@@ -6,6 +6,8 @@ All selected images render vertically, in the saved order, after the Prayer Guid
 
 Files are public Supabase Storage objects in `wall-assets/<wall-id>/prayer-guide/`. The ordered public URLs are stored in the existing `prayer_wall.email_copy` table under `guide_images`. Removing an image from the guide leaves the storage file intact so previously sent emails continue to display it. Uploading alone does not publish the image in future emails until settings are saved.
 
+Uploads go through `UploadGuideImage`, with real and mock storage gateways selected in the container. The email renderer accepts only HTTPS public `wall-assets` URLs matching the origin of the edge function's configured `SUPABASE_URL`. Missing or invalid configuration omits images rather than allowing foreign hosts.
+
 ## Deploy and verify
 
 - Publish the frontend and redeploy `send-confirmation`. Per the shared layout release procedure, also redeploy `send-reminders` and `send-donation-thanks`.

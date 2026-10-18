@@ -1,16 +1,15 @@
 import { useState } from 'react'
-import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '../../../infrastructure/supabase/types'
+import { useContainer } from '../../context/AppContext'
 
 interface Props {
-  supabase: SupabaseClient<Database>
   wallId: string
   value: string
   onChange: (value: string) => void
   onBusy: (busy: boolean) => void
 }
 
-export function GuideImagesEditor({ supabase, wallId, value, onChange, onBusy }: Props) {
+export function GuideImagesEditor({ wallId, value, onChange, onBusy }: Props) {
+  const { uploadGuideImage } = useContainer()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const images = value.split('\n').map(url => url.trim()).filter(Boolean)
@@ -28,12 +27,7 @@ export function GuideImagesEditor({ supabase, wallId, value, onChange, onBusy }:
     const added: string[] = []
     try {
       for (const file of files) {
-        const extension = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' }[file.type]
-        const path = `${wallId}/prayer-guide/${crypto.randomUUID()}.${extension}`
-        const bucket = supabase.storage.from('wall-assets')
-        const { error: uploadError } = await bucket.upload(path, file, { contentType: file.type })
-        if (uploadError) throw uploadError
-        added.push(bucket.getPublicUrl(path).data.publicUrl)
+        added.push(await uploadGuideImage.execute(wallId, file))
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Image upload failed. Please try again.')
