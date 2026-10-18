@@ -6,6 +6,7 @@ import {
   emailShell,
   fromHeader,
   greeting,
+  guideImagesBlock,
   introParagraphs,
   leadLine,
   mergeEmailCopy,
@@ -98,6 +99,7 @@ function buildSummaryHtml(
     ${requestsHtml}
     ${praisesBlock(copy)}
     ${closing(copy)}
+    ${guideImagesBlock(copy)}
   `;
 
   return emailShell({

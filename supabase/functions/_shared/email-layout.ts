@@ -120,17 +120,31 @@ export function commitmentList(copy: EmailCopy, categoryNames: string[]): string
 }
 
 // "Prayer Requests" — grouped by category, each request as a bullet.
+export function guideImagesBlock(copy: EmailCopy): string {
+  return copyLines(copy.guide_images).filter((value) => {
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" && !url.username && !url.password &&
+        url.pathname.startsWith("/storage/v1/object/public/wall-assets/");
+    } catch { return false; }
+  }).map((url, index) => `<p style="margin: 24px 0 0;"><img src="${escapeHtml(url)}" alt="Prayer guide image ${index + 1}" width="612" style="display: block; width: 100%; max-width: 612px; height: auto; border: 0;"></p>`).join("");
+}
+
 export function prayerRequestsBlock(
   copy: EmailCopy,
   groups: Array<{ categoryName: string; requests: string[] }>,
 ): string {
-  const filled = groups.filter((g) => g.requests.length > 0);
+  const filled = groups.map((g) => ({
+    ...g,
+    requests: g.requests.flatMap((request) => request.replace(/\r\n?/g, "\n")
+      .split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean)),
+  })).filter((g) => g.requests.length > 0);
   if (filled.length === 0) return "";
 
   const sections = filled
     .map((g) => {
       const bullets = g.requests
-        .map((r) => `<li style="margin: 0 0 8px;">${escapeHtml(r)}</li>`)
+        .map((r) => `<li style="margin: 0 0 8px;">${escapeHtml(r).replace(/\n/g, "<br>")}</li>`)
         .join("");
       return `
         <div style="margin: 0 0 16px;">

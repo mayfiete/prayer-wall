@@ -233,6 +233,14 @@ const FIELDS = [
 
   // ── Prayer guide (summary) email ───────────────────────────────────────────
   {
+    key: "guide_images",
+    label: "Images at the bottom of the guide",
+    group: "guide",
+    scope: "prayer",
+    defaultValue: "",
+    allowBlank: true,
+  },
+  {
     key: "guide_subject",
     label: "Subject",
     group: "guide",
