@@ -8,6 +8,7 @@ import {
   emailCopyFieldsForScope,
 } from '../../../infrastructure/email/emailCopy'
 import type { EmailCopyField, EmailCopyGroup } from '../../../infrastructure/email/emailCopy'
+import { GuideImagesEditor } from './GuideImagesEditor'
 
 interface EmailCopyAdminProps {
   supabase: SupabaseClient<Database>
@@ -39,6 +40,7 @@ export function EmailCopyAdmin({ supabase, wallId, scope, onDone }: EmailCopyAdm
   const [savedDraft, setSavedDraft] = useState<Draft>(defaults)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploadingImages, setUploadingImages] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
 
@@ -132,7 +134,7 @@ export function EmailCopyAdmin({ supabase, wallId, scope, onDone }: EmailCopyAdm
         <div>
           <h2 className="text-lg font-semibold text-[var(--color-heading)]">Emails</h2>
           <p className="text-xs text-stone-400 mt-0.5">
-            Every word of every email this wall sends. Text only — formatting and colours come from
+            Edit the wording and Prayer Guide images. Formatting and colours come from
             the shared email design. Saved changes apply to the next email sent.
           </p>
         </div>
@@ -145,6 +147,13 @@ export function EmailCopyAdmin({ supabase, wallId, scope, onDone }: EmailCopyAdm
               {EMAIL_COPY_GROUP_LABELS[group]}
             </h3>
             {groupFields.map(field => (
+              field.key === 'guide_images' ? <GuideImagesEditor
+                key={field.key}
+                wallId={wallId}
+                value={draft[field.key] ?? ''}
+                onChange={value => update(field.key, value)}
+                onBusy={setUploadingImages}
+              /> :
               <CopyRow
                 key={field.key}
                 field={field}
@@ -159,6 +168,7 @@ export function EmailCopyAdmin({ supabase, wallId, scope, onDone }: EmailCopyAdm
         <div className="flex items-center justify-between pb-4">
           <button
             onClick={handleReset}
+            disabled={uploadingImages}
             className="flex items-center gap-1.5 text-sm text-stone-400 hover:text-stone-700 transition-colors"
           >
             <RefreshCw size={13} />
@@ -174,7 +184,7 @@ export function EmailCopyAdmin({ supabase, wallId, scope, onDone }: EmailCopyAdm
             )}
             <button
               onClick={() => void handleSave()}
-              disabled={saving}
+              disabled={saving || uploadingImages}
               className="flex items-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-60 transition-colors"
             >
               <Save size={14} />

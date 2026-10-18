@@ -42,7 +42,7 @@ async function loadEmailModule(name, overrides = {}) {
     Request, Response, URL, Intl,
     console: { log() {}, error() {} },
     Deno: {
-      env: { get: (key) => ({ APP_URL: 'https://example.com' })[key] },
+      env: { get: (key) => ({ APP_URL: 'https://example.com', SUPABASE_URL: 'https://example.supabase.co' })[key] },
       serve: (fn) => { handler = fn },
     },
     fetch: () => { throw new Error('Network calls are disabled in email tests') },
@@ -95,6 +95,37 @@ test('plain-text content cannot inject markup into the template', () => {
     assert.ok(html.includes('&lt;img src=x onerror=&quot;alert(1)&quot;&gt; &amp; Friends'))
   }
   assert.ok(layout.paragraph('<strong>Psalm 127:1</strong>').includes('<strong>Psalm 127:1</strong>'))
+})
+
+test('prayer meditation paragraphs become bullets while single line breaks stay within a bullet', () => {
+  const html = layout.prayerRequestsBlock(layout.EMAIL_COPY_DEFAULTS, [{
+    categoryName: 'Health',
+    requests: ['  First prayer\r\nContinue <script> & pray\r\n \r\nSecond prayer\r\n\r\n\r\nThird prayer  ', 'Another meditation', ' \n\n '],
+  }])
+  assert.equal((html.match(/<li\b/g) ?? []).length, 4)
+  assert.ok(html.includes('First prayer<br>Continue &lt;script&gt; &amp; pray</li>'))
+  assert.match(html, />Second prayer<\/li>/)
+  assert.match(html, />Third prayer<\/li>/)
+  assert.match(html, />Another meditation<\/li>/)
+  assert.doesNotMatch(html, /<script>/)
+  assert.equal(layout.prayerRequestsBlock(layout.EMAIL_COPY_DEFAULTS, [{ categoryName: 'Empty', requests: [' \r\n\r\n '] }]), '')
+})
+
+test('guide images render multiple storage images in order and reject unsafe URLs', async () => {
+  const first = 'https://example.supabase.co/storage/v1/object/public/wall-assets/guide/one.png'
+  const second = 'https://example.supabase.co/storage/v1/object/public/wall-assets/guide/two.jpg'
+  const { context } = await loadEmailModule('send-confirmation')
+  const copy = { ...layout.EMAIL_COPY_DEFAULTS, guide_images: `${first}\n${second}\njavascript:alert(1)\nhttps://evil.example/image.png\nhttps://evil.example/storage/v1/object/public/wall-assets/tracker.png` }
+  const html = context.buildSummaryHtml(copy, { name: 'Alex' }, [], new Map())
+  assert.ok(html.includes(`src="${first}"`))
+  assert.ok(html.indexOf(`src="${second}"`) > html.indexOf(`src="${first}"`))
+  assert.ok(html.indexOf(`src="${first}"`) > html.indexOf(copy.closing))
+  assert.doesNotMatch(html, /javascript:|evil\.example/)
+  assert.doesNotMatch(context.buildConfirmationHtml(copy, { name: 'Alex' }), /guide\/one\.png/)
+  assert.equal(layout.guideImagesBlock(copy, ''), '')
+  assert.equal(layout.guideImagesBlock(copy, 'not-a-url'), '')
+  const invalidImages = { ...copy, guide_images: 'http://example.supabase.co/storage/v1/object/public/wall-assets/a.png\nhttps://user:pass@example.supabase.co/storage/v1/object/public/wall-assets/b.png\nhttps://example.supabase.co/storage/v1/object/public/other/c.png' }
+  assert.equal(layout.guideImagesBlock(invalidImages, 'https://example.supabase.co'), '')
 })
 
 test('optional sections remain optional and blank names use the supporter greeting', () => {

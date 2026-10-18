@@ -85,7 +85,9 @@ export function GivingWallDonorsAdmin({ supabase }: GivingWallDonorsAdminProps) 
                   <td className="px-5 py-3 font-medium text-stone-800">{d.name}</td>
                   <td className="px-5 py-3 text-stone-700">{formatAmount(d.amount_cents, d.currency)}</td>
                   <td className="px-5 py-3 text-stone-500">{new Date(d.donated_at).toLocaleDateString()}</td>
-                  <td className="px-5 py-3 text-stone-400 font-mono text-xs">{d.processor_ref ?? '—'}</td>
+                  <td className="px-5 py-3 text-stone-400 font-mono text-xs">
+                    <span className="block max-w-xs whitespace-normal break-all">{d.processor_ref ?? '—'}</span>
+                  </td>
                   <td className="px-5 py-3">
                     <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${d.email_opt_out ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600'}`}>
                       {d.email_opt_out ? 'Opted out' : 'Active'}

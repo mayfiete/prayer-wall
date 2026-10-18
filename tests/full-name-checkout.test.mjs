@@ -61,27 +61,33 @@ function nodes(tree) {
   return [tree, ...nodes(tree.props?.children)]
 }
 
-for (const [name, anonymous, expected] of [
-  [' Mary Jane van der Berg ', false, 'Mary Jane van der Berg'],
-  ['', false, undefined],
-  ['Private Name', true, undefined],
+for (const [firstName, lastName, expected] of [
+  [' Mary Jane ', ' van der Berg ', 'Mary Jane van der Berg'],
+  ['Alex', '', 'Alex'],
+  ['', 'Smith', undefined],
 ]) {
-  test(`one optional Full Name reaches Checkout correctly: anonymous=${anonymous}, blank=${!name}`, async () => {
+  test(`checkout combines names and requires a first name: first=${JSON.stringify(firstName)}, last=${JSON.stringify(lastName)}`, async () => {
     const app = checkoutHarness()
     let tree = app.render()
-    const fields = nodes(tree).filter(n => n.type === 'input-control' && n.props.autoComplete === 'name')
-    assert.equal(fields.length, 1)
-    assert.equal(fields[0].props.label, 'Full Name (optional)')
-    assert.ok(!fields[0].props.required)
-    fields[0].props.onChange({ target: { value: name } })
-    if (anonymous) nodes(tree).find(n => n.props?.type === 'checkbox').props.onChange({ target: { checked: true } })
+    const fields = nodes(tree).filter(n => n.type === 'input-control' && ['given-name', 'family-name'].includes(n.props.autoComplete))
+    assert.equal(fields.length, 2)
+    assert.equal(fields[0].props.required, true)
+    assert.ok(!fields[1].props.required)
+    fields[0].props.onChange({ target: { value: firstName } })
+    fields[1].props.onChange({ target: { value: lastName } })
+    nodes(tree).find(n => n.props?.id === 'monthly-consent').props.onChange({ target: { checked: true } })
     tree = app.render()
-    if (anonymous) assert.equal(nodes(tree).filter(n => n.props?.autoComplete === 'name').length, 0)
     await tree.props.onSubmit({ preventDefault() {} })
     // The event wrapper intentionally discards the promise; drain its async handoff.
     await new Promise(resolve => setImmediate(resolve))
-    assert.equal(app.body.full_name, expected)
-    assert.equal(app.body.is_anonymous, anonymous)
-    assert.equal(app.redirect, 'https://checkout.stripe.com/fixture')
+    if (expected === undefined) {
+      assert.equal(app.body, undefined)
+      assert.equal(app.redirect, undefined)
+      assert.ok(nodes(app.render()).some(n => n.props?.children === 'Enter your first name'))
+    } else {
+      assert.equal(app.body.full_name, expected)
+      assert.equal(app.body.monthly_consent, true)
+      assert.equal(app.redirect, 'https://checkout.stripe.com/fixture')
+    }
   })
 }

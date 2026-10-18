@@ -185,13 +185,21 @@ export function StatementsAdmin({ categoryId, categoryName }: Readonly<Statement
                   className="w-full border border-[var(--color-primary)] rounded px-2 py-1 text-xs text-stone-800 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 resize-y"
                 />
               ) : (
-                <button
-                  onClick={() => startEdit(stmt)}
-                  className="text-xs text-stone-700 text-left leading-relaxed hover:text-[var(--color-primary)] transition-colors w-full"
-                  title="Click to edit"
-                >
-                  {stmt.body}
-                </button>
+                <ul className="list-disc pl-4 space-y-2 text-xs text-stone-700">
+                  {stmt.body.replace(/\r\n?/g, '\n').split(/\n\s*\n/)
+                    .map(paragraph => paragraph.trim()).filter(Boolean)
+                    .map((paragraph, paragraphIndex) => (
+                      <li key={paragraphIndex}>
+                        <button
+                          onClick={() => startEdit(stmt)}
+                          className="text-left leading-relaxed whitespace-pre-line hover:text-[var(--color-primary)] transition-colors w-full"
+                          title="Click to edit"
+                        >
+                          {paragraph}
+                        </button>
+                      </li>
+                    ))}
+                </ul>
               )}
             </div>
 
@@ -217,6 +225,7 @@ export function StatementsAdmin({ categoryId, categoryName }: Readonly<Statement
       </ul>
 
       <form onSubmit={(e) => void handleAdd(e)} className="flex flex-col gap-2">
+        <p className="text-xs text-stone-500">Separate paragraphs with a blank line to create bullet points. Single line breaks stay within the same bullet.</p>
         <textarea
           value={newBody}
           onChange={(e) => setNewBody(e.target.value)}

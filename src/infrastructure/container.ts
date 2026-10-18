@@ -4,6 +4,10 @@ import type { IPrayerMeditationRepository } from '../domain/repositories/IPrayer
 import type { IGivingWallRepository } from '../domain/repositories/IGivingWallRepository'
 import type { IPaymentGateway } from '../domain/gateways/IPaymentGateway'
 import { isSimulatedGateway } from '../domain/gateways/IPaymentGateway'
+import type { IGuideImageStorage } from '../domain/gateways/IGuideImageStorage'
+import { UploadGuideImage } from '../application/use-cases/UploadGuideImage'
+import { MockGuideImageStorage } from './mock/MockGuideImageStorage'
+import { SupabaseGuideImageStorage } from './gateways/SupabaseGuideImageStorage'
 import type { IRealtimeClient } from './mock/MockRealtimeClient'
 
 import { GetPrayerWall } from '../application/use-cases/GetPrayerWall'
@@ -52,8 +56,10 @@ let givingWallRepo: IGivingWallRepository
 let paymentGateway: IPaymentGateway
 let realtimeClient: IRealtimeClient
 let givingWallId: string
+let guideImageStorage: IGuideImageStorage
 
 if (USE_MOCK) {
+  guideImageStorage = new MockGuideImageStorage()
   prayerRepo = new MockPrayerRepository()
   categoryRepo = new MockPrayerCategoryRepository()
   meditationRepo = new MockPrayerMeditationRepository()
@@ -68,6 +74,7 @@ if (USE_MOCK) {
   // DECISION: createSupabaseClient() sets db: { schema: 'prayer_wall' }.
   // All repos share one client instance. Admin pages create their own separate client.
   const supabase = createSupabaseClient()
+  guideImageStorage = new SupabaseGuideImageStorage(supabase)
   prayerRepo = new SupabasePrayerRepository(supabase)
   categoryRepo = new SupabasePrayerCategoryRepository(supabase)
   meditationRepo = new SupabasePrayerMeditationRepository(supabase)
@@ -78,6 +85,7 @@ if (USE_MOCK) {
 }
 
 export const container = {
+  uploadGuideImage: new UploadGuideImage(guideImageStorage),
   getPrayerWall: new GetPrayerWall(prayerRepo),
   getPrayerCategories: new GetPrayerCategories(categoryRepo),
   getAllPrayerCategories: new GetAllPrayerCategories(categoryRepo),
