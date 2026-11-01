@@ -335,6 +335,7 @@ export interface Database {
       }
       donations: {
         Row: {
+          hidden_from_wall: boolean
           id: string
           giving_wall_id: string
           commitment_id: string | null
@@ -350,6 +351,7 @@ export interface Database {
           created_at: string
         }
         Insert: {
+          hidden_from_wall?: boolean
           id?: string
           giving_wall_id: string
           commitment_id?: string | null
@@ -365,6 +367,7 @@ export interface Database {
           created_at?: string
         }
         Update: {
+          hidden_from_wall?: boolean
           id?: string
           giving_wall_id?: string
           commitment_id?: string | null
@@ -466,6 +469,10 @@ export interface Database {
       admin_read_donations: {
         Args: { p_wall_id: string }
         Returns: Database['prayer_wall']['Tables']['donations']['Row'][]
+      }
+      admin_hide_donation: {
+        Args: { p_wall_id: string; p_donation_id: string }
+        Returns: boolean
       }
       record_paid_donation: {
         Args: {

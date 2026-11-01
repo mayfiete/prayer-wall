@@ -21,10 +21,14 @@ function deferred() {
 function mount(execute, initialWall = 'wall-a') {
   const state = []
   const timers = new Map()
+  const intervals = new Map()
+  const refs = []
+  let refCursor = 0
   let cursor = 0, nextTimer = 0, effect, cleanup, wall = initialWall
   const container = { getGivingWall: { execute } }
   const exports = {}
   const react = {
+    useRef(initial) { const index = refCursor++; return refs[index] ??= { current: initial } },
     useState(initial) {
       const index = cursor++
       if (!(index in state)) state[index] = initial
@@ -43,8 +47,10 @@ function mount(execute, initialWall = 'wall-a') {
     },
     setTimeout(callback, delay) { const id = ++nextTimer; timers.set(id, { callback, delay }); return id },
     clearTimeout(id) { timers.delete(id) },
+    setInterval(callback) { const id = ++nextTimer; intervals.set(id, callback); return id },
+    clearInterval(id) { intervals.delete(id) },
   })
-  function render() { cursor = 0; return exports.useGivingWall(wall) }
+  function render() { cursor = 0; refCursor = 0; return exports.useGivingWall(wall) }
   function restart(nextWall = wall) {
     cleanup?.()
     wall = nextWall
@@ -56,6 +62,7 @@ function mount(execute, initialWall = 'wall-a') {
     render, restart,
     unmount() { cleanup?.() },
     timers,
+    refresh() { for (const callback of intervals.values()) callback() },
     retry() {
       assert.equal(timers.size, 1, 'exactly one retry should be scheduled')
       const [id, timer] = timers.entries().next().value
@@ -81,6 +88,84 @@ test('a transient first fetch retries automatically and displays the donation', 
   assert.equal(hook.render().donations[0], donation)
   assert.equal(hook.render().loading, false)
   assert.equal(hook.render().error, null)
+})
+
+test('periodic refresh removes hidden donations while retaining new realtime arrivals', async () => {
+  const refresh = deferred()
+  let calls = 0
+  const hook = mount(() => ++calls === 1 ? Promise.resolve([{ id: 'hidden-later' }]) : refresh.promise)
+  await setImmediate()
+  hook.render()
+  hook.refresh()
+  hook.render().addDonation({ id: 'new-arrival' })
+  refresh.resolve([])
+  await setImmediate()
+  assert.deepEqual(Array.from(hook.render().donations, row => row.id), ['new-arrival'])
+  hook.unmount()
+})
+
+test('successful background refresh recovers a failed initial load', async () => {
+  let calls = 0
+  const hook = mount(async () => {
+    if (++calls === 1) throw new Error('Service temporarily unavailable')
+    return [{ id: 'recovered' }]
+  })
+  await setImmediate()
+  assert.ok(hook.render().error)
+  hook.refresh()
+  await setImmediate()
+  assert.equal(hook.render().error, null)
+  assert.equal(hook.render().loading, false)
+  assert.equal(hook.render().donations[0].id, 'recovered')
+})
+
+test('background refresh waits for the initial load to settle', async () => {
+  const initial = deferred()
+  let calls = 0
+  const hook = mount(() => { calls++; return initial.promise })
+  hook.refresh()
+  assert.equal(calls, 1, 'overlapping initial and refresh reads can resurrect hidden rows')
+  initial.resolve([])
+  await setImmediate()
+  hook.unmount()
+})
+
+test('failed background refresh preserves the visible wall', async () => {
+  let calls = 0
+  const hook = mount(async () => {
+    if (++calls > 1) throw new TypeError('Failed to fetch')
+    return [{ id: 'visible' }]
+  })
+  await setImmediate()
+  hook.render()
+  hook.refresh()
+  await setImmediate()
+  assert.equal(hook.render().donations[0].id, 'visible')
+  assert.equal(hook.render().error, null)
+  hook.unmount()
+})
+
+test('refresh ticks do not overlap and obsolete refresh results cannot change a new wall', async () => {
+  const pending = deferred()
+  let calls = 0
+  const hook = mount(async wall => {
+    calls++
+    if (calls === 2) return pending.promise
+    return [{ id: wall }]
+  })
+  await setImmediate()
+  hook.render()
+  hook.refresh()
+  hook.refresh()
+  assert.equal(calls, 2)
+  hook.restart('wall-b')
+  await setImmediate()
+  pending.resolve([{ id: 'stale' }])
+  await setImmediate()
+  assert.equal(hook.render().donations[0].id, 'wall-b')
+  hook.unmount()
+  hook.refresh()
+  assert.equal(calls, 3)
 })
 
 test('persistent transport failures stop after three attempts', async () => {

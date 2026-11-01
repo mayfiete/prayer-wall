@@ -169,4 +169,25 @@ test('admin allowlist against an empty disposable PostgreSQL database', { skip: 
       assert.equal(result(await asUser(admins[0], 'SELECT prayer_wall.is_app_admin()')), 't')
     })
   }
+  await t.test('only admins can hide donations; public reads exclude them while history stays intact', async () => {
+    await sql(await readFile(new URL('../supabase/migrations/036_hide_giving_wall_bricklayers.sql', import.meta.url), 'utf8'))
+    const donationId = await sql("SELECT id FROM prayer_wall.donations WHERE processor_ref = 'pi_035_test'")
+    const call = `SELECT prayer_wall.admin_hide_donation('${givingWall}', '${donationId}')`
+    for (const role of ['anon', 'authenticated']) {
+      await assert.rejects(asUser(outsider, call, role), /permission denied|Administrator access required/)
+      await assert.rejects(asUser(outsider, `UPDATE prayer_wall.donations SET hidden_from_wall = true WHERE id = '${donationId}'`, role), /permission denied/)
+    }
+    const before = await sql(`SELECT row_to_json(d)::text FROM prayer_wall.donations d WHERE id = '${donationId}'`)
+    assert.equal(result(await asUser(admins[0], `SELECT prayer_wall.admin_hide_donation('${wall}', '${donationId}')`)), 'f')
+    assert.equal(await sql(`SELECT row_to_json(d)::text FROM prayer_wall.donations d WHERE id = '${donationId}'`), before)
+    for (const admin of admins) assert.equal(result(await asUser(admin, call)), 't')
+    for (const role of ['anon', 'authenticated']) {
+      assert.equal(result(await asUser(outsider, `SELECT count(id) FROM prayer_wall.donations WHERE id = '${donationId}'`, role)), '0')
+    }
+    const after = JSON.parse(result(await asUser('', `SELECT row_to_json(d)::text FROM prayer_wall.donations d WHERE id = '${donationId}'`, 'service_role')))
+    assert.deepEqual(after, { ...JSON.parse(before), hidden_from_wall: true })
+    for (const admin of admins) {
+      assert.equal(result(await asUser(admin, `SELECT hidden_from_wall FROM prayer_wall.admin_read_donations('${givingWall}') WHERE id = '${donationId}'`)), 't')
+    }
+  })
 })

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import type { Donation } from '../../domain/entities/Donation'
 import { useContainer } from '../context/AppContext'
 
@@ -10,10 +10,13 @@ export function useGivingWall(givingWallId: string) {
   const [donations, setDonations] = useState<Donation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const currentDonations = useRef(donations)
+  currentDonations.current = donations
 
   useEffect(() => {
     let cancelled = false
     let retryTimer: ReturnType<typeof setTimeout> | undefined
+    let initialSettled = false
 
     setError(null)
     setDonations([])
@@ -35,6 +38,7 @@ export function useGivingWall(givingWallId: string) {
         })
         setError(null)
         setLoading(false)
+        initialSettled = true
       } catch (cause) {
         if (cancelled) return
         const message = cause instanceof Error ? cause.message : 'Could not load the giving wall.'
@@ -46,11 +50,35 @@ export function useGivingWall(givingWallId: string) {
         console.error('[giving-wall] Failed to load donations', cause)
         setError(message)
         setLoading(false)
+        initialSettled = true
       }
     }
 
     void load(0)
+    // Hidden rows no longer pass Realtime RLS, so reconcile with public reads.
+    let refreshing = false
+    const refreshTimer = setInterval(async () => {
+      if (refreshing || !initialSettled) return
+      refreshing = true
+      const existingIds = new Set(currentDonations.current.map(row => row.id))
+      try {
+        const rows = await getGivingWall.execute(givingWallId)
+        if (cancelled) return
+        const loadedIds = new Set(rows.map(row => row.id))
+        setDonations(current => [
+          ...current.filter(row => !existingIds.has(row.id) && !loadedIds.has(row.id)),
+          ...rows,
+        ])
+        setError(null)
+        setLoading(false)
+      } catch {
+        // Keep the displayed wall during a background network failure.
+      } finally {
+        refreshing = false
+      }
+    }, 30_000)
     return () => {
+      clearInterval(refreshTimer)
       cancelled = true
       if (retryTimer !== undefined) clearTimeout(retryTimer)
     }
