@@ -8,7 +8,7 @@ const GIVING_WALL_ID = (import.meta.env.VITE_GIVING_WALL_ID as string | undefine
 // Private reads use the database RPC, which checks the approved Auth UUIDs.
 type DonationRow = Pick<
   Database['prayer_wall']['Tables']['donations']['Row'],
-  'id' | 'name' | 'amount_cents' | 'currency' | 'processor_ref' | 'email_opt_out' | 'donated_at'
+  'id' | 'name' | 'amount_cents' | 'currency' | 'processor_ref' | 'email_opt_out' | 'donated_at' | 'hidden_from_wall'
 >
 
 interface GivingWallDonorsAdminProps {
@@ -23,6 +23,26 @@ export function GivingWallDonorsAdmin({ supabase }: GivingWallDonorsAdminProps) 
   const [donations, setDonations] = useState<DonationRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [removingId, setRemovingId] = useState<string | null>(null)
+  const [operationError, setOperationError] = useState('')
+
+  async function handleRemove(donation: DonationRow) {
+    if (removingId || !globalThis.confirm(`Remove "${donation.name}" from the giving wall? The donation record will be kept. This does not refund the payment or change email subscriptions.`)) return
+    setRemovingId(donation.id)
+    setOperationError('')
+    try {
+      const { data, error: err } = await supabase.rpc('admin_hide_donation', {
+        p_wall_id: GIVING_WALL_ID, p_donation_id: donation.id,
+      })
+      if (err) throw new Error(err.message)
+      if (!data) throw new Error('Donation not found. Reload the list and try again.')
+      setDonations(current => current.map(row => row.id === donation.id ? { ...row, hidden_from_wall: true } : row))
+    } catch (cause) {
+      setOperationError(cause instanceof Error ? cause.message : 'Could not remove bricklayer. Please try again.')
+    } finally {
+      setRemovingId(null)
+    }
+  }
 
   useEffect(() => {
     if (!GIVING_WALL_ID) { setLoading(false); return }
@@ -68,7 +88,7 @@ export function GivingWallDonorsAdmin({ supabase }: GivingWallDonorsAdminProps) 
       {donations.length === 0 ? (
         <p className="text-sm text-stone-400">No donations yet.</p>
       ) : (
-        <div className="bg-white border border-stone-200 rounded-lg overflow-hidden">
+        <div className="bg-white border border-stone-200 rounded-lg overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-stone-100 text-xs text-stone-400 uppercase tracking-wide">
@@ -77,6 +97,7 @@ export function GivingWallDonorsAdmin({ supabase }: GivingWallDonorsAdminProps) 
                 <th className="px-5 py-3 text-left font-medium">Date</th>
                 <th className="px-5 py-3 text-left font-medium">Processor ref</th>
                 <th className="px-5 py-3 text-left font-medium">Email opt-out</th>
+                <th className="px-5 py-3 text-left font-medium">Wall</th>
               </tr>
             </thead>
             <tbody>
@@ -93,12 +114,23 @@ export function GivingWallDonorsAdmin({ supabase }: GivingWallDonorsAdminProps) 
                       {d.email_opt_out ? 'Opted out' : 'Active'}
                     </span>
                   </td>
+                  <td className="px-5 py-3">
+                    {d.hidden_from_wall ? <span className="text-xs text-stone-400">Hidden</span> : (
+                      <button type="button" disabled={removingId !== null}
+                        onClick={() => void handleRemove(d)}
+                        aria-label={`Remove ${d.name} from the giving wall`}
+                        className="text-xs text-red-600 hover:text-red-800 disabled:opacity-50">
+                        {removingId === d.id ? 'Removing…' : 'Remove'}
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
+      {operationError && <p role="alert" className="text-sm text-red-600">{operationError}</p>}
     </div>
   )
 }
