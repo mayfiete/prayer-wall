@@ -101,6 +101,9 @@
   /* The image has transparent margins; crop those rather than shrink the names. */
   .stone-row--mobile .tile-stone {
     background-size: 150% auto;
+    /* The cropped texture is square-cornered; round and clip it. */
+    border-radius: 24% / 32% !important;
+    overflow: hidden;
   }
 
   .stone-row--mobile .stone-name {
