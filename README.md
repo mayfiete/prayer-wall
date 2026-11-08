@@ -34,21 +34,21 @@ The prayer admin area includes:
 - **Stonemasons:** manage prayer participants, prayer points, and individual rhythm assignments.
 - **Assets:** upload wall textures and logos.
 - **Theme:** edit colors, fonts, layout settings, and interface copy with live preview.
-- **Emails:** edit sender name, shared wording, confirmation, prayer guide, and reminder copy for this wall.
+- **Emails:** edit sender name, shared wording, confirmation, prayer guide, and reminder copy for this wall, and add, reorder, or remove images in the prayer guide email ([details](docs/prayer-guide-images.md)).
 
 The current reminder worker selects recipients through **category-to-rhythm assignments**. Individual rhythm assignments exist in the admin and database, but the worker does not currently use `commitment_rhythms` to select recipients.
 
 ### Giving Wall
 
-Visitors choose a preset or custom gift amount, enter a required first name and optionally a last name. The frontend combines these into the name sent to Checkout; it currently does **not** offer an Anonymous toggle. In Supabase mode, the app redirects them to **Stripe-hosted Checkout** to enter payment details.
+Visitors choose a preset or custom **monthly** gift amount, enter a required first name and optionally a last name, and must tick an unchecked monthly-donation agreement (changing the amount clears it). The frontend combines the names into the name sent to Checkout; it currently does **not** offer an Anonymous toggle. In Supabase mode, the app redirects them to **Stripe-hosted Checkout** to enter payment details. Checkout Sessions use Stripe `subscription` mode with a monthly recurring price; consent, its timestamp, and the agreed amount are recorded in session metadata, and both the application and `create-donation-checkout` reject a missing consent.
 
-A verified, paid Checkout event records the donation and a linked commitment. Realtime then updates the giving wall, and the webhook requests a thank-you email. A successful donation does **not** subscribe the donor to prayer reminders.
+A verified, paid Checkout event records one donation and a linked commitment. Renewals do not create additional bricks or change the wall's total; renewal history, failed payments, and cancellation are managed in Stripe. Realtime then updates the giving wall, and the webhook requests a thank-you email. A successful donation does **not** subscribe the donor to prayer reminders.
 
-The giving admin area includes Rhythms, Assets, Theme, Emails, and **Bricklayers**. The Emails tab edits this wall's sender name, shared wording, and donation thank-you text. The Bricklayers view lists recorded donations, amounts, dates, processor references, email opt-out status, and a total. A Rhythms tab is available, but the current email worker is a category-based prayer reminder worker; a separate recurring donor-email campaign is not implemented.
+The giving admin area includes Rhythms, Assets, Theme, Emails, and **Bricklayers**. The Emails tab edits this wall's sender name, shared wording, and donation thank-you text. The Bricklayers view lists recorded donations, amounts, dates, processor references, email opt-out status, and a total, and lets an administrator **remove** a brick from the wall. Removal is a soft hide (`donations.hidden_from_wall`, migration `036`) through the admin-only `admin_hide_donation` function: payment history and webhook idempotency are preserved, and hidden donations no longer appear in public reads. A Rhythms tab is available, but the current email worker is a category-based prayer reminder worker; a separate recurring donor-email campaign is not implemented.
 
 ### Shared presentation
 
-Both public walls use `WallHeader`, `WallBanner`, `WallGrid`, `WallBrick`, and the shared modal and form controls. `useWallLayout` measures the grid container with `ResizeObserver`, adapts the number and size of tiles, and observes live theme changes. The configured row count acts as a maximum; narrower containers use fewer columns. Alternate rows retain their stagger except in a single-column layout.
+Both public walls use `WallHeader`, `WallBanner`, `WallGrid`, `WallBrick`, and the shared modal and form controls. `useWallLayout` measures the grid container with `ResizeObserver`, adapts the number and size of tiles, and observes live theme changes. The configured row count acts as a maximum; narrower containers use fewer columns. Alternate rows retain their stagger on desktop. Containers narrower than 640px switch to a mobile layout of repeating courses that alternate one centered stone with two side-by-side stones, with rounded stone edges; the desktop layout continues to use the configured theme.
 
 Public headers and forms adapt to narrow screens. Dialog content scrolls within the available viewport height while keeping the close button visible. Themes and cached assets are separated by wall, with Storage folders such as `prayer/stone`, `prayer/logo`, `giving/stone`, and `giving/logo`.
 
@@ -145,9 +145,9 @@ sequenceDiagram
     participant Thanks as send-donation-thanks
     participant Mail as Resend
 
-    Visitor->>App: Choose amount, first name, optional last name
+    Visitor->>App: Choose monthly amount, first name, optional last name, agree to monthly gift
     App->>Checkout: Request Checkout Session
-    Checkout->>Stripe: Create hosted Checkout Session
+    Checkout->>Stripe: Create hosted subscription Checkout Session
     Stripe-->>Checkout: Session URL
     Checkout-->>App: Redirect URL
     App-->>Visitor: Open Stripe-hosted Checkout
@@ -276,7 +276,7 @@ Application tables live in the **`prayer_wall`** Postgres schema. The current un
 | `email_rhythms`, `category_rhythms`, `commitment_rhythms` | Schedule definitions and assignments. |
 | `wall_theme` | Per-wall presentation settings and public interface copy. |
 | `email_copy` | Per-wall, admin-edited plain-text email wording overrides (migration `034`). |
-| `donations` | Paid amounts in cents, currency, display name, payment references, and linked commitments. |
+| `donations` | Paid amounts in cents, currency, display name, payment references, linked commitments, and a `hidden_from_wall` flag for removed bricks. |
 | `webhook_events` | Stripe event audit and processing status. |
 | `email_logs` | Delivery attempts, email types, statuses, and provider message IDs. |
 
@@ -299,6 +299,7 @@ The directory contains historical alternatives and two files numbered `018`; do 
 - `029_walls_app_type.sql` establishes the current discriminator and refuses to run if a separate `giving_walls` table exists. Existing separate-table installations require reconciliation first.
 - Apply `030_donation_commitments.sql`, `031_donation_full_name.sql`, and `032_restore_commitment_public_reads.sql` in that order for current donation persistence and public commitment reads.
 - Apply `033_restrict_donation_public_reads.sql` after `024` to remove broad donation SELECT grants; **do not rerun `024` afterward**. It allows only an explicit public column projection. Run the disposable-stack API/Realtime privacy tests below to verify effective grants.
+- Apply `036_hide_giving_wall_bricklayers.sql` (requires `035`) to let administrators remove bricks from the giving wall; it adds `hidden_from_wall`, a restrictive read policy, and `admin_hide_donation`.
 - Apply `034_email_copy.sql` for admin email editing. The table is not publicly readable, but its write policies currently trust any authenticated user; see [Security posture and remaining work](#security-posture-and-remaining-work).
 
 The migration headers and [giving-wall setup guide](docs/giving-wall-stripe-test-mode.md) explain prerequisites and deployment order. The older [Supabase setup notes](docs/supabase-setup.md) provide background but contain historical names and scheduling examples; use the current files above for migrations and cron setup.
@@ -309,7 +310,7 @@ The migration headers and [giving-wall setup guide](docs/giving-wall-stripe-test
 | --- | --- |
 | `send-confirmation` | Prayer form after signup; sends confirmation and prayer-guide emails and records results. |
 | `send-reminders` | Hourly scheduler; finds due category rhythms and active recipients, sends prayer reminders, and updates logs/reminder timestamps. |
-| `create-donation-checkout` | Giving form through `StripeCheckoutGateway`; validates input and mode and creates a hosted Checkout Session. |
+| `create-donation-checkout` | Giving form through `StripeCheckoutGateway`; validates input, monthly consent, and mode and creates a hosted subscription Checkout Session. |
 | `giving-wall-webhook` | Stripe; verifies signatures and payment state, audits events, persists donations, and requests thank-you emails. |
 | `send-donation-thanks` | Webhook; sends a thank-you email and records delivery state. |
 | `unsubscribe` | Opt-out endpoint supporting both products; the giving frontend uses it because browsers cannot update donation rows. |
@@ -373,7 +374,7 @@ For the current checkout name flow, apply the required schema first, deploy the 
 | `npm run build` | TypeScript project build and production assets. |
 | `npm run preview` | Preview built frontend locally. |
 | `npm run lint` | Repository ESLint check. |
-| `node --test tests/*.test.mjs` | Frontend/use-case regressions, including checkout naming, donation loading, and responsive layout calculations. Checkout naming tests currently expect an obsolete optional Full Name/Anonymous UI and fail on the required first/optional last name form. |
+| `node --test tests/*.test.mjs` | Frontend/use-case regressions, including checkout naming and monthly consent, donation loading and removal, admin access, guide images, and responsive layout calculations. |
 | `node --test supabase/functions/stripe-mode.test.mjs` | Stripe test/live mode guards with external services mocked. |
 | `node --test supabase/functions/email-layout.test.mjs` | Email layout, copy defaults, escaping, and mocked sending; sends no emails. |
 | `node --test supabase/functions/donation-persistence.test.mjs` | Donation persistence migration integration checks against disposable Postgres; requires `DONATION_TEST_CONTAINER`. |
