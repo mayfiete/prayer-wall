@@ -45,5 +45,5 @@ export function PrayerWallGrid({ wallId, onCtaClick }: PrayerWallGridProps) {
     [onCtaClick],
   )
 
-  return <WallGrid items={items} ctaBrick={ctaBrick} loading={loading} error={error} />
+  return <WallGrid items={items} ctaBrick={ctaBrick} loading={loading} error={error} rounded />
 }

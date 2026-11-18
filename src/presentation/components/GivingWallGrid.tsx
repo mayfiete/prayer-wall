@@ -45,5 +45,5 @@ export function GivingWallGrid({ givingWallId, onCtaClick }: GivingWallGridProps
     [onCtaClick],
   )
 
-  return <WallGrid items={items} ctaBrick={ctaBrick} loading={loading} error={error} />
+  return <WallGrid items={items} ctaBrick={ctaBrick} loading={loading} error={error} mobileHeightScale={1.15} mobileNameShift={10} />
 }

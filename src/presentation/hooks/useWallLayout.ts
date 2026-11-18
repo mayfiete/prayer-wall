@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 
-export function useWallLayout() {
+export function useWallLayout(mobileHeightScale = 1) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [layout, setLayout] = useState({ columns: 1, width: 200, height: 100, overlapX: 0, overlapY: 0, offsetX: 0, mobile: false })
 
@@ -63,7 +63,7 @@ export function useWallLayout() {
   const mobileRowStyle = (): CSSProperties => {
     const gap = 8
     const width = Math.max(1, (layout.width - gap) / 2)
-    const height = Math.max(96, Math.round(layout.height / 2))
+    const height = Math.round(Math.max(96, Math.round(layout.height / 2)) * mobileHeightScale)
     return {
       '--stone-w': `${width}px`,
       '--stone-h': `${height}px`,
