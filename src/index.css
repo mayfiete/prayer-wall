@@ -101,13 +101,19 @@
   /* The image has transparent margins; crop those rather than shrink the names. */
   .stone-row--mobile .tile-stone {
     background-size: 150% auto;
-    /* The cropped texture is square-cornered; round and clip it. */
+  }
+
+  /* Prayer wall only: the cropped texture is square-cornered; round and clip it.
+     The giving wall (bricks) keeps its square corners. */
+  .stone-wall--rounded .stone-row--mobile .tile-stone {
     border-radius: 24% / 32% !important;
     overflow: hidden;
   }
 
   .stone-row--mobile .stone-name {
     width: 75%;
+    /* --mobile-name-shift (percentage points of tile height) is set per wall. */
+    top: calc((var(--brick-name-y, 50) + var(--mobile-name-shift, 0)) * 1%);
   }
 
   /* ─── Shared tile structure ────────────────────────────────────────────── */

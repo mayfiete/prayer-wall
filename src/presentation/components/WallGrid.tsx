@@ -1,4 +1,4 @@
-import { useMemo, Fragment, type ReactNode } from 'react'
+import { useMemo, Fragment, type CSSProperties, type ReactNode } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useWallLayout } from '../hooks/useWallLayout'
 
@@ -12,10 +12,16 @@ interface WallGridProps {
   ctaBrick: ReactNode
   loading: boolean
   error: string | null
+  /** Round the tile corners on mobile (prayer stones). Giving bricks stay square. */
+  rounded?: boolean
+  /** Multiplies tile height in mobile mode (1 = default). */
+  mobileHeightScale?: number
+  /** Moves names down in mobile mode, as a percentage of tile height (0 = default). */
+  mobileNameShift?: number
 }
 
-export function WallGrid({ items, ctaBrick, loading, error }: WallGridProps) {
-  const { containerRef, columns: stonesPerRow, mobile, style, mobileRowStyle } = useWallLayout()
+export function WallGrid({ items, ctaBrick, loading, error, rounded = false, mobileHeightScale = 1, mobileNameShift = 0 }: WallGridProps) {
+  const { containerRef, columns: stonesPerRow, mobile, style, mobileRowStyle } = useWallLayout(mobileHeightScale)
   const FULL = stonesPerRow
   const OFFSET = Math.max(1, stonesPerRow - 1)
 
@@ -50,12 +56,12 @@ export function WallGrid({ items, ctaBrick, loading, error }: WallGridProps) {
       ) : error ? (
         <div className="flex items-center justify-center py-24 text-red-400 text-sm">{error}</div>
       ) : (
-        <div className="stone-wall" style={style}>
+        <div className={`stone-wall${rounded ? ' stone-wall--rounded' : ''}`} style={style}>
           {rows.map((row, rowIdx) => (
             <div
               key={rowIdx}
               className={`stone-row${rowClass(rowIdx)}`}
-              style={mobile ? mobileRowStyle() : undefined}
+              style={mobile ? { ...mobileRowStyle(), '--mobile-name-shift': mobileNameShift } as CSSProperties : undefined}
             >
               {row.map((item) => (
                 <Fragment key={item.key}>{item.node}</Fragment>
